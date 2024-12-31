@@ -1,8 +1,4 @@
 import {
-	useEffect,
-	useState
-} from "react";
-import {
 	ChevronDown,
 	ExternalLink,
 	Mail
@@ -76,10 +72,10 @@ const App = () => {
 
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 						{
-							projects.map( ( project, index ) => (
+							projects.map( ( project ) => (
 								<div
 									className="bg-gray-700 rounded-lg p-6 hover:transform hover:scale-105 transition-transform duration-300"
-									key={ index }>
+									key={ project.title }>
 									<h3 className="text-xl font-bold mb-4">
 										{project.title}
 									</h3>
@@ -90,10 +86,10 @@ const App = () => {
 
 									<div className="flex flex-wrap gap-2 mb-4">
 										{
-											project.tech.map( ( tech, techIndex ) => (
+											project.tech.map( ( tech ) => (
 												<span
 													className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
-													key={ techIndex }>
+													key={ tech }>
 													{tech}
 												</span>
 											) )
@@ -128,10 +124,10 @@ const App = () => {
 
 					<div className="max-w-2xl mx-auto space-y-6">
 						{
-							skills.map( ( skill, index ) => (
+							skills.map( ( skill ) => (
 								<div
 									className="space-y-2"
-									key={ index }>
+									key={ skill.name }>
 									<div className="flex justify-between">
 										<span className="font-medium">
 											{skill.name}
@@ -148,7 +144,7 @@ const App = () => {
 											className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-1000"
 											style={
 												{
-													width: `${ skill.level }%`
+													width: `${ skill.level.toString() }%`
 												}
 											}/>
 									</div>
