@@ -17,9 +17,6 @@ import {
 	GetSectionRef,
 	ScrollSpyContext
 } from "./ScrollSpyContext";
-import {
-	Entries
-} from "type-fest";
 
 type SectionRef = Record<SectionId, HTMLElement | null>;
 
@@ -29,9 +26,9 @@ type SectionRef = Record<SectionId, HTMLElement | null>;
  * - Otherwise, the section closest to the viewport's middle is considered active
  * - If the user is within a set distance from the top or bottom of the page, the first or last section is considered active
  * */
-function getActiveSection( ref: MutableRefObject<SectionRef> ): SectionId {
+function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
 	const pixelBuffer = 32;
-	const sectionIds = Object.keys( ref.current ) as SectionId[];
+	const sectionIds = Object.keys( ref.current );
 
 	// Edge case: User is near TOP of page
 	if ( window.scrollY <= pixelBuffer ) {
@@ -52,18 +49,15 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): SectionId {
 	let closestSectionId = sectionIds[ 0 ];
 	let smallestDistance = Infinity;
 
-	for (
-		const [ sectionId, element ] of
-		Object.entries( ref.current ) as
-		Entries<typeof ref.current>
-	) {
+	// Find the section closest to the viewport's middle
+	for ( const [ sectionId, element ] of Object.entries( ref.current ) ) {
 		if ( !element ) continue;
 
 		const rect = element.getBoundingClientRect();
 		const sectionMiddle = window.scrollY + rect.top + rect.height / 2;
 		const distance = Math.abs( viewportMiddle - sectionMiddle );
 
-		// If a section covers >85% of the viewport, prioritize it
+		// If a section covers >85% of the viewport, return it immediately
 		const viewportCoverage = Math.min(
 			rect.height,
 			window.innerHeight
@@ -88,7 +82,7 @@ export const ScrollSpyProvider = ( {
 }: {
 	children: ReactNode
 } ) => {
-	const [ activeSection, setActiveSection ] = useState<SectionId>( sections.ABOUT );
+	const [ activeSection, setActiveSection ] = useState<string>( sections.ABOUT );
 	const sectionRefs = useRef<SectionRef>( {
 		[ sections.ABOUT ]: null,
 		[ sections.PROJECTS ]: null,
@@ -118,7 +112,7 @@ export const ScrollSpyProvider = ( {
 				"scroll",
 				throttledHandleScroll,
 				{
-					passive: true // We don't need to use preventDefault, so keep this in place
+					passive: true // We don't need to use preventDefault, so keep this in place!
 				}
 			);
 			// Do an initial check
@@ -134,6 +128,7 @@ export const ScrollSpyProvider = ( {
 		[ sectionRefs ]
 	);
 
+	// Store a reference to each section
 	const getSectionRef: GetSectionRef = ( sectionId ) => ( el ) => {
 		sectionRefs.current[ sectionId ] = el;
 	};
