@@ -14,7 +14,13 @@ import {
 	throttle
 } from "lodash";
 
-function getActiveSection(): string {
+/**
+ * Determine the active section based on the current scroll position
+ * - If a section covers >85% of the viewport, it is considered active
+ * - Otherwise, the section closest to the viewport's middle is considered active
+ * - If the user is within a set distance from the top or bottom of the page, the first or last section is considered active
+ * */
+function getActiveSection( refs: MutableRefObject<null | HTMLElement>[] ): string {
 	const pixelBuffer = 32;
 
 	// 1) Check near-top edge case
@@ -36,11 +42,10 @@ function getActiveSection(): string {
 	let closestSectionId = sections[ 0 ];
 	let smallestDistance = Infinity;
 
-	for ( const sectionId of sections ) {
-		const el = document.getElementById( sectionId );
-		if ( !el ) continue; // Skip if no matching element
+	for ( const ref of refs ) {
+		if ( !ref.current ) continue;
 
-		const rect = el.getBoundingClientRect();
+		const rect = ref.current.getBoundingClientRect();
 		const sectionMiddle = window.scrollY + rect.top + rect.height / 2;
 		const distance = Math.abs( viewportMiddle - sectionMiddle );
 
@@ -51,12 +56,12 @@ function getActiveSection(): string {
 		) / window.innerHeight;
 		const isCoveringMajority = rect.top <= 0 && rect.bottom >= window.innerHeight && viewportCoverage > 0.85;
 		if ( isCoveringMajority ) {
-			return sectionId; // Immediately pick it if it covers the majority
+			return ref.current.id; // Immediately pick it if it covers the majority
 		}
 
 		// Otherwise, keep track of the closest section to the viewport's middle
 		if ( distance < smallestDistance ) {
-			closestSectionId = sectionId;
+			closestSectionId = ref.current.id;
 			smallestDistance = distance;
 		}
 	}
@@ -64,6 +69,9 @@ function getActiveSection(): string {
 	return closestSectionId;
 }
 
+/**
+ * Navbar component that highlights the active section based on the current scroll position
+ * */
 const Navbar = ( {
 	refs
 }: {
@@ -79,21 +87,21 @@ const Navbar = ( {
 				if ( !scrolling.current ) {
 					scrolling.current = true;
 					window.requestAnimationFrame( () => {
-						setActiveSection( getActiveSection() );
+						setActiveSection( getActiveSection( refs ) );
 						scrolling.current = false;
 					} );
 				}
 			}
 			const throttledHandleScroll = throttle(
 				handleScroll,
-				200
+				300
 			);
 
 			window.addEventListener(
 				"scroll",
 				throttledHandleScroll,
 				{
-					passive: true
+					passive: true // We don't need to use preventDefault, so keep this in place
 				}
 			);
 			// Do an initial check
@@ -106,7 +114,7 @@ const Navbar = ( {
 				);
 			};
 		},
-		[]
+		[ refs ]
 	);
 
 	return (
@@ -119,18 +127,26 @@ const Navbar = ( {
 
 					<div className="space-x-6">
 						{
-							sections.map( ( item ) => (
-								<a
-									className={
-										`hover:text-blue-400 transition-colors ${
-											activeSection === item.toLowerCase() ? "text-blue-400" : "text-gray-200"
-										}`
-									}
-									href={ `#${ item }` }
-									key={ item }>
-									{toCapitalized( item )}
-								</a>
-							) )
+							refs.map( ( item ) => {
+								if ( !item.current ) return null;
+
+								const {
+									id
+								} = item.current;
+
+								return (
+									<a
+										className={
+											`hover:text-blue-400 transition-colors ${
+												activeSection === id ? "text-blue-400" : "text-gray-200"
+											}`
+										}
+										href={ `#${ id }` }
+										key={ id }>
+										{toCapitalized( id )}
+									</a>
+								);
+							} )
 						}
 					</div>
 				</div>
