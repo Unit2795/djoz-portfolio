@@ -40,10 +40,12 @@ const App = () => {
 				handleScroll
 			);
 
-			return () => window.removeEventListener(
-				"scroll",
-				handleScroll
-			);
+			return () => {
+				window.removeEventListener(
+					"scroll",
+					handleScroll
+				);
+			};
 		},
 		[]
 	);
@@ -112,8 +114,7 @@ const App = () => {
 											}`
 										}
 										href={ `#${ item.toLowerCase() }` }
-										key={ item }
-									>
+										key={ item }>
 										{item}
 									</a>
 								) )
@@ -130,8 +131,7 @@ const App = () => {
 						isVisible ? "opacity-100" : "opacity-0"
 					}`
 				}
-				id="hero"
-			>
+				id="hero">
 				<div className="container mx-auto px-6 text-center">
 					<h1 className="text-6xl font-bold mb-6">
 						<span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -149,22 +149,19 @@ const App = () => {
 					<div className="flex justify-center space-x-4">
 						<a
 							className="p-2 hover:text-blue-400 transition-colors"
-							href="#"
-						>
+							href="#">
 							<GitHub />
 						</a>
 
 						<a
 							className="p-2 hover:text-blue-400 transition-colors"
-							href="#"
-						>
+							href="#">
 							<LinkedIn />
 						</a>
 
 						<a
 							className="p-2 hover:text-blue-400 transition-colors"
-							href="#"
-						>
+							href="#">
 							<Mail size={ 24 } />
 						</a>
 					</div>
@@ -178,8 +175,7 @@ const App = () => {
 			{/* Projects Section */}
 			<section
 				className="py-20 bg-gray-800"
-				id="projects"
-			>
+				id="projects">
 				<div className="container mx-auto px-6">
 					<h2 className="text-4xl font-bold mb-12 text-center">
 						Featured Projects
@@ -190,8 +186,7 @@ const App = () => {
 							projects.map( ( project, index ) => (
 								<div
 									className="bg-gray-700 rounded-lg p-6 hover:transform hover:scale-105 transition-transform duration-300"
-									key={ index }
-								>
+									key={ index }>
 									<h3 className="text-xl font-bold mb-4">
 										{project.title}
 									</h3>
@@ -205,8 +200,7 @@ const App = () => {
 											project.tech.map( ( tech, techIndex ) => (
 												<span
 													className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
-													key={ techIndex }
-												>
+													key={ techIndex }>
 													{tech}
 												</span>
 											) )
@@ -215,15 +209,13 @@ const App = () => {
 
 									<a
 										className="inline-flex items-center text-blue-400 hover:text-blue-300"
-										href={ project.link }
-									>
+										href={ project.link }>
 										View Project
 										{" "}
 
 										<ExternalLink
 											className="ml-2"
-											size={ 16 }
-										/>
+											size={ 16 }/>
 									</a>
 								</div>
 							) )
@@ -235,8 +227,7 @@ const App = () => {
 			{/* Skills Section */}
 			<section
 				className="py-20"
-				id="skills"
-			>
+				id="skills">
 				<div className="container mx-auto px-6">
 					<h2 className="text-4xl font-bold mb-12 text-center">
 						Skills
@@ -247,8 +238,7 @@ const App = () => {
 							skills.map( ( skill, index ) => (
 								<div
 									className="space-y-2"
-									key={ index }
-								>
+									key={ index }>
 									<div className="flex justify-between">
 										<span className="font-medium">
 											{skill.name}
@@ -267,8 +257,7 @@ const App = () => {
 												{
 													width: `${ skill.level }%`
 												}
-											}
-										/>
+											}/>
 									</div>
 								</div>
 							) )
@@ -280,8 +269,7 @@ const App = () => {
 			{/* Contact Section */}
 			<section
 				className="py-20 bg-gray-800"
-				id="contact"
-			>
+				id="contact">
 				<div className="container mx-auto px-6 text-center">
 					<h2 className="text-4xl font-bold mb-8">
 						Get In Touch
@@ -293,13 +281,11 @@ const App = () => {
 
 					<a
 						className="inline-flex items-center bg-gradient-to-r from-blue-400 to-purple-500 text-white px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
-						href="mailto:contact@example.com"
-					>
+						href="mailto:contact@example.com">
 						Say Hello
 						<Mail
 							className="ml-2"
-							size={ 20 }
-						/>
+							size={ 20 }/>
 					</a>
 				</div>
 			</section>
