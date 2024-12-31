@@ -17,6 +17,9 @@ import {
 	GetSectionRef,
 	ScrollSpyContext
 } from "./ScrollSpyContext";
+import {
+	Entries
+} from "type-fest";
 
 type SectionRef = Record<SectionId, HTMLElement | null>;
 
@@ -52,8 +55,7 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): SectionId {
 	for (
 		const [ sectionId, element ] of
 		Object.entries( ref.current ) as
-		// TODO: Improve the type guarantee here, ideally by removing this cast. Embrace the weirdness of Object.entries
-		[keyof SectionRef, SectionRef[keyof SectionRef]][]
+		Entries<typeof ref.current>
 	) {
 		if ( !element ) continue;
 
