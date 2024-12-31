@@ -13,26 +13,26 @@ import {
 import "./App.css";
 import Navbar from "@/components/navbar/Navbar.tsx";
 import {
-	MutableRefObject,
-	useRef
-} from "react";
+	useScrollSpy
+} from "@/components/navbar/useScrollSpy.ts";
 
 const App = () => {
-	const sectionRefs: MutableRefObject<null | HTMLElement>[] = [ useRef( null ), useRef( null ), useRef( null ), useRef( null ) ];
+	const {
+		getSectionRef
+	} = useScrollSpy();
 
 	return (
 		<div className="min-h-screen bg-gray-900 text-white relative w-full">
 			<div className="hero-background"/>
 
 			<div className="relative z-10">
-				<Navbar refs={ sectionRefs }/>
+				<Navbar/>
 
 				{/* About Section */}
 				<section
 					className="min-h-screen flex items-center justify-center pt-20 animate-fade"
-					data-section="1"
 					id={ sections[ 0 ] }
-					ref={ sectionRefs[ 0 ] }>
+					ref={ getSectionRef( 0 ) }>
 					<div className="container mx-auto px-6 text-center">
 						<h1 className="text-6xl font-bold mb-6">
 							<span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -76,9 +76,8 @@ const App = () => {
 				{/* Projects Section */}
 				<section
 					className="py-20 bg-gray-800"
-					data-section="2"
 					id={ sections[ 1 ] }
-					ref={ sectionRefs[ 1 ] }>
+					ref={ getSectionRef( 1 ) }>
 					<div className="container mx-auto px-6">
 						<h2 className="text-4xl font-bold mb-12 text-center">
 							Featured Projects
@@ -130,9 +129,8 @@ const App = () => {
 				{/* Skills Section */}
 				<section
 					className="py-20"
-					data-section="3"
 					id={ sections[ 2 ] }
-					ref={ sectionRefs[ 2 ] }>
+					ref={ getSectionRef( 2 ) }>
 					<div className="container mx-auto px-6">
 						<h2 className="text-4xl font-bold mb-12 text-center">
 							Skills
@@ -174,9 +172,8 @@ const App = () => {
 				{/* Contact Section */}
 				<section
 					className="py-20 bg-gray-800"
-					data-section="4"
 					id={ sections[ 3 ] }
-					ref={ sectionRefs[ 3 ] }>
+					ref={ getSectionRef( 3 ) }>
 					<div className="container mx-auto px-6 text-center">
 						<h2 className="text-4xl font-bold mb-8">
 							Get In Touch
@@ -222,7 +219,6 @@ const App = () => {
 					</div>
 				</section>
 			</div>
-
 		</div>
 	);
 };

@@ -1,23 +1,16 @@
 import {
-	sections
-} from "@/content.ts";
-import {
-	useRef,
-	useState
+	useContext,
 } from "react";
+import {
+	ScrollSpyContext
+} from "@/components/navbar/ScrollSpyProvider.tsx";
+
 
 export const useScrollSpy = () => {
-	const sectionCount = sections.length;
-	const [ activeSection, setActiveSection ] = useState( sections[ 0 ] );
-	const sectionRefs = useRef( new Array( sectionCount ).fill( null ) );
-	const scrolling = useRef( false );
+	const context = useContext( ScrollSpyContext );
+	if ( !context ) {
+		throw new Error( "useScrollSpy must be used within a ScrollSpyProvider" );
+	}
 
-	const getSectionRef = ( index: number ) => ( el: HTMLElement ) => {
-		sectionRefs.current[ index ] = el;
-	};
-
-	return {
-		getSectionRef,
-		activeSection
-	};
+	return context;
 };
