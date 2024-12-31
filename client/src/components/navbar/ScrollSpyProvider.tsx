@@ -49,7 +49,12 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): SectionId {
 	let closestSectionId = sectionIds[ 0 ];
 	let smallestDistance = Infinity;
 
-	for ( const [ sectionId, element ] of Object.entries( ref.current ) as [SectionId, HTMLElement | null][] ) {
+	for (
+		const [ sectionId, element ] of
+		Object.entries( ref.current ) as
+		// TODO: Improve the type guarantee here, ideally by removing this cast. Embrace the weirdness of Object.entries
+		[keyof SectionRef, SectionRef[keyof SectionRef]][]
+	) {
 		if ( !element ) continue;
 
 		const rect = element.getBoundingClientRect();
