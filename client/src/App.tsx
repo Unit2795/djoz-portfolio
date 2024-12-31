@@ -9,17 +9,25 @@ import {
 } from "lucide-react";
 import GitHub from "@/components/icons/GitHub.tsx";
 import LinkedIn from "@/components/icons/LinkedIn.tsx";
+import {
+	projects,
+	skills
+} from "@/content.ts";
+import {
+	clsx
+} from "clsx";
+import "./App.css";
 
 const App = () => {
 	const [ isVisible, setIsVisible ] = useState( false );
-	const [ activeSection, setActiveSection ] = useState( "hero" );
+	const [ activeSection, setActiveSection ] = useState( "about" );
 
 	useEffect(
 		() => {
 			setIsVisible( true );
 
 			const handleScroll = () => {
-				const sections = [ "hero", "projects", "skills", "contact" ];
+				const sections = [ "about", "projects", "skills", "contact" ];
 				const current = sections.find( section => {
 					const element = document.getElementById( section );
 					if ( element ) {
@@ -50,59 +58,14 @@ const App = () => {
 		[]
 	);
 
-	const projects = [
-		{
-			title: "Project Alpha",
-			description: "A real-time data visualization dashboard built with React and D3.js",
-			tech: [ "React", "D3.js", "Node.js", "WebSocket" ],
-			link: "#"
-		},
-		{
-			title: "Project Beta",
-			description: "AI-powered content management system with natural language processing",
-			tech: [ "Python", "TensorFlow", "Flask", "MongoDB" ],
-			link: "#"
-		},
-		{
-			title: "Project Gamma",
-			description: "Cross-platform mobile app for fitness tracking and social networking",
-			tech: [ "React Native", "Firebase", "Redux", "GraphQL" ],
-			link: "#"
-		}
-	];
-
-	const skills = [
-		{
-			name: "Frontend Development",
-			level: 90
-		},
-		{
-			name: "Backend Development",
-			level: 85
-		},
-		{
-			name: "DevOps",
-			level: 75
-		},
-		{
-			name: "UI/UX Design",
-			level: 80
-		},
-		{
-			name: "Mobile Development",
-			level: 70
-		}
-	];
 
 	return (
 		<div className="min-h-screen bg-gray-900 text-white">
 			{/* Navigation */}
-			<nav className="fixed top-0 w-full bg-gray-900/80 backdrop-blur-sm z-50">
+			<nav className="fixed top-0 w-full bg-gray-900/50 backdrop-blur-sm z-50 drop-shadow-lg">
 				<div className="container mx-auto px-6 py-4">
 					<div className="flex justify-between items-center">
-						<span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-							Jane Developer
-						</span>
+						<span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">David Jozwik</span>
 
 						<div className="space-x-6">
 							{
@@ -124,15 +87,15 @@ const App = () => {
 				</div>
 			</nav>
 
-			{/* Hero Section */}
+			{/* About Section */}
 			<section
 				className={
-					`min-h-screen flex items-center justify-center pt-20 transition-opacity duration-1000 ${
+					`hero min-h-screen flex items-center justify-center pt-20 transition-opacity duration-1000 ${
 						isVisible ? "opacity-100" : "opacity-0"
 					}`
 				}
-				id="hero">
-				<div className="container mx-auto px-6 text-center">
+				id="about">
+				<div className="container mx-auto px-6 text-center hero-content">
 					<h1 className="text-6xl font-bold mb-6">
 						<span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
 							Building Digital
