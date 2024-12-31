@@ -3,7 +3,7 @@ import {
 } from "react";
 import {
 	ScrollSpyContext
-} from "@/components/navbar/ScrollSpyProvider.tsx";
+} from "@/components/navbar/ScrollSpyContext.ts";
 
 
 export const useScrollSpy = () => {

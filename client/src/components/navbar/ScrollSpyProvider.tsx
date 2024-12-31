@@ -1,10 +1,10 @@
 import {
+	SectionId,
 	sections
 } from "@/content.ts";
 import {
 	MutableRefObject,
 	ReactNode,
-	createContext,
 	useEffect,
 	useMemo,
 	useRef,
@@ -13,8 +13,12 @@ import {
 import {
 	throttle
 } from "lodash";
+import {
+	GetSectionRef,
+	ScrollSpyContext
+} from "./ScrollSpyContext";
 
-export type SectionsRef = MutableRefObject<( null | HTMLElement )[]>;
+type SectionRef = Record<SectionId, HTMLElement | null>;
 
 /**
  * Determine the active section based on the current scroll position
@@ -22,32 +26,33 @@ export type SectionsRef = MutableRefObject<( null | HTMLElement )[]>;
  * - Otherwise, the section closest to the viewport's middle is considered active
  * - If the user is within a set distance from the top or bottom of the page, the first or last section is considered active
  * */
-function getActiveSection( ref: SectionsRef ): string {
+function getActiveSection( ref: MutableRefObject<SectionRef> ): SectionId {
 	const pixelBuffer = 32;
+	const sectionIds = Object.keys( ref.current ) as SectionId[];
 
-	// 1) Check near-top edge case
+	// Edge case: User is near TOP of page
 	if ( window.scrollY <= pixelBuffer ) {
-		return sections[ 0 ];
+		return sectionIds[ 0 ];
 	}
 
-	// 2) Check near-bottom edge case
+	// Edge case: User is near BOTTOM of page
 	const scrolledToBottom =
 		window.innerHeight + window.scrollY >=
 		document.documentElement.scrollHeight - pixelBuffer;
 	if ( scrolledToBottom ) {
-		return sections[ sections.length - 1 ];
+		return sectionIds[ sectionIds.length - 1 ];
 	}
 
 	// Calculate viewport middle
 	const viewportMiddle = window.scrollY + window.innerHeight / 2;
 
-	let closestSectionId = sections[ 0 ];
+	let closestSectionId = sectionIds[ 0 ];
 	let smallestDistance = Infinity;
 
-	for ( const item of ref.current ) {
-		if ( !item ) continue;
+	for ( const [ sectionId, element ] of Object.entries( ref.current ) as [SectionId, HTMLElement | null][] ) {
+		if ( !element ) continue;
 
-		const rect = item.getBoundingClientRect();
+		const rect = element.getBoundingClientRect();
 		const sectionMiddle = window.scrollY + rect.top + rect.height / 2;
 		const distance = Math.abs( viewportMiddle - sectionMiddle );
 
@@ -58,12 +63,12 @@ function getActiveSection( ref: SectionsRef ): string {
 		) / window.innerHeight;
 		const isCoveringMajority = rect.top <= 0 && rect.bottom >= window.innerHeight && viewportCoverage > 0.85;
 		if ( isCoveringMajority ) {
-			return item.id; // Immediately pick it if it covers the majority
+			return sectionId; // Immediately pick it if it covers the majority
 		}
 
 		// Otherwise, keep track of the closest section to the viewport's middle
 		if ( distance < smallestDistance ) {
-			closestSectionId = item.id;
+			closestSectionId = sectionId;
 			smallestDistance = distance;
 		}
 	}
@@ -71,19 +76,18 @@ function getActiveSection( ref: SectionsRef ): string {
 	return closestSectionId;
 }
 
-export const ScrollSpyContext = createContext<{
-	activeSection: string,
-	getSectionRef: ( index: number )=> ( el: HTMLElement )=> void
-} | null>( null );
-
 export const ScrollSpyProvider = ( {
 	children
 }: {
 	children: ReactNode
 } ) => {
-	const sectionCount = sections.length;
-	const [ activeSection, setActiveSection ] = useState( sections[ 0 ] );
-	const sectionRefs = useRef< ( null | HTMLElement )[] >( new Array<null>( sectionCount ).fill( null ) );
+	const [ activeSection, setActiveSection ] = useState<SectionId>( sections.ABOUT );
+	const sectionRefs = useRef<SectionRef>( {
+		[ sections.ABOUT ]: null,
+		[ sections.PROJECTS ]: null,
+		[ sections.SKILLS ]: null,
+		[ sections.CONTACT ]: null
+	} );
 	const scrolling = useRef( false );
 
 	useEffect(
@@ -123,8 +127,8 @@ export const ScrollSpyProvider = ( {
 		[ sectionRefs ]
 	);
 
-	const getSectionRef = ( index: number ) => ( el: HTMLElement ) => {
-		sectionRefs.current[ index ] = el;
+	const getSectionRef: GetSectionRef = ( sectionId ) => ( el ) => {
+		sectionRefs.current[ sectionId ] = el;
 	};
 
 	const value = useMemo(

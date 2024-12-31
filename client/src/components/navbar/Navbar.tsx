@@ -2,7 +2,7 @@ import {
 	toCapitalized
 } from "@/utils/toCapitalized.ts";
 import {
-	sections
+	sectionArray
 } from "@/content.ts";
 import {
 	useScrollSpy
@@ -28,7 +28,7 @@ const Navbar = () => {
 
 					<div className="space-x-6">
 						{
-							sections.map( ( section ) => {
+							sectionArray.map( ( section ) => {
 								return (
 									<a
 										className={

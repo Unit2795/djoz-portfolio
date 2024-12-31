@@ -31,8 +31,8 @@ const App = () => {
 				{/* About Section */}
 				<section
 					className="min-h-screen flex items-center justify-center pt-20 animate-fade"
-					id={ sections[ 0 ] }
-					ref={ getSectionRef( 0 ) }>
+					id={ sections.ABOUT }
+					ref={ getSectionRef( sections.ABOUT ) }>
 					<div className="container mx-auto px-6 text-center">
 						<h1 className="text-6xl font-bold mb-6">
 							<span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -76,8 +76,8 @@ const App = () => {
 				{/* Projects Section */}
 				<section
 					className="py-20 bg-gray-800"
-					id={ sections[ 1 ] }
-					ref={ getSectionRef( 1 ) }>
+					id={ sections.PROJECTS }
+					ref={ getSectionRef( sections.PROJECTS ) }>
 					<div className="container mx-auto px-6">
 						<h2 className="text-4xl font-bold mb-12 text-center">
 							Featured Projects
@@ -129,8 +129,8 @@ const App = () => {
 				{/* Skills Section */}
 				<section
 					className="py-20"
-					id={ sections[ 2 ] }
-					ref={ getSectionRef( 2 ) }>
+					id={ sections.SKILLS }
+					ref={ getSectionRef( sections.SKILLS ) }>
 					<div className="container mx-auto px-6">
 						<h2 className="text-4xl font-bold mb-12 text-center">
 							Skills
@@ -172,8 +172,8 @@ const App = () => {
 				{/* Contact Section */}
 				<section
 					className="py-20 bg-gray-800"
-					id={ sections[ 3 ] }
-					ref={ getSectionRef( 3 ) }>
+					id={ sections.CONTACT }
+					ref={ getSectionRef( sections.CONTACT ) }>
 					<div className="container mx-auto px-6 text-center">
 						<h2 className="text-4xl font-bold mb-8">
 							Get In Touch
