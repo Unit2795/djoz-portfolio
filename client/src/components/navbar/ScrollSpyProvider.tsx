@@ -30,18 +30,12 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
 	const pixelBuffer = 32;
 	const sectionIds = Object.keys( ref.current );
 
-	// Edge case: User is near TOP of page
-	if ( window.scrollY <= pixelBuffer ) return sectionIds[ 0 ];
-
-	// Edge case: User is near BOTTOM of page
-	const isAtBottom =
-		window.innerHeight + window.scrollY >=
-		document.documentElement.scrollHeight - pixelBuffer;
-	if ( isAtBottom ) return sectionIds[ sectionIds.length - 1 ];
+	if ( window.scrollY <= pixelBuffer ) return sectionIds[ 0 ]; // Edge case: User is near TOP of page
+	if ( window.innerHeight + window.scrollY >=
+		document.documentElement.scrollHeight - pixelBuffer ) return sectionIds[ sectionIds.length - 1 ]; // Edge case: User is near BOTTOM of page
 
 	// Calculate viewport middle
 	const viewportMiddle = window.scrollY + window.innerHeight / 2;
-
 	let closestSection = {
 		id: sectionIds[ 0 ],
 		distance: Infinity
@@ -53,14 +47,13 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
 
 		const rect = element.getBoundingClientRect();
 		const sectionMiddle = window.scrollY + rect.top + rect.height / 2;
-
 		// If a section covers >85% of the viewport, return it immediately
 		const viewportCoverage = Math.min(
 			rect.height,
 			window.innerHeight
 		) / window.innerHeight;
 		const isCoveringMajority = rect.top <= 0 && rect.bottom >= window.innerHeight && viewportCoverage > 0.85;
-		if ( isCoveringMajority ) return id; // Immediately pick it if it covers the majority
+		if ( isCoveringMajority ) return id; // Pick immediately if covers the majority of viewport
 
 		const distance = Math.abs( viewportMiddle - sectionMiddle );
 		// Otherwise, keep track of the closest section to the viewport's middle
