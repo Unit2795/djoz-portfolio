@@ -87,39 +87,33 @@ export const ScrollSpyProvider = ( {
 		[ sections.SKILLS ]: null,
 		[ sections.CONTACT ]: null
 	} );
-	const scrolling = useRef( false );
 
 	useEffect(
 		() => {
-			function handleScroll() {
-				// Use requestAnimationFrame to throttle updates to active section
-				if ( !scrolling.current ) {
-					scrolling.current = true;
+			const updateActiveSection = throttle(
+				() => {
+					// Use requestAnimationFrame to throttle updates to active section
 					window.requestAnimationFrame( () => {
 						setActiveSection( getActiveSection( sectionRefs ) );
-						scrolling.current = false;
 					} );
-				}
-			}
-			const throttledHandleScroll = throttle(
-				handleScroll,
-				300
+				},
+				200
 			);
 
 			window.addEventListener(
 				"scroll",
-				throttledHandleScroll,
+				updateActiveSection,
 				{
 					passive: true // We don't need to use preventDefault, so keep this in place!
 				}
 			);
 			// Do an initial check
-			handleScroll();
+			updateActiveSection();
 
 			return () => {
 				window.removeEventListener(
 					"scroll",
-					throttledHandleScroll
+					updateActiveSection
 				);
 			};
 		},
