@@ -1,3 +1,5 @@
+export const sections = [ "about", "projects", "skills", "contact" ];
+
 export const projects = [
 	{
 		title: "Project Alpha",
