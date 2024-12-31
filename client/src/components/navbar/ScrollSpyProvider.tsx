@@ -31,31 +31,28 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
 	const sectionIds = Object.keys( ref.current );
 
 	// Edge case: User is near TOP of page
-	if ( window.scrollY <= pixelBuffer ) {
-		return sectionIds[ 0 ];
-	}
+	if ( window.scrollY <= pixelBuffer ) return sectionIds[ 0 ];
 
 	// Edge case: User is near BOTTOM of page
-	const scrolledToBottom =
+	const isAtBottom =
 		window.innerHeight + window.scrollY >=
 		document.documentElement.scrollHeight - pixelBuffer;
-	if ( scrolledToBottom ) {
-		return sectionIds[ sectionIds.length - 1 ];
-	}
+	if ( isAtBottom ) return sectionIds[ sectionIds.length - 1 ];
 
 	// Calculate viewport middle
 	const viewportMiddle = window.scrollY + window.innerHeight / 2;
 
-	let closestSectionId = sectionIds[ 0 ];
-	let smallestDistance = Infinity;
+	let closestSection = {
+		id: sectionIds[ 0 ],
+		distance: Infinity
+	};
 
 	// Find the section closest to the viewport's middle
-	for ( const [ sectionId, element ] of Object.entries( ref.current ) ) {
+	for ( const [ id, element ] of Object.entries( ref.current ) ) {
 		if ( !element ) continue;
 
 		const rect = element.getBoundingClientRect();
 		const sectionMiddle = window.scrollY + rect.top + rect.height / 2;
-		const distance = Math.abs( viewportMiddle - sectionMiddle );
 
 		// If a section covers >85% of the viewport, return it immediately
 		const viewportCoverage = Math.min(
@@ -63,18 +60,19 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
 			window.innerHeight
 		) / window.innerHeight;
 		const isCoveringMajority = rect.top <= 0 && rect.bottom >= window.innerHeight && viewportCoverage > 0.85;
-		if ( isCoveringMajority ) {
-			return sectionId; // Immediately pick it if it covers the majority
-		}
+		if ( isCoveringMajority ) return id; // Immediately pick it if it covers the majority
 
+		const distance = Math.abs( viewportMiddle - sectionMiddle );
 		// Otherwise, keep track of the closest section to the viewport's middle
-		if ( distance < smallestDistance ) {
-			closestSectionId = sectionId;
-			smallestDistance = distance;
+		if ( distance < closestSection.distance ) {
+			closestSection = {
+				id,
+				distance
+			};
 		}
 	}
 
-	return closestSectionId;
+	return closestSection.id;
 }
 
 export const ScrollSpyProvider = ( {
