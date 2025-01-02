@@ -26,13 +26,13 @@ type SectionRef = Record<SectionId, HTMLElement | null>;
  * - Otherwise, the section closest to the viewport's middle is considered active
  * - If the user is within a set distance from the top or bottom of the page, the first or last section is considered active
  * */
-function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
+function getActiveSection( ref: MutableRefObject<SectionRef> ): SectionId {
 	const pixelBuffer = 32;
 	const sectionIds = Object.keys( ref.current );
 
-	if ( window.scrollY <= pixelBuffer ) return sectionIds[ 0 ]; // Edge case: User is near TOP of page
+	if ( window.scrollY <= pixelBuffer ) return sections.ABOUT; // Edge case: User is near TOP of page
 	if ( window.innerHeight + window.scrollY >=
-		document.documentElement.scrollHeight - pixelBuffer ) return sectionIds[ sectionIds.length - 1 ]; // Edge case: User is near BOTTOM of page
+		document.documentElement.scrollHeight - pixelBuffer ) return sections.CONTACT; // Edge case: User is near BOTTOM of page
 
 	// Calculate viewport middle
 	const viewportMiddle = window.scrollY + window.innerHeight / 2;
@@ -42,7 +42,7 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
 	};
 
 	// Find the section closest to the viewport's middle
-	for ( const [ id, element ] of Object.entries( ref.current ) ) {
+	for ( const [ sectionId, element ] of Object.entries( ref.current ) ) {
 		if ( !element ) continue;
 
 		const rect = element.getBoundingClientRect();
@@ -53,19 +53,19 @@ function getActiveSection( ref: MutableRefObject<SectionRef> ): string {
 			window.innerHeight
 		) / window.innerHeight;
 		const isCoveringMajority = rect.top <= 0 && rect.bottom >= window.innerHeight && viewportCoverage > 0.85;
-		if ( isCoveringMajority ) return id; // Pick immediately if covers the majority of viewport
+		if ( isCoveringMajority ) return sectionId as SectionId; // Pick immediately if covers the majority of viewport
 
 		const distance = Math.abs( viewportMiddle - sectionMiddle );
 		// Otherwise, keep track of the closest section to the viewport's middle
 		if ( distance < closestSection.distance ) {
 			closestSection = {
-				id,
+				id: sectionId,
 				distance
 			};
 		}
 	}
 
-	return closestSection.id;
+	return closestSection.id as SectionId;
 }
 
 export const ScrollSpyProvider = ( {
@@ -73,7 +73,7 @@ export const ScrollSpyProvider = ( {
 }: {
 	children: ReactNode
 } ) => {
-	const [ activeSection, setActiveSection ] = useState<string>( sections.ABOUT );
+	const [ activeSection, setActiveSection ] = useState<SectionId>( sections.ABOUT );
 	const sectionRefs = useRef<SectionRef>( {
 		[ sections.ABOUT ]: null,
 		[ sections.PROJECTS ]: null,
