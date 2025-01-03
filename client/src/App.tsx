@@ -15,6 +15,7 @@ import Navbar from "@/components/navbar/Navbar.tsx";
 import {
 	useScrollSpy
 } from "@/components/navbar/useScrollSpy.ts";
+import Button from "@/components/button/Button.tsx";
 
 const App = () => {
 	const {
@@ -30,12 +31,13 @@ const App = () => {
 
 				{/* About Section */}
 				<section
-					className="min-h-screen flex items-center justify-center pt-20 animate-fade"
+					className="min-h-screen flex flex-col items-center justify-center pt-20 animate-fade relative"
 					id={ sections.ABOUT }
 					ref={ getSectionRef( sections.ABOUT ) }>
-					<div className="container mx-auto px-6 text-center">
+					<div className="container mx-auto px-6 text-center my-6">
 						<h1 className="text-6xl font-bold mb-6">
-							<span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+							<span
+								className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
 								Building Digital
 							</span>
 
@@ -67,10 +69,15 @@ const App = () => {
 							</a>
 						</div>
 
-						<div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-							{/*TODO: ⚠️ FIX THIS ARROW*/}
-							<ChevronDown size={ 24 }/>
-						</div>
+						<a href={ `#${ sections.PROJECTS }` }>
+							<Button className="group flex pr-4 mx-auto mt-8">
+								<span className="pr-6 text-nowrap">See My Work</span>
+
+								<ChevronDown
+									className="group-hover:animate-bounceMid"
+									size={ 24 }/>
+							</Button>
+						</a>
 					</div>
 				</section>
 

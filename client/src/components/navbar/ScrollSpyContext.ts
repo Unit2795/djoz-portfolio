@@ -3,7 +3,7 @@ import {
 } from "react";
 import {
 	SectionId
-} from "@/content.ts";
+} from "@/components/navbar/types.ts";
 
 export type GetSectionRef = ( index: SectionId )=> ( el: HTMLElement | null )=> void;
 

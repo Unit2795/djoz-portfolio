@@ -2,11 +2,11 @@ import {
 	toCapitalized
 } from "@/utils/toCapitalized.ts";
 import {
-	sectionArray
-} from "@/content.ts";
-import {
 	useScrollSpy
 } from "@/components/navbar/useScrollSpy.ts";
+import {
+	sectionArray
+} from "@/components/navbar/types.ts";
 
 
 /**
@@ -22,7 +22,7 @@ const Navbar = () => {
 			<div className="container mx-auto px-6 py-4">
 				<div className="flex justify-between items-center">
 					<span
-						className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+						className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
 						David Jozwik
 					</span>
 
