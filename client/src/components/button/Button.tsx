@@ -13,13 +13,19 @@ const Button = (
 		...rest
 	}: ButtonProps
 ) => {
+	const variantClass = {
+		primary: "bg-primary text-white",
+		secondary: "bg-secondary text-white",
+		neutral: "bg-white/5 text-neutral"
+	};
 
 	return (
 		<button
 			className={
 				clsx(
+					variantClass[ variant ],
 					className,
-					"px-6 py-3 bg-white/5 backdrop-blur-sm rounded-lg font-medium border border-white/20 shadow-lg hover:bg-white/10 transition-colors duration-200 glass-btn text-neutral"
+					"px-6 py-3 backdrop-blur-sm rounded-lg font-medium border border-white/20 shadow-lg hover:bg-white/10 transition-colors duration-200 glass-btn"
 				)
 			}
 			type={

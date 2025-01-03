@@ -6,9 +6,12 @@ import {
 import GitHub from "@/components/icons/GitHub.tsx";
 import LinkedIn from "@/components/icons/LinkedIn.tsx";
 import {
+	intro,
+	nextButton,
 	projects,
 	sections,
-	skills
+	skills,
+	taglines
 } from "@/content.ts";
 import "./App.css";
 import Navbar from "@/components/navbar/Navbar.tsx";
@@ -38,15 +41,18 @@ const App = () => {
 						<h1 className="text-6xl font-bold mb-6">
 							<span
 								className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-								Building Digital
+								{intro[ 0 ]}
 							</span>
 
 							<br/>
-							Experiences
+
+							{intro[ 1 ]}
 						</h1>
 
 						<p className="text-xl text-gray-400 mb-8">
-							Full Stack Developer • UI/UX Enthusiast • Open Source Contributor
+							{
+								taglines.join( " • " )
+							}
 						</p>
 
 						<div className="flex justify-center space-x-4">
@@ -71,7 +77,7 @@ const App = () => {
 
 						<a href={ `#${ sections.PROJECTS }` }>
 							<Button className="group flex pr-4 mx-auto mt-12">
-								<span className="pr-6 text-nowrap">See My Work</span>
+								<span className="pr-6 text-nowrap">{nextButton}</span>
 
 								<ChevronDown
 									className="group-hover:animate-bounceMid"

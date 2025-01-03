@@ -1,3 +1,18 @@
+export const name = "David Jozwik";
+
+export const intro: [string, string] = [
+	"Building Digital",
+	"Experiences"
+];
+
+export const taglines = [
+	"Full Stack Developer",
+	"UI/UX Enthusiast",
+	"DevOps Specialist"
+];
+
+export const nextButton = "See My Work";
+
 export const projects = [
 	{
 		title: "Project Alpha",

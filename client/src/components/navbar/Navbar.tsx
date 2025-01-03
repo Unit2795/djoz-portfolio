@@ -7,6 +7,9 @@ import {
 import {
 	sectionArray
 } from "@/components/navbar/types.ts";
+import {
+	name
+} from "@/content.ts";
 
 
 /**
@@ -25,7 +28,7 @@ const Navbar = () => {
 				<div className="flex justify-between items-center">
 					<span
 						className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-						David Jozwik
+						{name}
 					</span>
 
 					<div className="space-x-6">
