@@ -18,7 +18,9 @@ const Navbar = () => {
 	} = useScrollSpy();
 
 	return (
-		<nav className="fixed top-0 w-full bg-gray-900/50 backdrop-blur-sm z-50 drop-shadow-lg">
+		<nav className="fixed top-0 w-full bg-gray-900/50 backdrop-blur-lg z-50 drop-shadow-lg h-16">
+			<div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary/20 to-secondary/20"/>
+
 			<div className="container mx-auto px-6 py-4">
 				<div className="flex justify-between items-center">
 					<span

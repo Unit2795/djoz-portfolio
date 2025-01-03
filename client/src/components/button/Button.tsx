@@ -2,6 +2,7 @@ import clsx from "clsx";
 import {
 	ButtonProps
 } from "@/components/button/types.ts";
+import "./Button.css";
 
 const Button = (
 	{
@@ -18,7 +19,7 @@ const Button = (
 			className={
 				clsx(
 					className,
-					"px-6 py-3 bg-white/10 backdrop-blur-sm rounded-lg font-medium text-white border border-white/20 shadow-lg hover:bg-white/20 transition-colors duration-200"
+					"px-6 py-3 bg-white/5 backdrop-blur-sm rounded-lg font-medium border border-white/20 shadow-lg hover:bg-white/10 transition-colors duration-200 glass-btn text-neutral"
 				)
 			}
 			type={

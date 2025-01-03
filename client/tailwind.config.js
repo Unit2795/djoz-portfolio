@@ -13,7 +13,7 @@ export default {
       },
       animation: {
         fade: 'fadeIn 0.5s ease-in-out forwards',
-        bounceMid: 'bounceMiddle 1s ease-in-out infinite'
+        bounceMid: 'bounceMiddle linear 1s infinite'
       },
       keyframes: {
         fadeIn: {
@@ -22,12 +22,16 @@ export default {
         },
         bounceMiddle: {
             '0%, 100%': {
-                transform: 'translateY(-10%)',
-                animationTimingFunction: 'cubic-bezier(0.8,0,1,1)'
+                transform: 'translateY(0)',
+            },
+            '25%': {
+                transform: 'translateY(10%)',
             },
             '50%': {
-                transform: 'translateY(10%)',
-                animationTimingFunction: 'cubic-bezier(0,0,0.2,1)'
+                transform: 'translateY(0)',
+            },
+            '75%': {
+                transform: 'translateY(-10%)',
             }
         }
       }

@@ -26,12 +26,12 @@ const App = () => {
 		<div className="min-h-screen bg-gray-900 text-white relative w-full">
 			<div className="hero-background"/>
 
-			<div className="relative z-10">
-				<Navbar/>
+			<Navbar/>
 
+			<main className="relative z-10">
 				{/* About Section */}
 				<section
-					className="min-h-screen flex flex-col items-center justify-center pt-20 animate-fade relative"
+					className="min-h-screen flex flex-col items-center justify-center animate-fade relative"
 					id={ sections.ABOUT }
 					ref={ getSectionRef( sections.ABOUT ) }>
 					<div className="container mx-auto px-6 text-center my-6">
@@ -70,7 +70,7 @@ const App = () => {
 						</div>
 
 						<a href={ `#${ sections.PROJECTS }` }>
-							<Button className="group flex pr-4 mx-auto mt-8">
+							<Button className="group flex pr-4 mx-auto mt-12">
 								<span className="pr-6 text-nowrap">See My Work</span>
 
 								<ChevronDown
@@ -226,7 +226,7 @@ const App = () => {
 						</a>
 					</div>
 				</section>
-			</div>
+			</main>
 		</div>
 	);
 };

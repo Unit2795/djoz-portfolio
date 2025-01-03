@@ -1,0 +1,30 @@
+.glass-btn {
+    transition: 0.5s;
+}
+
+.glass-btn::after {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(
+            45deg,
+            transparent 50%,
+            rgba(255, 255, 255, 0.03) 58%,
+            rgba(255, 255, 255, 0.16) 67%,
+            transparent 68%
+    );
+    background-size: 200% 100%;
+    background-position: 165% 0;
+    transition: 0.7s;
+}
+
+.glass-btn:hover::after {
+    background-position: -20% 0;
+}
+
+.glass-btn:hover {
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+}
