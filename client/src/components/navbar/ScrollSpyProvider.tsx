@@ -99,7 +99,7 @@ export const ScrollSpyProvider = ( {
 				"scroll",
 				updateActiveSection,
 				{
-					passive: true // We don't need to use preventDefault, so keep this in place!
+					passive: true
 				}
 			);
 			// Do an initial check
