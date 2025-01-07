@@ -19,6 +19,7 @@ import {
 	useScrollSpy
 } from "@/components/Navbar/useScrollSpy.ts";
 import Button from "@/components/Button/Button.tsx";
+import RotatingText from "@/components/RotatingText/RotatingText.tsx";
 
 const App = () => {
 	const {
@@ -39,24 +40,25 @@ const App = () => {
 					ref={ getSectionRef( sections.ABOUT ) }>
 					<div className="container mx-auto px-6 text-center my-6">
 
-						<h1 className="text-6xl font-bold mb-6 text-center">
-							<span
-								className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-								{intro[ 0 ]}
-							</span>
+						<RotatingText
+							bottom={ intro[ 1 ] }
+							className="text-5xl sm:text-6xl font-bold mb-8 text-center"
+							top={
+								(
+									<span
+										className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+										{intro[ 0 ]}
+									</span>
+								)
+							}/>
 
-							<br/>
-
-							{intro[ 1 ]}
-						</h1>
-
-						<p className="text-xl text-gray-400 mb-8">
+						<p className="sm:text-xl text-md text-gray-400 mb-8">
 							{
 								taglines.join( " • " )
 							}
 						</p>
 
-						<div className="flex justify-center space-x-4">
+						<div className="flex justify-center space-x-4 mb-8">
 							<a
 								className="p-2 hover:text-blue-400 transition-colors"
 								href="#">
@@ -77,7 +79,7 @@ const App = () => {
 						</div>
 
 						<a href={ `#${ sections.PROJECTS }` }>
-							<Button className="group flex pr-4 mx-auto mt-12">
+							<Button className="group flex pr-4 mx-auto">
 								<span className="pr-6 text-nowrap">{nextButton}</span>
 
 								<ChevronDown
