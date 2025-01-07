@@ -20,11 +20,16 @@ import {
 } from "@/components/Navbar/useScrollSpy.ts";
 import Button from "@/components/Button/Button.tsx";
 import RotatingText from "@/components/RotatingText/RotatingText.tsx";
+import {
+	usePrefersReducedMotion
+} from "@/utils/useReducedMotion.ts";
+import clsx from "clsx";
 
 const App = () => {
 	const {
 		getSectionRef
 	} = useScrollSpy();
+	const prefersReducedMotion = usePrefersReducedMotion();
 
 	return (
 		<div className="min-h-screen bg-gray-900 text-white relative w-full">
@@ -35,7 +40,12 @@ const App = () => {
 			<main className="relative z-10">
 				{/* About Section */}
 				<section
-					className="min-h-screen flex flex-col items-center justify-center animate-fade relative"
+					className={
+						clsx(
+							"min-h-screen flex flex-col items-center justify-center relative",
+							Boolean( !prefersReducedMotion ) && "animate-fade"
+						)
+					}
 					id={ sections.ABOUT }
 					ref={ getSectionRef( sections.ABOUT ) }>
 					<div className="container mx-auto px-6 text-center my-6">
@@ -78,12 +88,14 @@ const App = () => {
 							</a>
 						</div>
 
-						<a href={ `#${ sections.PROJECTS }` }>
-							<Button className="group flex pr-4 mx-auto">
+						<a
+							className="inline-block"
+							href={ `#${ sections.PROJECTS }` }>
+							<Button className="group flex pr-4">
 								<span className="pr-6 text-nowrap">{nextButton}</span>
 
 								<ChevronDown
-									className="group-hover:animate-bounceMid"
+									className={ clsx( !prefersReducedMotion && "group-hover:animate-bounceMid" ) }
 									size={ 24 }/>
 							</Button>
 						</a>

@@ -13,7 +13,7 @@ export default {
 			},
 			animation: {
 				fade: 'fadeIn 0.5s ease-in-out forwards',
-				bounceMid: 'bounceMiddle linear 1s infinite',
+				bounceMid: 'bounceMiddle linear 0.75s infinite',
 				topRotateIn: 'rotateIn 1s ease-in-out forwards',
 				bottomRotateIn: 'rotateOut 1s ease-in-out forwards',
 			},
