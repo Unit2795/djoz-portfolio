@@ -15,7 +15,7 @@ import {
 import {
 	GetSectionRef,
 	ScrollSpyContext
-} from "./ScrollSpyContext";
+} from "@/components/Navbar/ScrollSpyContext.ts";
 import {
 	SectionId
 } from "@/components/Navbar/types.ts";
