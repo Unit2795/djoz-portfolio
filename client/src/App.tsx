@@ -14,11 +14,11 @@ import {
 	taglines
 } from "@/content.ts";
 import "./App.css";
-import Navbar from "@/components/navbar/Navbar.tsx";
+import Navbar from "@/components/Navbar/Navbar.tsx";
 import {
 	useScrollSpy
-} from "@/components/navbar/useScrollSpy.ts";
-import Button from "@/components/button/Button.tsx";
+} from "@/components/Navbar/useScrollSpy.ts";
+import Button from "@/components/Button/Button.tsx";
 
 const App = () => {
 	const {
@@ -38,7 +38,8 @@ const App = () => {
 					id={ sections.ABOUT }
 					ref={ getSectionRef( sections.ABOUT ) }>
 					<div className="container mx-auto px-6 text-center my-6">
-						<h1 className="text-6xl font-bold mb-6">
+
+						<h1 className="text-6xl font-bold mb-6 text-center">
 							<span
 								className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
 								{intro[ 0 ]}

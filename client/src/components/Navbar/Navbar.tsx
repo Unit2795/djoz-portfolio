@@ -6,7 +6,7 @@ import {
 } from "@/components/Navbar/useScrollSpy.ts";
 import {
 	sectionArray
-} from "@/components/navbar/types.ts";
+} from "@/components/Navbar/types.ts";
 import {
 	name
 } from "@/content.ts";
