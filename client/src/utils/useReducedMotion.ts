@@ -21,9 +21,7 @@ export const usePrefersReducedMotion = () => {
 				!window.matchMedia( QUERY ).matches
 			);
 			// Register our event listener
-			const listener = ( event: {
-				matches: any;
-			} ) => {
+			const listener = ( event: MediaQueryListEvent ) => {
 				setPrefersReducedMotion( !event.matches );
 			};
 			mediaQueryList.addEventListener(
