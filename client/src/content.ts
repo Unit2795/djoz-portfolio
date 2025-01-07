@@ -18,19 +18,22 @@ export const projects = [
 		title: "Project Alpha",
 		description: "A real-time data visualization dashboard built with React and D3.js",
 		tech: [ "React", "D3.js", "Node.js", "WebSocket" ],
-		link: "#"
+		link: "#",
+		img: "hero-bg.jpg"
 	},
 	{
 		title: "Project Beta",
 		description: "AI-powered content management system with natural language processing",
 		tech: [ "Python", "TensorFlow", "Flask", "MongoDB" ],
-		link: "#"
+		link: "#",
+		img: "hero-bg.jpg"
 	},
 	{
 		title: "Project Gamma",
 		description: "Cross-platform mobile app for fitness tracking and social networking",
 		tech: [ "React Native", "Firebase", "Redux", "GraphQL" ],
-		link: "#"
+		link: "#",
+		img: "hero-bg.jpg"
 	}
 ];
 

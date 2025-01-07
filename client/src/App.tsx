@@ -116,38 +116,45 @@ const App = () => {
 							{
 								projects.map( ( project ) => (
 									<div
-										className="bg-gray-700 rounded-lg p-6 hover:transform hover:scale-105 transition-transform duration-300"
+										className="bg-gray-700 rounded-lg hover:transform hover:scale-105 transition-transform duration-300 flex flex-col"
 										key={ project.title }>
-										<h3 className="text-xl font-bold mb-4">
-											{project.title}
-										</h3>
-
-										<p className="text-gray-300 mb-4">
-											{project.description}
-										</p>
-
-										<div className="flex flex-wrap gap-2 mb-4">
-											{
-												project.tech.map( ( tech ) => (
-													<span
-														className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
-														key={ tech }>
-														{tech}
-													</span>
-												) )
-											}
+										<div className="h-32 relative shadow-lg">
+											<img
+												alt={ `Picture of ${ project.title }` }
+												className="absolute w-full h-full object-cover rounded-lg"
+												src={ project.img }/>
 										</div>
 
-										<a
-											className="inline-flex items-center text-blue-400 hover:text-blue-300"
-											href={ project.link }>
-											View Project
-											{" "}
+										<div className="p-6 flex flex-col">
+											<h3 className="text-xl font-bold mb-4">
+												{project.title}
+											</h3>
 
-											<ExternalLink
-												className="ml-2"
-												size={ 16 }/>
-										</a>
+											<p className="text-gray-300 mb-4">
+												{project.description}
+											</p>
+
+											<div className="flex flex-wrap gap-2 mb-8">
+												{
+													project.tech.map( ( tech ) => (
+														<span
+															className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
+															key={ tech }>
+															{tech}
+														</span>
+													) )
+												}
+											</div>
+
+											<a
+												className="inline-flex items-center text-blue-400 hover:text-blue-300 mt-auto"
+												href={ project.link }>
+												View Project
+												<ExternalLink
+													className="ml-2"
+													size={ 16 }/>
+											</a>
+										</div>
 									</div>
 								) )
 							}
