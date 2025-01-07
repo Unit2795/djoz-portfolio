@@ -3,7 +3,7 @@ import {
 } from "@/utils/toCapitalized.ts";
 import {
 	useScrollSpy
-} from "@/components/navbar/useScrollSpy.ts";
+} from "@/components/Navbar/useScrollSpy.ts";
 import {
 	sectionArray
 } from "@/components/navbar/types.ts";

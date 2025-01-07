@@ -3,8 +3,8 @@ import {
 	ExternalLink,
 	Mail
 } from "lucide-react";
-import GitHub from "@/components/icons/GitHub.tsx";
-import LinkedIn from "@/components/icons/LinkedIn.tsx";
+import GitHub from "@/components/Icons/GitHub.tsx";
+import LinkedIn from "@/components/Icons/LinkedIn.tsx";
 import {
 	intro,
 	nextButton,

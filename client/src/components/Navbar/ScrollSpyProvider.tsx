@@ -18,7 +18,7 @@ import {
 } from "./ScrollSpyContext";
 import {
 	SectionId
-} from "@/components/navbar/types.ts";
+} from "@/components/Navbar/types.ts";
 
 type SectionRef = Record<SectionId, HTMLElement | null>;
 

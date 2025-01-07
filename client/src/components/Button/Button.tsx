@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import {
 	ButtonProps
-} from "@/components/button/types.ts";
+} from "@/components/Button/types.ts";
 import "./Button.css";
 
 const Button = (
