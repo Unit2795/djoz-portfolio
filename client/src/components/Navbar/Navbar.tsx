@@ -20,6 +20,9 @@ import {
 	X
 } from "lucide-react";
 import clsx from "clsx";
+import {
+	usePrefersReducedMotion
+} from "@/utils/useReducedMotion.ts";
 
 
 /**
@@ -29,6 +32,7 @@ const Navbar = () => {
 	const {
 		activeSection
 	} = useScrollSpy();
+	const prefersReducedMotion = usePrefersReducedMotion();
 
 	const navbar = useRef<null | HTMLElement>( null );
 	const scrollThreshold = 200; // Distance over which the scroll animation occurs
@@ -86,10 +90,12 @@ const Navbar = () => {
 					if ( !navbar.current ) return;
 
 					const scrollPosition = window.scrollY;
-					const progress = Math.min(
-						scrollPosition / scrollThreshold,
-						1
-					);
+					const progress = prefersReducedMotion
+						? 1
+						: Math.min(
+							scrollPosition / scrollThreshold,
+							1
+						);
 
 					// Initial and final values for each property
 					const initialWidth = 80; // 80%
@@ -120,21 +126,33 @@ const Navbar = () => {
 				} );
 			}
 
-			// Update on scroll and resize
-			window.addEventListener(
-				"scroll",
-				updateNavbarSize,
-				{
-					passive: true
-				}
-			);
-			window.addEventListener(
-				"resize",
-				updateNavbarSize,
-				{
-					passive: true
-				}
-			);
+			if ( !prefersReducedMotion ) {
+				// Update on scroll and resize
+				window.addEventListener(
+					"scroll",
+					updateNavbarSize,
+					{
+						passive: true
+					}
+				);
+				window.addEventListener(
+					"resize",
+					updateNavbarSize,
+					{
+						passive: true
+					}
+				);
+			} else {
+				window.removeEventListener(
+					"scroll",
+					updateNavbarSize
+				);
+				window.removeEventListener(
+					"resize",
+					updateNavbarSize
+				);
+			}
+
 
 			// Initial update
 			updateNavbarSize();
@@ -150,7 +168,7 @@ const Navbar = () => {
 				);
 			};
 		},
-		[ navbar ]
+		[ navbar, prefersReducedMotion ]
 	);
 
 	return (

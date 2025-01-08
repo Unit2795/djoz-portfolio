@@ -28,3 +28,13 @@
 .glass-btn:hover {
     box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
 }
+
+@media (prefers-reduced-motion) {
+    .glass-btn {
+        transition: unset;
+    }
+
+    .glass-btn::after {
+        background: unset;
+    }
+}

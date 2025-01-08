@@ -20,32 +20,22 @@ import {
 } from "@/components/Navbar/useScrollSpy.ts";
 import Button from "@/components/Button/Button.tsx";
 import RotatingText from "@/components/RotatingText/RotatingText.tsx";
-import {
-	usePrefersReducedMotion
-} from "@/utils/useReducedMotion.ts";
-import clsx from "clsx";
 
 const App = () => {
 	const {
 		getSectionRef
 	} = useScrollSpy();
-	const prefersReducedMotion = usePrefersReducedMotion();
 
 	return (
 		<div className="min-h-screen bg-gray-900 text-white relative w-full">
-			<div className="hero-background"/>
+			<div className="hero-background motion-safe:animate-fade"/>
 
 			<Navbar/>
 
 			<main className="relative z-10">
 				{/* About Section */}
 				<section
-					className={
-						clsx(
-							"min-h-screen flex flex-col items-center justify-center relative",
-							Boolean( !prefersReducedMotion ) && "animate-fade"
-						)
-					}
+					className="min-h-screen flex flex-col items-center justify-center relative motion-safe:animate-fade"
 					id={ sections.ABOUT }
 					ref={ getSectionRef( sections.ABOUT ) }>
 					<div className="container mx-auto px-6 text-center my-6">
@@ -95,7 +85,7 @@ const App = () => {
 								<span className="pr-6 text-nowrap">{nextButton}</span>
 
 								<ChevronDown
-									className={ clsx( !prefersReducedMotion && "group-hover:animate-bounceMid" ) }
+									className="group-hover:motion-safe:animate-bounceMid"
 									size={ 24 }/>
 							</Button>
 						</a>

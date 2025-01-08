@@ -1,8 +1,5 @@
 import clsx from "clsx";
 import {
-	usePrefersReducedMotion
-} from "@/utils/useReducedMotion.ts";
-import {
 	ReactNode
 } from "react";
 
@@ -17,8 +14,6 @@ const RotatingText = (
 		className?: string
 	}
 ) => {
-	const prefersReducedMotion = usePrefersReducedMotion();
-
 	return (
 		<div
 			className={
@@ -32,11 +27,11 @@ const RotatingText = (
 					perspective: "800px"
 				}
 			}>
-			<div className={ clsx( !prefersReducedMotion && "animate-topRotateIn origin-[50%_-50px]" ) }>
+			<div className={ clsx( "motion-safe:animate-topRotateIn origin-[50%_-50px]" ) }>
 				{top}
 			</div>
 
-			<div className={ clsx( !prefersReducedMotion && "animate-bottomRotateIn origin-[50%_150px]" ) }>
+			<div className={ clsx( "motion-safe:animate-bottomRotateIn origin-[50%_150px]" ) }>
 				{bottom}
 			</div>
 		</div>

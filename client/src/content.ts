@@ -3,17 +3,23 @@ export const name = "David Jozwik";
 export const intro: [string, string] = [
 	"Building Digital",
 	"Experiences"
-];
+] as const;
 
-export const taglines = [
+export const taglines: string[] = [
 	"Full Stack Developer",
 	"UI/UX Enthusiast",
-	"DevOps Specialist"
-];
+	"Solutions Architect"
+] as const;
 
 export const nextButton = "See My Work";
 
-export const projects = [
+export const projects: {
+	title: string;
+	description: string;
+	tech: string[];
+	link: string;
+	img: string;
+}[] = [
 	{
 		title: "Project Alpha",
 		description: "A real-time data visualization dashboard built with React and D3.js",
@@ -35,9 +41,12 @@ export const projects = [
 		link: "#",
 		img: "hero-bg.jpg"
 	}
-];
+] as const;
 
-export const skills = [
+export const skills: {
+	name: string;
+	level: number;
+}[] = [
 	{
 		name: "Frontend Development",
 		level: 90
