@@ -12,7 +12,8 @@ export default {
 				neutral: "#a6a6a6"
 			},
 			animation: {
-				fade: 'fadeIn 0.5s ease-in-out forwards',
+				fade: 'fadeIn 1s ease-in-out forwards',
+				fadeUp: 'fadeUp 1s ease-in-out forwards',
 				bounceMid: 'bounceMiddle linear 0.75s infinite',
 				topRotateIn: 'rotateIn 1s ease-in-out forwards',
 				bottomRotateIn: 'rotateOut 1s ease-in-out forwards',
@@ -21,6 +22,16 @@ export default {
 				fadeIn: {
 					'0%': {opacity: 0},
 					'100%': {opacity: 1}
+				},
+				fadeUp: {
+					'0%': {
+						opacity: 0,
+						transform: 'translateY(2rem)'
+					},
+					'100%': {
+						opacity: 1,
+						transform: 'translateY(0)'
+					},
 				},
 				bounceMiddle: {
 					'0%, 100%': {
@@ -37,12 +48,12 @@ export default {
 					}
 				},
 				rotateIn: {
-					'0%': { transform: 'rotateX(90deg)', opacity: '0' },
-					'100%': { transform: 'rotateX(0deg)', opacity: '1' },
+					'0%': {transform: 'rotateX(90deg)', opacity: '0'},
+					'100%': {transform: 'rotateX(0deg)', opacity: '1'},
 				},
 				rotateOut: {
-					'0%': { transform: 'rotateX(-90deg)', opacity: '0' },
-					'100%': { transform: 'rotateX(0deg)', opacity: '1' },
+					'0%': {transform: 'rotateX(-90deg)', opacity: '0'},
+					'100%': {transform: 'rotateX(0deg)', opacity: '1'},
 				},
 			}
 		}

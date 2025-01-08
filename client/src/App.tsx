@@ -35,7 +35,7 @@ const App = () => {
 			<main className="relative z-10">
 				{/* About Section */}
 				<section
-					className="min-h-screen flex flex-col items-center justify-center relative motion-safe:animate-fade"
+					className="min-h-screen flex flex-col items-center justify-center relative"
 					id={ sections.ABOUT }
 					ref={ getSectionRef( sections.ABOUT ) }>
 					<div className="container mx-auto px-6 text-center my-6">
@@ -52,7 +52,14 @@ const App = () => {
 								)
 							}/>
 
-						<p className="sm:text-xl text-md text-gray-400 mb-8">
+						<p
+							className="sm:text-xl text-md text-gray-400 mb-8 motion-safe:animate-fadeUp"
+							style={
+								{
+									animationDelay: "250ms",
+									animationFillMode: "both"
+								}
+							}>
 							{
 								taglines.join( " • " )
 							}
@@ -60,27 +67,51 @@ const App = () => {
 
 						<div className="flex justify-center space-x-4 mb-8">
 							<a
-								className="p-2 hover:text-blue-400 transition-colors"
-								href="#">
+								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
+								href="#"
+								style={
+									{
+										animationDelay: "500ms",
+										animationFillMode: "both"
+									}
+								}>
 								<GitHub/>
 							</a>
 
 							<a
-								className="p-2 hover:text-blue-400 transition-colors"
-								href="#">
+								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
+								href="#"
+								style={
+									{
+										animationDelay: "750ms",
+										animationFillMode: "both"
+									}
+								}>
 								<LinkedIn/>
 							</a>
 
 							<a
-								className="p-2 hover:text-blue-400 transition-colors"
-								href="#">
+								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
+								href="#"
+								style={
+									{
+										animationDelay: "1000ms",
+										animationFillMode: "both"
+									}
+								}>
 								<Mail size={ 24 }/>
 							</a>
 						</div>
 
 						<a
-							className="inline-block"
-							href={ `#${ sections.PROJECTS }` }>
+							className="inline-block motion-safe:animate-fadeUp"
+							href={ `#${ sections.PROJECTS }` }
+							style={
+								{
+									animationDelay: "1000ms",
+									animationFillMode: "both"
+								}
+							}>
 							<Button className="group flex pr-4">
 								<span className="pr-6 text-nowrap">{nextButton}</span>
 
