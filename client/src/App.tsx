@@ -22,6 +22,7 @@ import RotatingText from "@/components/RotatingText/RotatingText.tsx";
 import {
 	sections
 } from "@/components/Navbar/types.ts";
+import Card from "@/components/Card/Card.tsx";
 
 const App = () => {
 	const {
@@ -138,47 +139,50 @@ const App = () => {
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 							{
 								projects.map( ( project ) => (
-									<div
-										className="bg-gray-700 rounded-lg hover:transform hover:scale-105 transition-transform duration-300 flex flex-col"
+									<a
+										className="group"
+										href={ project.link }
 										key={ project.title }>
-										<div className="h-32 relative shadow-lg">
-											<img
-												alt={ `Picture of ${ project.title }` }
-												className="absolute w-full h-full object-cover rounded-lg"
-												src={ project.img }/>
-										</div>
-
-										<div className="p-6 flex flex-col">
-											<h3 className="text-xl font-bold mb-4">
-												{project.title}
-											</h3>
-
-											<p className="text-gray-300 mb-4">
-												{project.description}
-											</p>
-
-											<div className="flex flex-wrap gap-2 mb-8">
-												{
-													project.tech.map( ( tech ) => (
-														<span
-															className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
-															key={ tech }>
-															{tech}
-														</span>
-													) )
-												}
+										<Card>
+											<div className="h-32 relative shadow-lg">
+												<img
+													alt={ `Picture of ${ project.title }` }
+													className="absolute w-full h-full object-cover rounded-lg"
+													src={ project.img }/>
 											</div>
 
-											<a
-												className="inline-flex items-center text-blue-400 hover:text-blue-300 mt-auto"
-												href={ project.link }>
-												View Project
-												<ExternalLink
-													className="ml-2"
-													size={ 16 }/>
-											</a>
-										</div>
-									</div>
+											<div className="p-6 flex flex-col">
+												<h3 className="text-xl font-bold mb-4">
+													{project.title}
+												</h3>
+
+												<p className="text-gray-300 mb-4">
+													{project.description}
+												</p>
+
+												<div className="flex flex-wrap gap-2 mb-8">
+													{
+														project.tech.map( ( tech ) => (
+															<span
+																className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
+																key={ tech }>
+																{tech}
+															</span>
+														) )
+													}
+												</div>
+
+												<a
+													className="inline-flex items-center text-blue-400 group-hover:text-blue-300 mt-auto"
+													href={ project.link }>
+													View Project
+													<ExternalLink
+														className="ml-2"
+														size={ 16 }/>
+												</a>
+											</div>
+										</Card>
+									</a>
 								) )
 							}
 						</div>
