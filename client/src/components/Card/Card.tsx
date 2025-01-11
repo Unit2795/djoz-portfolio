@@ -5,7 +5,8 @@ import clsx from "clsx";
 
 const Card = (
 	{
-		children, className
+		children,
+		className
 	}:
 	{
 		children: ReactNode;
@@ -25,7 +26,7 @@ const Card = (
 
 			{/* Main card content */}
 			<div
-				className="relative h-full rounded-xl bg-gray-700/50 backdrop-blur-md">
+				className="relative h-full rounded-xl bg-gray-700/50 backdrop-blur-sm">
 				{children}
 			</div>
 		</div>

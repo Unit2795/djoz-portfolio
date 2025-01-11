@@ -7,7 +7,7 @@ import {
 interface BallGradient {
 	centerColor: string;
 	edgeColor: string;
-	edgeStart: number; // Value between 0 and 1
+	edgeStart: number;
 }
 
 interface AnimatedBackgroundConfig {
@@ -21,14 +21,14 @@ interface AnimatedBackgroundConfig {
 }
 
 const defaultConfig: AnimatedBackgroundConfig = {
-	speedMultiplier: 0.5,
-	ballMinSize: 20,
-	ballMaxSize: 50,
-	numberOfBalls: 15,
+	speedMultiplier: 0.05,
+	ballMinSize: 80,
+	ballMaxSize: 100,
+	numberOfBalls: 8,
 	ballGradient: {
-		centerColor: "#87CEEB",
-		edgeColor: "white",
-		edgeStart: 0.8
+		centerColor: "#1f2937",
+		edgeColor: "#2e3d52",
+		edgeStart: 0.6
 	},
 	backgroundColor: "#1f2937",
 	maxSpawnRetries: 100
@@ -114,25 +114,23 @@ class Ball implements BallProps {
 	}
 
 	update( width: number, height: number ): void {
-		// Update position first
 		this.x += this.dx;
 		this.y += this.dy;
 
-		// Then check for wall collisions and correct position
 		if ( this.x - this.radius < 0 ) {
 			this.x = this.radius;
-			this.dx = Math.abs( this.dx ); // Ensure we move right
+			this.dx = Math.abs( this.dx );
 		} else if ( this.x + this.radius > width ) {
 			this.x = width - this.radius;
-			this.dx = -Math.abs( this.dx ); // Ensure we move left
+			this.dx = -Math.abs( this.dx );
 		}
 
 		if ( this.y - this.radius < 0 ) {
 			this.y = this.radius;
-			this.dy = Math.abs( this.dy ); // Ensure we move down
+			this.dy = Math.abs( this.dy );
 		} else if ( this.y + this.radius > height ) {
 			this.y = height - this.radius;
-			this.dy = -Math.abs( this.dy ); // Ensure we move up
+			this.dy = -Math.abs( this.dy );
 		}
 	}
 }
@@ -145,13 +143,22 @@ interface AnimatedBackgroundProps {
 const BallBackground = ( {
 	config,
 	children
-}: AnimatedBackgroundProps ) => {
+}: AnimatedBackgroundProps ): JSX.Element => {
+	const containerRef = useRef<HTMLDivElement | null>( null );
 	const canvasRef = useRef<HTMLCanvasElement | null>( null );
+	const dimensionsRef = useRef<{
+		width: number;
+		height: number
+	}>( {
+		width: 0,
+		height: 0
+	} );
 
 	useEffect(
 		() => {
 			const canvas = canvasRef.current;
-			if ( !canvas ) return;
+			const container = containerRef.current;
+			if ( !canvas || !container ) return;
 
 			const ctx = canvas.getContext( "2d" );
 			if ( !ctx ) return;
@@ -163,17 +170,25 @@ const BallBackground = ( {
 
 			const updateSize = (): void => {
 				const dpr = window.devicePixelRatio || 1;
-				const rect = canvas.getBoundingClientRect();
+				const rect = container.getBoundingClientRect();
 
+				// Store logical dimensions
+				dimensionsRef.current = {
+					width: rect.width,
+					height: rect.height
+				};
+
+				// Set high-resolution canvas
 				canvas.width = rect.width * dpr;
 				canvas.height = rect.height * dpr;
+				canvas.style.width = `${ rect.width }px`;
+				canvas.style.height = `${ rect.height }px`;
+
+				// Initial scale for high DPR
 				ctx.scale(
 					dpr,
 					dpr
 				);
-
-				canvas.style.width = `${ rect.width.toString() }px`;
-				canvas.style.height = `${ rect.width.toString() }px`;
 			};
 
 			window.addEventListener(
@@ -182,26 +197,26 @@ const BallBackground = ( {
 			);
 			updateSize();
 
+			const baseWidth = 1920;
+			const baseHeight = 1080;
+
 			const createBall = ( attempts = 0 ): Ball | null => {
 				if ( attempts > finalConfig.maxSpawnRetries ) return null;
 
-				// Calculate viewport-based scale factors
-				const baseWidth = 1920; // Base width for scaling
-				const baseHeight = 1080; // Base height for scaling
-				const viewportScale = Math.sqrt(
-					( canvas.width * canvas.height ) / ( baseWidth * baseHeight )
-				);
+				const {
+					width,
+					height
+				} = dimensionsRef.current;
+				const viewportScale = Math.sqrt( ( width * height ) / ( baseWidth * baseHeight ) );
 
-				// Scale ball sizes based on viewport
 				const scaledMinSize = finalConfig.ballMinSize * viewportScale;
 				const scaledMaxSize = finalConfig.ballMaxSize * viewportScale;
-
-				// Scale speed based on viewport
-				const speedScale = Math.sqrt( viewportScale ); // Use sqrt for less aggressive speed scaling
-
 				const radius = Math.random() * ( scaledMaxSize - scaledMinSize ) + scaledMinSize;
-				const x = Math.random() * ( canvas.width - radius * 2 ) + radius;
-				const y = Math.random() * ( canvas.height - radius * 2 ) + radius;
+
+				const x = Math.random() * ( width - radius * 2 ) + radius;
+				const y = Math.random() * ( height - radius * 2 ) + radius;
+
+				const speedScale = Math.sqrt( viewportScale );
 				const speed = ( Math.random() * 2 + 1 ) * finalConfig.speedMultiplier * speedScale;
 				const angle = Math.random() * Math.PI * 2;
 
@@ -225,24 +240,21 @@ const BallBackground = ( {
 			}
 
 			let animationId: number;
-
 			const animate = (): void => {
+				const {
+					width,
+					height
+				} = dimensionsRef.current;
+
 				ctx.fillStyle = finalConfig.backgroundColor;
 				ctx.fillRect(
 					0,
 					0,
-					canvas.width,
-					canvas.height
+					width,
+					height
 				);
 
-				const scale = window.devicePixelRatio || 1;
-				ctx.save();
-				ctx.scale(
-					1 / scale,
-					1 / scale
-				);
-
-				// Check for collisions between all pairs of balls
+				// Check for collisions
 				for ( let i = 0; i < balls.length; i++ ) {
 					for ( let j = i + 1; j < balls.length; j++ ) {
 						if ( balls[ i ].checkCollision( balls[ j ] ) ) {
@@ -251,11 +263,11 @@ const BallBackground = ( {
 					}
 				}
 
-				// Update and draw all balls
+				// Update and draw balls
 				balls.forEach( ball => {
 					ball.update(
-						canvas.width / scale,
-						canvas.height / scale
+						width,
+						height
 					);
 					ball.draw(
 						ctx,
@@ -263,7 +275,6 @@ const BallBackground = ( {
 					);
 				} );
 
-				ctx.restore();
 				animationId = requestAnimationFrame( animate );
 			};
 
@@ -280,8 +291,11 @@ const BallBackground = ( {
 		[ config ]
 	);
 
+
 	return (
-		<div className="relative overflow-hidden">
+		<div
+			className="relative overflow-hidden"
+			ref={ containerRef }>
 			{children}
 
 			<canvas
