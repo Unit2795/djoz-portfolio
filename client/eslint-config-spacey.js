@@ -43,7 +43,9 @@ export default [
 					allowConstantExport: true
 				},
 			],
-			"newline-destructuring/newline": "error",
+			"newline-destructuring/newline": ["error", {
+				items: 1
+			}],
 			"no-relative-import-paths/no-relative-import-paths": [
 				"error",
 				{

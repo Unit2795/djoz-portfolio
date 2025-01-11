@@ -23,6 +23,7 @@ import {
 	sections
 } from "@/components/Navbar/types.ts";
 import Card from "@/components/Card/Card.tsx";
+import BallBackground from "@/components/BallBackground/BallBackground.tsx";
 
 const App = () => {
 	const {
@@ -128,65 +129,66 @@ const App = () => {
 
 				{/* Projects Section */}
 				<section
-					className="py-20 bg-gray-800"
 					id={ sections.PROJECTS }
 					ref={ getSectionRef( sections.PROJECTS ) }>
-					<div className="container mx-auto px-6">
-						<h2 className="text-4xl font-bold mb-12 text-center">
-							Featured Projects
-						</h2>
+					<BallBackground>
+						<div className="container mx-auto px-6 py-20">
+							<h2 className="text-4xl font-bold mb-12 text-center">
+								Featured Projects
+							</h2>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-							{
-								projects.map( ( project ) => (
-									<a
-										className="group"
-										href={ project.link }
-										key={ project.title }>
-										<Card>
-											<div className="h-32 relative shadow-lg">
-												<img
-													alt={ `Picture of ${ project.title }` }
-													className="absolute w-full h-full object-cover rounded-lg"
-													src={ project.img }/>
-											</div>
-
-											<div className="p-6 flex flex-col">
-												<h3 className="text-xl font-bold mb-4">
-													{project.title}
-												</h3>
-
-												<p className="text-gray-300 mb-4">
-													{project.description}
-												</p>
-
-												<div className="flex flex-wrap gap-2 mb-8">
-													{
-														project.tech.map( ( tech ) => (
-															<span
-																className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
-																key={ tech }>
-																{tech}
-															</span>
-														) )
-													}
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+								{
+									projects.map( ( project ) => (
+										<a
+											className="group"
+											href={ project.link }
+											key={ project.title }>
+											<Card>
+												<div className="h-32 relative shadow-lg">
+													<img
+														alt={ `Picture of ${ project.title }` }
+														className="absolute w-full h-full object-cover rounded-lg"
+														src={ project.img }/>
 												</div>
 
-												<a
-													className="inline-flex items-center text-blue-400 group-hover:text-blue-300 mt-auto"
-													href={ project.link }>
-													View Project
-													<ExternalLink
-														className="ml-2"
-														size={ 16 }/>
-												</a>
-											</div>
-										</Card>
-									</a>
-								) )
-							}
+												<div className="p-6 flex flex-col">
+													<h3 className="text-xl font-bold mb-4">
+														{project.title}
+													</h3>
+
+													<p className="text-gray-300 mb-4">
+														{project.description}
+													</p>
+
+													<div className="flex flex-wrap gap-2 mb-8">
+														{
+															project.tech.map( ( tech ) => (
+																<span
+																	className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
+																	key={ tech }>
+																	{tech}
+																</span>
+															) )
+														}
+													</div>
+
+													<a
+														className="inline-flex items-center text-blue-400 group-hover:text-blue-300 mt-auto"
+														href={ project.link }>
+														View Project
+														<ExternalLink
+															className="ml-2"
+															size={ 16 }/>
+													</a>
+												</div>
+											</Card>
+										</a>
+									) )
+								}
+							</div>
 						</div>
-					</div>
+					</BallBackground>
 				</section>
 
 				{/* Skills Section */}
