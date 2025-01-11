@@ -9,7 +9,6 @@ import {
 	intro,
 	nextButton,
 	projects,
-	sections,
 	skills,
 	taglines
 } from "@/content.ts";
@@ -20,6 +19,9 @@ import {
 } from "@/components/Navbar/useScrollSpy.ts";
 import Button from "@/components/Button/Button.tsx";
 import RotatingText from "@/components/RotatingText/RotatingText.tsx";
+import {
+	sections
+} from "@/components/Navbar/types.ts";
 
 const App = () => {
 	const {

@@ -1,7 +1,4 @@
 import {
-	sections
-} from "@/content.ts";
-import {
 	MutableRefObject,
 	ReactNode,
 	useEffect,
@@ -17,7 +14,8 @@ import {
 	ScrollSpyContext
 } from "@/components/Navbar/ScrollSpyContext.ts";
 import {
-	SectionId
+	SectionId,
+	sections
 } from "@/components/Navbar/types.ts";
 
 type SectionRef = Record<SectionId, HTMLElement | null>;
