@@ -9,7 +9,6 @@ import {
 	intro,
 	nextButton,
 	projects,
-	skills,
 	taglines
 } from "@/content.ts";
 import "./App.css";
@@ -23,7 +22,7 @@ import {
 	sections
 } from "@/components/Navbar/types.ts";
 import Card from "@/components/Card/Card.tsx";
-import BallBackground from "@/components/BallBackground/BallBackground.tsx";
+import SkillMatrix from "@/components/SkillMatrix/SkillMatrix.tsx";
 
 const App = () => {
 	const {
@@ -129,110 +128,69 @@ const App = () => {
 
 				{/* Projects Section */}
 				<section
+					className="py-20 bg-gray-800"
 					id={ sections.PROJECTS }
 					ref={ getSectionRef( sections.PROJECTS ) }>
-					<BallBackground>
-						<div className="container mx-auto px-6 py-20">
-							<h2 className="text-4xl font-bold mb-12 text-center">
-								Featured Projects
-							</h2>
-
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-								{
-									projects.map( ( project ) => (
-										<a
-											className="group"
-											href={ project.link }
-											key={ project.title }>
-											<Card>
-												<div className="h-32 relative shadow-lg">
-													<img
-														alt={ `Picture of ${ project.title }` }
-														className="absolute w-full h-full object-cover rounded-lg"
-														src={ project.img }/>
-												</div>
-
-												<div className="p-6 flex flex-col">
-													<h3 className="text-xl font-bold mb-4">
-														{project.title}
-													</h3>
-
-													<p className="text-gray-300 mb-4">
-														{project.description}
-													</p>
-
-													<div className="flex flex-wrap gap-2 mb-8">
-														{
-															project.tech.map( ( tech ) => (
-																<span
-																	className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
-																	key={ tech }>
-																	{tech}
-																</span>
-															) )
-														}
-													</div>
-
-													<a
-														className="inline-flex items-center text-blue-400 group-hover:text-blue-300 mt-auto"
-														href={ project.link }>
-														View Project
-														<ExternalLink
-															className="ml-2"
-															size={ 16 }/>
-													</a>
-												</div>
-											</Card>
-										</a>
-									) )
-								}
-							</div>
-						</div>
-					</BallBackground>
-				</section>
-
-				{/* Skills Section */}
-				<section
-					className="py-20"
-					id={ sections.SKILLS }
-					ref={ getSectionRef( sections.SKILLS ) }>
 					<div className="container mx-auto px-6">
 						<h2 className="text-4xl font-bold mb-12 text-center">
-							Skills
+							Featured Projects
 						</h2>
 
-						<div className="max-w-2xl mx-auto space-y-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 							{
-								skills.map( ( skill ) => (
-									<div
-										className="space-y-2"
-										key={ skill.name }>
-										<div className="flex justify-between">
-											<span className="font-medium">
-												{skill.name}
-											</span>
+								projects.map( ( project ) => (
+									<a
+										className="group"
+										href={ project.link }
+										key={ project.title }>
+										<Card>
+											<div className="h-32 relative shadow-lg">
+												<img
+													alt={ `Picture of ${ project.title }` }
+													className="absolute w-full h-full object-cover rounded-lg"
+													src={ project.img }/>
+											</div>
 
-											<span className="text-gray-400">
-												{skill.level}
-												%
-											</span>
-										</div>
+											<div className="p-6 flex flex-col">
+												<h3 className="text-xl font-bold mb-4">
+													{project.title}
+												</h3>
 
-										<div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-											<div
-												className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-1000"
-												style={
+												<p className="text-gray-300 mb-4">
+													{project.description}
+												</p>
+
+												<div className="flex flex-wrap gap-2 mb-8">
 													{
-														width: `${ skill.level.toString() }%`
+														project.tech.map( ( tech ) => (
+															<span
+																className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm"
+																key={ tech }>
+																{tech}
+															</span>
+														) )
 													}
-												}/>
-										</div>
-									</div>
+												</div>
+
+												<a
+													className="inline-flex items-center text-blue-400 group-hover:text-blue-300 mt-auto"
+													href={ project.link }>
+													View Project
+													<ExternalLink
+														className="ml-2"
+														size={ 16 }/>
+												</a>
+											</div>
+										</Card>
+									</a>
 								) )
 							}
 						</div>
 					</div>
 				</section>
+
+				{/* Skills Section */}
+				<SkillMatrix/>
 
 				{/* Contact Section */}
 				<section
@@ -261,27 +219,7 @@ const App = () => {
 
 				{/* Footer Section */}
 				<section className="flex flex-col items-center py-8">
-					<p className="pl-6 text-gray-600">© {new Date().getFullYear()} David Jozwik · All rights reserved</p>
-
-					<div className="flex items-center gap-6 pt-4">
-						<a
-							className="text-gray-600 hover:text-blue-400"
-							href="https://github.com/yourusername">
-							<GitHub/>
-						</a>
-
-						<a
-							className="text-gray-600 hover:text-blue-400"
-							href="https://linkedin.com/in/yourusername">
-							<LinkedIn/>
-						</a>
-
-						<a
-							className="text-gray-600 hover:text-blue-400"
-							href="mailto:you@example.com">
-							<Mail size={ 24 }/>
-						</a>
-					</div>
+					<p className="pl-6 text-gray-600">© 2024 - {new Date().getFullYear()} David Jozwik · All rights reserved</p>
 				</section>
 			</main>
 		</div>
