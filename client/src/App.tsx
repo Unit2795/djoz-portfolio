@@ -147,7 +147,7 @@ const App = () => {
 											<div className="h-32 relative shadow-lg">
 												<img
 													alt={ `Picture of ${ project.title }` }
-													className="absolute w-full h-full object-cover rounded-lg"
+													className="absolute w-full h-full rounded-lg object-cover object-top"
 													src={ project.img }/>
 											</div>
 
@@ -172,14 +172,13 @@ const App = () => {
 													}
 												</div>
 
-												<a
-													className="inline-flex items-center text-blue-400 group-hover:text-blue-300 mt-auto"
-													href={ project.link }>
+												<p
+													className="inline-flex items-center text-blue-400 group-hover:text-blue-300 mt-auto">
 													View Project
 													<ExternalLink
 														className="ml-2"
 														size={ 16 }/>
-												</a>
+												</p>
 											</div>
 										</Card>
 									</a>
