@@ -123,11 +123,18 @@ const SkillMatrix = () => {
 
 									<div
 										className={
-											`overflow-hidden transition-all duration-500 ease-in-out ${
+											`backdrop-blur-sm overflow-hidden ${
 												expandedCategory === skill.name ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
 											}`
+										}
+										style={
+											{
+												transitionProperty: "max-height, opacity",
+												transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+												transitionDuration: "500ms"
+											}
 										}>
-										<div className="bg-white/5 p-4 backdrop-blur-sm rounded-lg">
+										<div className="bg-white/5 p-4 rounded-lg">
 											<div className="flex flex-wrap gap-2">
 												{
 													skill.subSkills?.map( ( subSkill ) => (
