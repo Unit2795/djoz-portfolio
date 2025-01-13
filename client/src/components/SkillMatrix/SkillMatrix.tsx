@@ -17,6 +17,10 @@ import {
 	useEffect,
 	useState
 } from "react";
+import {
+	ChevronDown,
+	ChevronUp
+} from "lucide-react";
 
 const SkillMatrix = () => {
 	const {
@@ -29,6 +33,11 @@ const SkillMatrix = () => {
 		threshold: 0.4,
 	} );
 	const [ revealed, setRevealed ] = useState( false );
+	const [ expandedCategory, setExpandedCategory ] = useState<string | null>( null );
+
+	const toggleCategory = ( category: null | string ) => {
+		setExpandedCategory( expandedCategory === category ? null : category );
+	};
 
 	useEffect(
 		() => {
@@ -63,32 +72,74 @@ const SkillMatrix = () => {
 								<div
 									className="space-y-2"
 									key={ skill.name }>
-									<div className="flex justify-between">
-										<span className="font-medium">
-											{skill.name}
-										</span>
+									<div
+										className="bg-white/5 hover:bg-white/10 p-4 backdrop-blur-sm rounded-lg cursor-pointer transition-colors flex items-center justify-between shadow-lg"
+										onClick={
+											() => {
+												toggleCategory( skill.name );
+											}
+										}>
+										<div className="flex-1">
+											<div className="flex justify-between">
+												<span className="font-medium">
+													{skill.name}
+												</span>
 
-										<AnimatedCounter
-											duration={ delay }
-											isVisible={ revealed }
-											value={ skill.level }/>
+												<AnimatedCounter
+													duration={ delay }
+													isVisible={ revealed }
+													value={ skill.level }/>
+											</div>
+
+											<div className="h-2 bg-gray-600 rounded-full overflow-hidden">
+												<div
+													className={
+														clsx(
+															"h-full bg-gradient-to-r from-primary to-secondary transition-all transform origin-left rounded-full",
+															revealed ? "scale-x-100" : "scale-x-0",
+														)
+													}
+													style={
+														{
+															transitionDuration: `${ delay.toString() }ms`,
+															width: `${ skill.level.toString() }%`
+														}
+													}/>
+											</div>
+										</div>
+
+										<div className="ml-4">
+											{
+												expandedCategory === skill.name
+													? (
+														<ChevronUp className="w-6 h-6 text-gray-400"/>
+													)
+													: (
+														<ChevronDown className="w-6 h-6 text-gray-400"/>
+													)
+											}
+										</div>
 									</div>
 
-									<div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-										<div
-											className={
-												clsx(
-													"h-full bg-gradient-to-r from-primary to-secondary transition-all transform origin-left rounded-full",
-													revealed ? "scale-x-100" : "scale-x-0",
-
-												)
-											}
-											style={
+									<div
+										className={
+											`overflow-hidden transition-all duration-500 ease-in-out ${
+												expandedCategory === skill.name ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+											}`
+										}>
+										<div className="bg-white/5 p-4 backdrop-blur-sm rounded-lg">
+											<div className="flex flex-wrap gap-2">
 												{
-													transitionDuration: `${ delay.toString() }ms`,
-													width: `${ skill.level.toString() }%`
+													skill.subSkills?.map( ( subSkill ) => (
+														<span
+															className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm font-medium"
+															key={ subSkill }>
+															{subSkill}
+														</span>
+													) )
 												}
-											}/>
+											</div>
+										</div>
 									</div>
 								</div>
 							);

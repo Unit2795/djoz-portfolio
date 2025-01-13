@@ -46,25 +46,31 @@ export const projects: {
 export const skills: {
 	name: string;
 	level: number;
+	subSkills?: string[];
 }[] = [
 	{
 		name: "Frontend Development",
-		level: 90
+		level: 90,
+		subSkills: [ "React", "Tailwind CSS", "Three.js", "CSS/SASS", "JavaScript", "TypeScript", "Next.js", "Vue.js" ]
 	},
 	{
 		name: "Backend Development",
-		level: 85
+		level: 85,
+		subSkills: [ "Node.js", "Python", "PostgreSQL", "MongoDB", "GraphQL", "Express", "Django", "REST APIs" ]
 	},
 	{
 		name: "DevOps",
-		level: 75
+		level: 80,
+		subSkills: [ "Docker", "CI/CD", "AWS", "Kubernetes", "GitHub Actions", "Terraform", "Linux" ]
 	},
 	{
 		name: "UI/UX Design",
-		level: 80
+		level: 80,
+		subSkills: [ "Figma", "Adobe XD", "Sketch", "InVision", "User Research", "Wireframing", "Prototyping" ]
 	},
 	{
 		name: "Mobile Development",
-		level: 70
+		level: 70,
+		subSkills: [ "React Native", "Swift", "Kotlin", "Flutter", "Xamarin", "PWA" ]
 	}
 ];
