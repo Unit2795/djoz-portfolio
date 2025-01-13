@@ -30,7 +30,7 @@ const SkillMatrix = () => {
 		elementRef,
 		isIntersecting
 	} = useIntersectionObserver<HTMLElement>( {
-		threshold: 0.4,
+		threshold: 0.1
 	} );
 	const [ revealed, setRevealed ] = useState( false );
 	const [ expandedCategory, setExpandedCategory ] = useState<string | null>( null );

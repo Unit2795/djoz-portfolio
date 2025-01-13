@@ -21,7 +21,6 @@ import RotatingText from "@/components/RotatingText/RotatingText.tsx";
 import {
 	sections
 } from "@/components/Navbar/types.ts";
-import Card from "@/components/Card/Card.tsx";
 import SkillMatrix from "@/components/SkillMatrix/SkillMatrix.tsx";
 
 const App = () => {
@@ -143,15 +142,13 @@ const App = () => {
 										className="group"
 										href={ project.link }
 										key={ project.title }>
-										<Card>
-											<div className="h-32 relative shadow-lg">
-												<img
-													alt={ `Picture of ${ project.title }` }
-													className="absolute w-full h-full rounded-lg object-cover object-top"
-													src={ project.img }/>
-											</div>
+										<div className="rounded-xl overflow-hidden duration-300 transition-all cursor-pointer bg-gray-700/50 h-full flex flex-col">
+											<img
+												alt={ `Picture of ${ project.title }` }
+												className="h-32 rounded-lg object-cover object-top shadow-lg"
+												src={ project.img }/>
 
-											<div className="p-6 flex flex-col">
+											<div className="p-6 flex flex-col flex-1">
 												<h3 className="text-xl font-bold mb-4">
 													{project.title}
 												</h3>
@@ -180,7 +177,7 @@ const App = () => {
 														size={ 16 }/>
 												</p>
 											</div>
-										</Card>
+										</div>
 									</a>
 								) )
 							}
