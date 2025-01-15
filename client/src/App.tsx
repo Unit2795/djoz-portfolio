@@ -7,6 +7,7 @@ import GitHub from "@/components/Icons/GitHub.tsx";
 import LinkedIn from "@/components/Icons/LinkedIn.tsx";
 import {
 	intro,
+	name,
 	nextButton,
 	projects,
 	taglines
@@ -215,7 +216,7 @@ const App = () => {
 
 				{/* Footer Section */}
 				<section className="flex flex-col items-center py-8">
-					<p className="pl-6 text-gray-600">© 2024 - {new Date().getFullYear()} David Jozwik · All rights reserved</p>
+					<p className="pl-6 text-gray-600">{name} · All rights reserved</p>
 				</section>
 			</main>
 		</div>
