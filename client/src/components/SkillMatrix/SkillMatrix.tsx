@@ -72,8 +72,9 @@ const SkillMatrix = () => {
 								<div
 									className="space-y-2"
 									key={ skill.name }>
-									<div
-										className="bg-white/5 hover:bg-white/10 p-4 backdrop-blur-sm rounded-lg cursor-pointer transition-colors flex items-center justify-between shadow-lg"
+									<button
+										className="bg-white/5 hover:bg-white/10 p-4 backdrop-blur-sm rounded-lg cursor-pointer transition-colors flex items-center justify-between shadow-lg w-full"
+										type="button"
 										onClick={
 											() => {
 												toggleCategory( skill.name );
@@ -119,7 +120,7 @@ const SkillMatrix = () => {
 													)
 											}
 										</div>
-									</div>
+									</button>
 
 									<div
 										className={

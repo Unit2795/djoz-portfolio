@@ -70,6 +70,7 @@ const App = () => {
 
 						<div className="flex justify-center space-x-4 mb-8">
 							<a
+								aria-label="Visit my GitHub profile"
 								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
 								href="#"
 								style={
@@ -82,6 +83,7 @@ const App = () => {
 							</a>
 
 							<a
+								aria-label="Visit my LinkedIn profile"
 								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
 								href="#"
 								style={
@@ -94,6 +96,7 @@ const App = () => {
 							</a>
 
 							<a
+								aria-label="Send me an email"
 								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
 								href="#"
 								style={
@@ -107,6 +110,7 @@ const App = () => {
 						</div>
 
 						<a
+							aria-label="Scroll to projects section"
 							className="inline-block motion-safe:animate-fadeUp"
 							href={ `#${ sections.PROJECTS }` }
 							style={
@@ -140,6 +144,7 @@ const App = () => {
 							{
 								projects.map( ( project ) => (
 									<a
+										aria-label={ `Visit ${ project.title } project homepage` }
 										className="group"
 										href={ project.link }
 										key={ project.title }>
@@ -204,6 +209,7 @@ const App = () => {
 						</p>
 
 						<a
+							aria-label="Send me an email"
 							className="inline-flex items-center bg-gradient-to-r from-blue-400 to-purple-500 text-white px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
 							href="mailto:contact@example.com">
 							Say Hello
@@ -216,7 +222,7 @@ const App = () => {
 
 				{/* Footer Section */}
 				<section className="flex flex-col items-center py-8">
-					<p className="pl-6 text-gray-600">{name} · All rights reserved</p>
+					<p className="pl-6 text-gray-400">{name} · All rights reserved</p>
 				</section>
 			</main>
 		</div>
