@@ -1,0 +1,13 @@
+{
+  "name": "djoz-portfolio-terraform",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "plan": "terraform plan",
+    "apply": "terraform apply"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
