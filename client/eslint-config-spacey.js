@@ -3,7 +3,7 @@
 
 	Are you sure you want to edit this file? Consider extending it instead in your config.
 	Editing it directly may make it harder to update to a newer version in the future if Spacey is updated.
-*/
+ */
 
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
@@ -43,20 +43,23 @@ export default [
 					allowConstantExport: true
 				},
 			],
-			"newline-destructuring/newline": ["error", {
-				items: 1
-			}],
+			"newline-destructuring/newline": [
+				"error",
+				{
+					items: 1
+				}
+			],
 			"no-relative-import-paths/no-relative-import-paths": [
 				"error",
 				{
-					"allowSameFolder": true
+					allowSameFolder: true
 				}
 			],
 			"import-newlines/enforce": [
 				"error",
 				{
-					"items": 1,
-					"semi": true,
+					items: 1,
+					semi: true,
 					forceSingleLine: false
 				}
 			],
@@ -101,7 +104,7 @@ export default [
 			"@stylistic/lines-between-class-members": [ "error", "always" ],
 			"@stylistic/multiline-ternary": [ "error", "always-multiline" ],
 			"@stylistic/space-infix-ops": [ "error", {
-				"int32Hint": false
+				int32Hint: false
 			} ],
 			"@stylistic/no-mixed-spaces-and-tabs": [ "error" ],
 			"@stylistic/no-multi-spaces": [ "error" ],
@@ -260,10 +263,14 @@ export default [
 			"react/jsx-closing-tag-location": [ "error" ],
 			"react/jsx-closing-bracket-location": [ "error", "after-props" ],
 			"react/jsx-boolean-value": [ "error", "never" ],
-			"react/hook-use-state": [ "error", {
-				"allowDestructuredState": true
-			} ],
-			"react/iframe-missing-sandbox": [ "error" ]
+			"react/hook-use-state": [
+				"error",
+				{
+					allowDestructuredState: true
+				}
+			],
+			"react/iframe-missing-sandbox": [ "error" ],
+			"@typescript-eslint/no-misused-promises": "off"
 		},
 	}
 ];
