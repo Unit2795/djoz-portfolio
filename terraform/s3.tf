@@ -1,9 +1,15 @@
-# Create S3 bucket for hosting the React app
+# S3 bucket used to store the static files
 resource "aws_s3_bucket" "spa_bucket" {
 	bucket = var.bucket_name
 }
 
-# Block all public access to the S3 bucket
+# Ensure bucket access is restricted to the owner
+resource "aws_s3_bucket_acl" "spa_bucket_acl" {
+	bucket = aws_s3_bucket.spa_bucket.id
+	acl    = "private"
+}
+
+# Disable public access to the S3 bucket
 resource "aws_s3_bucket_public_access_block" "spa_bucket_access" {
 	bucket = aws_s3_bucket.spa_bucket.id
 
@@ -13,20 +19,12 @@ resource "aws_s3_bucket_public_access_block" "spa_bucket_access" {
 	restrict_public_buckets = true
 }
 
-# Enable versioning on the S3 bucket
-resource "aws_s3_bucket_versioning" "spa_bucket_versioning" {
-	bucket = aws_s3_bucket.spa_bucket.id
-	versioning_configuration {
-		status = "Enabled"
-	}
-}
-
 # Create CloudFront Origin Access Identity (OAI)
 resource "aws_cloudfront_origin_access_identity" "oai" {
 	comment = "OAI for ${var.domain_name}"
 }
 
-# Create S3 bucket policy
+# Create IAM policy that will allow CloudFront to access the S3 bucket
 data "aws_iam_policy_document" "s3_policy" {
 	statement {
 		actions   = ["s3:GetObject"]

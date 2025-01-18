@@ -1,3 +1,5 @@
+export const web3PublicKey = "YOUR-KEY-GOES-HERE";
+
 export const name = "David Jozwik";
 
 export const intro: [string, string] = [
