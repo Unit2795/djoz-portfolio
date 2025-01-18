@@ -3,6 +3,11 @@ output "cloudfront_distribution_domain" {
 	value       = aws_cloudfront_distribution.spa_distribution.domain_name
 }
 
+output "cloudfront_distribution_id" {
+	description = "ID of the CloudFront distribution"
+	value       = aws_cloudfront_distribution.spa_distribution.id
+}
+
 output "s3_bucket_name" {
 	description = "Name of the S3 bucket containing your static files"
 	value       = aws_s3_bucket.spa_bucket.id

@@ -1,5 +1,5 @@
 aws_region         = "us-east-1"
-bucket_name        = "my-portfolio"
+bucket_name        = "djoz-portfolio"
 # Do not append www to the domain name
 domain_name        = "djoz.us"
 
