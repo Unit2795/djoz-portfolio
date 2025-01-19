@@ -1,10 +1,10 @@
 aws_region         = "us-east-1"
 bucket_name        = "djoz-portfolio"
 # Do not append www to the domain name
-domain_name        = "djoz.us"
+domain_name        = "example.com"
 
 tags = {
 	Environment = "Production"
-	Project     = "My Portfolio"
+	Project     = "djoz-portfolio"
 	Terraform   = "true"
 }

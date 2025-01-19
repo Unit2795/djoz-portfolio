@@ -21,6 +21,3 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-
-src/content.ts
-public/projects
