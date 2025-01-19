@@ -23,6 +23,7 @@ import {
 	sections
 } from "@/components/Navbar/types.ts";
 import SkillMatrix from "@/components/SkillMatrix/SkillMatrix.tsx";
+import ContactForm from "@/components/ContactForm/ContactForm.tsx";
 
 const App = () => {
 	const {
@@ -208,15 +209,7 @@ const App = () => {
 							I'm always open to discussing new projects and opportunities.
 						</p>
 
-						<a
-							aria-label="Send me an email"
-							className="inline-flex items-center bg-gradient-to-r from-blue-400 to-purple-500 text-white px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
-							href="mailto:contact@example.com">
-							Say Hello
-							<Mail
-								className="ml-2"
-								size={ 20 }/>
-						</a>
+						<ContactForm/>
 					</div>
 				</section>
 

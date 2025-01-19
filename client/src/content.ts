@@ -1,6 +1,12 @@
-export const web3PublicKey = "YOUR-KEY-GOES-HERE";
+export const web3PublicKey = "YOUR-KEY-HERE";
 
-export const name = "David Jozwik";
+export const name = "John Doe";
+
+export const email = "john@example.com";
+
+export const description = `The personal portfolio website of ${ name }`;
+
+export const keywords = "developer, software, engineer, react, typescript, aws, devops, python, API design, ui/ux, machine learning";
 
 export const intro: [string, string] = [
 	"Building Digital",
@@ -27,21 +33,21 @@ export const projects: {
 		description: "A real-time data visualization dashboard built with React and D3.js",
 		tech: [ "React", "D3.js", "Node.js", "WebSocket" ],
 		link: "#",
-		img: "hero-bg.webp"
+		img: "project/placeholder.webp"
 	},
 	{
 		title: "Project Beta",
 		description: "AI-powered content management system with natural language processing",
 		tech: [ "Python", "TensorFlow", "Flask", "MongoDB" ],
 		link: "#",
-		img: "hero-bg.webp"
+		img: "project/placeholder.webp"
 	},
 	{
 		title: "Project Gamma",
 		description: "Cross-platform mobile app for fitness tracking and social networking",
 		tech: [ "React Native", "Firebase", "Redux", "GraphQL" ],
 		link: "#",
-		img: "hero-bg.webp"
+		img: "project/placeholder.webp"
 	}
 ] as const;
 
