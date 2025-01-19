@@ -1,4 +1,12 @@
-# variables.tf
+variable "cloud_organization" {
+	description = "Name of the organization in Terraform Cloud"
+	type        = string
+}
+
+variable "workspace_name" {
+	description = "Name of the workspace in Terraform Cloud"
+	type        = string
+}
 
 variable "aws_region" {
 	description = "AWS region for the S3 bucket"
