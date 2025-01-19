@@ -1,10 +1,10 @@
 terraform {
 	cloud {
 
-		organization = var.cloud_organization
+		organization = "DavidJozwik"
 
 		workspaces {
-			name = var.workspace_name
+			name = "djoz-portfolio"
 		}
 	}
 
