@@ -17,3 +17,8 @@ output "route53_domain" {
 	description = "Domain name of the Route 53 record that CloudFront has been attached to"
 	value = aws_route53_record.root_domain.fqdn
 }
+
+output "api_endpoint" {
+	description = "Endpoint of the API Gateway where the contact form is deployed"
+	value = "${aws_apigatewayv2_stage.stage.invoke_url}/contact"
+}

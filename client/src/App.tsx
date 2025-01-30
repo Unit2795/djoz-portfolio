@@ -1,17 +1,16 @@
 import {
 	ChevronDown,
-	ExternalLink,
-	Mail
+	ExternalLink
 } from "lucide-react";
-import GitHub from "@/components/Icons/GitHub.tsx";
-import LinkedIn from "@/components/Icons/LinkedIn.tsx";
 import {
 	intro,
+	links,
 	name,
 	nextButton,
 	projects,
+	showAvailability,
 	taglines
-} from "@/content.ts";
+} from "@/content.tsx";
 import "./App.css";
 import Navbar from "@/components/Navbar/Navbar.tsx";
 import {
@@ -24,14 +23,21 @@ import {
 } from "@/components/Navbar/types.ts";
 import SkillMatrix from "@/components/SkillMatrix/SkillMatrix.tsx";
 import ContactForm from "@/components/ContactForm/ContactForm.tsx";
+import CopyValue from "@/components/CopyValue/CopyValue.tsx";
+import AvailabilityBadge from "@/components/AvailabilityBadge/AvailabilityBadge.tsx";
 
 const App = () => {
 	const {
 		getSectionRef
 	} = useScrollSpy();
 
+
 	return (
 		<div className="min-h-screen bg-gray-900 text-white relative w-full">
+			{
+				showAvailability ? <AvailabilityBadge/> : null
+			}
+
 			<div className="hero-background motion-safe:animate-fade"/>
 
 			<Navbar/>
@@ -50,7 +56,7 @@ const App = () => {
 							top={
 								(
 									<span
-										className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+										className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
 										{intro[ 0 ]}
 									</span>
 								)
@@ -70,44 +76,44 @@ const App = () => {
 						</p>
 
 						<div className="flex justify-center space-x-4 mb-8">
-							<a
-								aria-label="Visit my GitHub profile"
-								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
-								href="#"
-								style={
-									{
-										animationDelay: "500ms",
-										animationFillMode: "both"
+							{
+								links.map( ( {
+									link,
+									value,
+									icon,
+									label
+								}, i ) => {
+									const delay = i * 250 + 500;
+									if ( link ) {
+										return (
+											<a
+												aria-label={ label }
+												className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
+												href={ link }
+												key={ link }
+												rel="noreferrer"
+												style={
+													{
+														animationDelay: `${ String( delay ) }ms`,
+														animationFillMode: "both"
+													}
+												}
+												target="_blank">
+												{icon}
+											</a>
+										);
+									} else if ( value ) {
+										return (
+											<CopyValue
+												animationDelay={ delay }
+												icon={ icon }
+												key={ value }
+												label={ label }
+												value={ value }/>
+										);
 									}
-								}>
-								<GitHub/>
-							</a>
-
-							<a
-								aria-label="Visit my LinkedIn profile"
-								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
-								href="#"
-								style={
-									{
-										animationDelay: "750ms",
-										animationFillMode: "both"
-									}
-								}>
-								<LinkedIn/>
-							</a>
-
-							<a
-								aria-label="Send me an email"
-								className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
-								href="#"
-								style={
-									{
-										animationDelay: "1000ms",
-										animationFillMode: "both"
-									}
-								}>
-								<Mail size={ 24 }/>
-							</a>
+								} )
+							}
 						</div>
 
 						<a
@@ -124,7 +130,7 @@ const App = () => {
 								<span className="pr-6 text-nowrap">{nextButton}</span>
 
 								<ChevronDown
-									className="group-hover:motion-safe:animate-bounceMid"
+									className="motion-safe:group-hover:animate-bounceMid"
 									size={ 24 }/>
 							</Button>
 						</a>

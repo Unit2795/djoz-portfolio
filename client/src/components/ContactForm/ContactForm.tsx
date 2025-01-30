@@ -1,5 +1,6 @@
 import {
 	FormEvent,
+	useEffect,
 	useState
 } from "react";
 import {
@@ -8,56 +9,73 @@ import {
 	Send
 } from "lucide-react";
 import {
-	email,
-	web3PublicKey
-} from "@/content.ts";
+	contactFormError,
+	contactFormSuccess,
+} from "@/content.tsx";
 
-interface Web3FormResponse {
-	success: boolean
-}
+const API_ENDPOINT = import.meta.env.VITE_API_GATEWAY_ENDPOINT as string;
 
 const ContactForm = () => {
 	const [ formResult, setFormResult ] = useState<"error" | "success" | "pending" | "unsubmitted">( "unsubmitted" );
+	const [ touched, setTouched ] = useState( false );
+	const [ isDisabled, setIsDisabled ] = useState( true );
+	const [ messageLength, setMessageLength ] = useState( 0 );
+	const [ validity, setValidity ] = useState( {
+		name: false,
+		email: false,
+		message: false
+	} );
+
+	const isFormValid = validity.name && validity.email && validity.message;
+
+	const handleFocus = () => {
+		if ( !touched ) {
+			setTouched( true );
+		}
+	};
+
+	useEffect(
+		() => {
+			// Once the first for input is touched, enable the submit button after 4 to 6 seconds
+			if ( touched ) {
+				setTimeout(
+					() => {
+						setIsDisabled( false );
+					},
+					// Randomize between 6000 to 4000 milliseconds
+					Math.floor( 4000 + Math.random() * 2000 )
+				);
+			}
+		},
+		[ touched ]
+	);
 
 	const onSubmit = async( event: FormEvent<HTMLFormElement> ) => {
 		event.preventDefault();
 		setFormResult( "pending" );
-		const formData = new FormData( event.currentTarget );
 
-		formData.append(
-			"access_key",
-			web3PublicKey
-		);
+		try {
+			const formData = new FormData( event.currentTarget );
+			const response = await fetch(
+				API_ENDPOINT,
+				{
+					method: "POST",
+					body: JSON.stringify( Object.fromEntries( formData ) )
+				}
+			);
 
-		// If honeypot fields are filled, don't submit the form
-		if ( formData.get( "subject" ) as string || formData.get( "mayContact" ) as string ) {
-			setFormResult( "success" );
-			event.currentTarget.reset();
-		}
-
-		// Remove honeypot fields
-		formData.delete( "subject" );
-		formData.delete( "mayContact" );
-
-		const response = await fetch(
-			"https://api.web3forms.com/submit",
-			{
-				method: "POST",
-				body: formData
+			if ( response.ok ) {
+				setFormResult( "success" );
+				event.currentTarget.reset();
+			} else {
+				setFormResult( "error" );
 			}
-		);
-
-		const data = await response.json() as Web3FormResponse;
-
-		if ( data.success ) {
-			setFormResult( "success" );
-			event.currentTarget.reset();
-		} else {
+		} catch {
 			setFormResult( "error" );
 		}
 	};
 
-	const inputClasses = "w-full p-3 border rounded-lg border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 bg-transparent text-white";
+	const inputClasses = "w-full p-3 border rounded-lg border-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 transition duration-200 bg-transparent text-white";
 	const labelClasses = "block text-md text-gray-300 mb-1";
 
 	return (
@@ -77,10 +95,23 @@ const ContactForm = () => {
 							<input
 								className={ inputClasses }
 								id="name"
+								maxLength={ 50 }
+								minLength={ 2 }
 								name="name"
 								placeholder="John Doe"
 								required
-								type="text"/>
+								type="text"
+								onChange={
+									( e ) => {
+										setValidity( prevState => {
+											return {
+												...prevState,
+												name: e.target.validity.valid
+											};
+										} );
+									}
+								}
+								onFocus={ handleFocus }/>
 						</div>
 
 						<div>
@@ -96,7 +127,18 @@ const ContactForm = () => {
 								name="email"
 								placeholder="john@example.com"
 								required
-								type="email"/>
+								type="email"
+								onChange={
+									( e ) => {
+										setValidity( prevState => {
+											return {
+												...prevState,
+												email: e.target.validity.valid
+											};
+										} );
+									}
+								}
+								onFocus={ handleFocus }/>
 						</div>
 
 						<div>
@@ -109,29 +151,53 @@ const ContactForm = () => {
 							<textarea
 								className={ inputClasses }
 								id="message"
+								maxLength={ 1000 }
+								minLength={ 12 }
 								name="message"
 								placeholder="Your message here..."
 								required
-								rows={ 4 }/>
+								rows={ 4 }
+								onChange={
+									( e ) => {
+										setMessageLength( e.target.value.length );
+										setValidity( prevState => {
+											return {
+												...prevState,
+												message: e.target.validity.valid
+											};
+										} );
+									}
+								}
+								onFocus={ handleFocus }/>
+
+							<p className="text-xs text-gray-400 text-right">{messageLength} / 1000</p>
 						</div>
 
 						<button
-							className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200"
-							disabled={ formResult === "pending" }
+							className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200
+							disabled:bg-stone-600 disabled:text-stone-300 disabled:cursor-not-allowed"
+							disabled={ formResult === "pending" || isDisabled || !isFormValid }
 							type="submit">
 							{
 								formResult === "pending"
 									? (
-										<div
-											className="w-4 h-4 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"/>
+										<>
+											<div
+												className="w-4 h-4 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"/>
+											Sending...
+										</>
+
 									)
 									: (
-										<Send
-											height={ 16 }
-											width={ 16 }/>
+										<>
+											<Send
+												height={ 16 }
+												width={ 16 }/>
+											Send Message
+										</>
+
 									)
 							}
-							Send Message
 						</button>
 					</form>
 				)
@@ -144,7 +210,7 @@ const ContactForm = () => {
 							className="text-green-500 mr-2"
 							width={ 48 }/>
 
-						<p className="text-green-500">Thank you for your message! I'll get back to you soon.</p>
+						<p className="text-green-500">{contactFormSuccess}</p>
 					</div>
 				)
 			}
@@ -156,7 +222,7 @@ const ContactForm = () => {
 							className="text-red-500 mr-2"
 							width={ 48 }/>
 
-						<p className="text-red-500">An error occurred when trying to send your message, please try again later or send an email to {email}</p>
+						<p className="text-red-500">{contactFormError}</p>
 					</div>
 				)
 			}

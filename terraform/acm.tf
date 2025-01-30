@@ -3,6 +3,7 @@ resource "aws_acm_certificate" "cert" {
 	provider          = aws.us-east-1  # WARNING! CloudFront requires certificates in us-east-1
 	domain_name       = var.domain_name
 	validation_method = "DNS"
+	subject_alternative_names = ["www.${var.domain_name}"]
 
 	lifecycle {
 		create_before_destroy = true
@@ -35,7 +36,7 @@ resource "aws_route53_record" "validation_records" {
 	allow_overwrite = true
 	name            = each.value.name
 	records         = [each.value.record]
-	ttl             = 60
+	ttl             = 3600
 	type            = each.value.type
 	zone_id         = data.aws_route53_zone.zone.zone_id
 }

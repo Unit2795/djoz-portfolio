@@ -18,7 +18,7 @@ const AnimatedCounter: FC<AnimatedCounterProps> = ( {
 } ) => {
 	const [ count, setCount ] = useState( 0 );
 	const countRef = useRef<number>( 0 );
-	const rafRef = useRef<number>();
+	const rafRef = useRef<number>( 0 );
 
 	useEffect(
 		() => {

@@ -3,7 +3,7 @@ import {
 } from "@/components/Navbar/types.ts";
 import {
 	skills
-} from "@/content.ts";
+} from "@/content.tsx";
 import {
 	useScrollSpy
 } from "@/components/Navbar/useScrollSpy.ts";
@@ -73,7 +73,7 @@ const SkillMatrix = () => {
 									className="space-y-2"
 									key={ skill.name }>
 									<button
-										className="bg-white/5 hover:bg-white/10 p-4 backdrop-blur-sm rounded-lg cursor-pointer transition-colors flex items-center justify-between shadow-lg w-full"
+										className="bg-white/5 hover:bg-white/10 p-4 backdrop-blur-xs rounded-lg cursor-pointer transition-colors flex items-center justify-between shadow-lg w-full"
 										type="button"
 										onClick={
 											() => {
@@ -81,7 +81,7 @@ const SkillMatrix = () => {
 											}
 										}>
 										<div className="flex-1">
-											<div className="flex justify-between">
+											<div className="flex justify-between pb-2">
 												<span className="font-medium">
 													{skill.name}
 												</span>
@@ -96,7 +96,7 @@ const SkillMatrix = () => {
 												<div
 													className={
 														clsx(
-															"h-full bg-gradient-to-r from-primary to-secondary transition-all transform origin-left rounded-full",
+															"h-full bg-linear-to-r from-primary to-secondary transition-all transform origin-left rounded-full",
 															revealed ? "scale-x-100" : "scale-x-0",
 														)
 													}
@@ -124,7 +124,7 @@ const SkillMatrix = () => {
 
 									<div
 										className={
-											`backdrop-blur-sm overflow-hidden ${
+											`backdrop-blur-xs overflow-hidden ${
 												expandedCategory === skill.name ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
 											}`
 										}

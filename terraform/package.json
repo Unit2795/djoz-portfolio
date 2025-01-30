@@ -1,12 +1,12 @@
 {
-  "name": "djoz-portfolio-terraform",
+  "name": "terraform",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "plan": "terraform plan",
-    "apply": "terraform apply",
-    "destroy": "terraform destroy"
+    "init": "terraform init -backend-config=state.config -input=false",
+    "destroy": "terraform destroy -auto-approve -input=false",
+    "apply": "terraform apply -auto-approve -input=false",
   },
   "keywords": [],
   "author": "",

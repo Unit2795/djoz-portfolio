@@ -3,7 +3,12 @@ name: Build and Deploy
 on:
   push:
     branches: [ "main" ]  # Trigger on push to main branch
-  workflow_dispatch:      # Allow manual triggering
+  workflow_dispatch:      # Allow manual triggering (for disabling in the template repo)
+
+
+permissions:
+  id-token: write # This is required for requesting the AWS OIDC JWT
+  contents: read # This is required for actions/checkout and AWS OIDC JWT
 
 jobs:
   build-and-deploy:
@@ -12,25 +17,86 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need at least 2 commits to compare changes
+
+      # Learn more about AWS OIDC here: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_IAM_ROLE_NAME }}
+          role-session-name: djoz-portfolio-session
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Setup Terraform State Backend
+        working-directory: ./terraform/bootstrap
+        run: |
+          chmod +x ./boostrap-state.sh
+          ./boostrap-state.sh
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Initialize and Plan Terraform
+        working-directory: ./terraform
+        run: |
+          terraform init -backend-config=state.config
+          terraform plan -detailed-exitcode
+          
+          if [ $? -eq 2 ]; then
+            echo "TERRAFORM_CHANGED=true" >> $GITHUB_ENV
+          fi
+
+      - name: Apply Terraform
+        working-directory: ./terraform
+        run: |
+          terraform apply -auto-approve -input=false
+          
+          # Export Terraform outputs as GitHub environment variables
+          echo "S3_BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
+          echo "CLOUDFRONT_DIST_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_ENV
+          echo "API_GATEWAY_ENDPOINT=$(terraform output -raw api_endpoint)" >> $GITHUB_ENV
+
+      - name: Check for client directory changes
+        id: check-changes
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep "^client/"; then
+            echo "client_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "client_changed=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Setup Node.js
+        # Only run if the client directory has changed, FORCE_INVALIDATION is set (for manual trigger), or TERRAFORM_CHANGED is true (terraform applied changes and we need to grab the new API endpoint)
+        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 'latest'
 
       - name: Install pnpm
+        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
         uses: pnpm/action-setup@v2
         with:
           version: 'latest'
           run_install: false
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Initialize and Apply Terraform
-        working-directory: ./terraform
+      - name: Build Client
+        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
+        working-directory: ./client
+        env:
+          VITE_API_GATEWAY_ENDPOINT: ${{ env.API_GATEWAY_ENDPOINT }}
         run: |
-          terraform init
-          terraform apply -auto-approve -input=false
+          pnpm install
+          pnpm run build
+
+      - name: Upload to S3 and invalidate CloudFront
+        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
+        working-directory: ./client
+        run: |
+          # Upload to S3 bucket
+          aws s3 sync ./dist s3://${{ env.S3_BUCKET_NAME }} --delete
+
+          # Create CloudFront invalidation
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DIST_ID }} \
+            --paths "/*"

@@ -9,7 +9,7 @@ import {
 } from "@/components/Navbar/types.ts";
 import {
 	name
-} from "@/content.ts";
+} from "@/content.tsx";
 import {
 	useEffect,
 	useRef,
@@ -179,7 +179,7 @@ const Navbar = () => {
 			<div className="container mx-auto py-4">
 				<div className="flex justify-between items-center px-6">
 					<span
-						className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+						className="text-2xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
 						{name}
 					</span>
 

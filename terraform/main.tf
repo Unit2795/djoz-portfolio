@@ -1,11 +1,9 @@
 terraform {
-	cloud {
-
-		organization = "DavidJozwik"
-
-		workspaces {
-			name = "djoz-portfolio"
-		}
+	backend "s3" {
+		bucket = ""
+		key    = ""
+		dynamodb_table = ""
+		region = ""
 	}
 
 	required_providers {

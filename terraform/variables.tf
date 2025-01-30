@@ -1,13 +1,3 @@
-variable "cloud_organization" {
-	description = "Name of the organization in Terraform Cloud"
-	type        = string
-}
-
-variable "workspace_name" {
-	description = "Name of the workspace in Terraform Cloud"
-	type        = string
-}
-
 variable "aws_region" {
 	description = "AWS region for the S3 bucket"
 	type        = string
@@ -24,8 +14,7 @@ variable "domain_name" {
 	type        = string
 }
 
-variable "tags" {
-	description = "Tags to apply to resources"
-	type        = map(string)
-	default     = {}
+variable "admin_email" {
+	description = "Email address for the admin user you will send emails to"
+	type = string
 }

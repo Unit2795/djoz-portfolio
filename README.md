@@ -41,3 +41,5 @@ A Terraform configuration is included if you'd like to deploy the site to AWS Cl
 11. In the `client` directory, run `pnpm run build`. Assuming the build looks good, you may then upload the build to S3 by running `aws s3 sync dist/ s3://djoz-portfolio` (if necessary, replace `djoz-portfolio` with your S3 bucket name).
 12. Visit your domain name to see your site live!
 13. If you are releasing an update, you should immediately invalidate the CloudFront cache, run `aws cloudfront create-invalidation --distribution-id <your-distribution-id> --paths "/*"`. It may still take a while for the cache to clear (15 to 60 minutes).
+
+Test

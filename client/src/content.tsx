@@ -1,8 +1,19 @@
-export const web3PublicKey = "YOUR-KEY-HERE";
+import {
+	Mail
+} from "lucide-react";
+import {
+	ReactNode
+} from "react";
+import GitHub from "./components/Icons/GitHub";
+import LinkedIn from "./components/Icons/LinkedIn";
 
-export const name = "John Doe";
+export const name = "Your Name";
 
-export const email = "john@example.com";
+// If you want to display your email on the website, set it here
+export const email: string | null = "youremail@example.com";
+
+// If you want to display your availability on the website, set it here
+export const showAvailability: string | null = "Available for new opportunities!";
 
 export const description = `The personal portfolio website of ${ name }`;
 
@@ -20,6 +31,34 @@ export const taglines: string[] = [
 ] as const;
 
 export const nextButton = "See My Work";
+
+export const contactFormSuccess = "Thank you for your message! I'll get back to you soon.";
+export const contactFormError = `An error occurred when trying to send your message, please try again later or send an email to ${ email }`;
+
+export const links: {
+	label: string;
+	icon: ReactNode;
+	// If a link is provided, an anchor tag will be used
+	link?: string;
+	// If a value is provided, a copy button will be used
+	value?: string;
+}[] = [
+	{
+		label: "Visit my GitHub",
+		link: "https://github.com/YourGitHub",
+		icon: <GitHub/>
+	},
+	{
+		label: "Connect with me on LinkedIn",
+		link: "https://www.linkedin.com/in/yourlinkedin/",
+		icon: <LinkedIn/>
+	},
+	{
+		label: "Send me an email",
+		value: email,
+		icon: <Mail size={ 24 }/>
+	}
+];
 
 export const projects: {
 	title: string;

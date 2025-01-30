@@ -7,7 +7,7 @@ import {
 	description,
 	keywords,
 	name
-} from "./src/content.ts";
+} from "./src/content.tsx";
 
 // https://vite.dev/config/
 export default defineConfig( {
