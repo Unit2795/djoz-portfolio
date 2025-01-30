@@ -10,46 +10,44 @@
 
 
 <!-- TOC -->
-
 * [Overview](#overview)
 * [Features](#features)
-    * [⚡️ **Performance**](#-performance)
-    * [🎨 **Design & Content**](#-design--content)
-    * [🛠 **Developer Experience**](#-developer-experience)
-    * [🚀 **Deployment**](#-deployment)
+  * [⚡️ **Performance**](#-performance)
+  * [🎨 **Design & Content**](#-design--content)
+  * [🛠 **Developer Experience**](#-developer-experience)
+  * [🚀 **Deployment**](#-deployment)
 * [Getting Started](#getting-started)
-    * [Prerequisites](#prerequisites)
-    * [Building Your Portfolio Website](#building-your-portfolio-website)
-        * [Initial Setup](#initial-setup-)
-        * [Content Customization](#content-customization)
-        * [Development Workflow](#development-workflow)
-        * [Deployment Options](#deployment-options)
-        * [Version Control](#version-control)
-        * [Maintenance](#maintenance)
-    * [(Optional) Deploy to AWS](#optional-deploy-to-aws)
-        * [Overview](#overview-1)
-        * [Infrastructure Overview](#infrastructure-overview)
-        * [Prerequisites](#prerequisites-1)
-        * [Deployment Steps](#deployment-steps)
-            * [1. DNS Configuration](#1-dns-configuration)
-            * [2. GitHub Actions Setup](#2-github-actions-setup)
-            * [3. Repository Configuration](#3-repository-configuration)
-            * [4. Infrastructure Configuration](#4-infrastructure-configuration)
-        * [5. Deployment](#5-deployment)
-        * [Alternative DNS Setup](#alternative-dns-setup)
-        * [Deploying Locally](#deploying-locally)
-        * [Manually Rebuilding the Site & Forcing Cache Invalidation](#manually-rebuilding-the-site--forcing-cache-invalidation)
-    * [(Optional) Destroying the AWS Infrastructure](#optional-destroying-the-aws-infrastructure)
+  * [Prerequisites](#prerequisites)
+  * [Building Your Portfolio Website](#building-your-portfolio-website)
+    * [Initial Setup](#initial-setup)
+    * [Content Customization](#content-customization)
+    * [Development Workflow](#development-workflow)
+    * [Deployment Options](#deployment-options)
+    * [Version Control](#version-control)
+    * [Maintenance](#maintenance)
+  * [(Optional) Deploy to AWS](#optional-deploy-to-aws)
+    * [Overview](#overview-1)
+    * [Infrastructure Overview](#infrastructure-overview)
+    * [Prerequisites](#prerequisites-1)
+    * [Deployment Steps](#deployment-steps)
+      * [1. DNS Configuration](#1-dns-configuration)
+      * [2. GitHub Actions Setup](#2-github-actions-setup)
+      * [3. Repository Configuration](#3-repository-configuration)
+      * [4. Infrastructure Configuration](#4-infrastructure-configuration)
+      * [5. Deployment](#5-deployment)
+    * [Alternative DNS Setup](#alternative-dns-setup)
+    * [Deploying Locally](#deploying-locally)
+    * [Manually Rebuilding the Site & Forcing Cache Invalidation](#manually-rebuilding-the-site--forcing-cache-invalidation)
+  * [(Optional) Destroying the AWS Infrastructure](#optional-destroying-the-aws-infrastructure)
 * [Good to Know](#good-to-know)
-    * [React SPA](#react-spa)
-    * [Terraform](#terraform)
-    * [Lambda Functions](#lambda-functions)
-        * [Contact Form Submission](#contact-form-submission)
-        * [API Gateway Authorizer](#api-gateway-authorizer)
+  * [React SPA](#react-spa)
+  * [Terraform](#terraform)
+  * [Lambda Functions](#lambda-functions)
+    * [Contact Form Submission](#contact-form-submission)
+    * [API Gateway Authorizer](#api-gateway-authorizer)
 * [Key Technologies](#key-technologies)
 * [License](#license)
 * [Contributing](#contributing)
-
 <!-- TOC -->
 
 # Overview
@@ -331,7 +329,7 @@ Using another DNS provider? See [Alternative DNS Setup](#alternative-dns-setup).
     region = "us-east-1"
    ```
 
-### 5. Deployment
+#### 5. Deployment
 
 1. Push changes to trigger deployment:
    ```bash
