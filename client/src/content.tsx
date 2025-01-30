@@ -12,6 +12,15 @@ export const name = "Your Name";
 // If you want to display your email on the website, set it here
 export const email: string | null = "youremail@example.com";
 
+// Set this to null if you don't want a footer link
+export const footerLink: {
+	label: string;
+	href: string;
+} | null = {
+	label: "Handcrafted with ❤️ by David Jozwik  •  View on GitHub ↗️",
+	href: "https://github.com/Unit2795/djoz-portfolio"
+};
+
 // If you want to display your availability on the website, set it here
 export const showAvailability: string | null = "Available for new opportunities!";
 

@@ -1,0 +1,42 @@
+name: Manual Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: 'Type "DESTROY" to confirm infrastructure deletion'
+        required: true
+        type: string
+
+jobs:
+  terraform_destroy:
+    runs-on: ubuntu-latest
+
+    # Additional safety check
+    if: github.event.inputs.confirm_destroy == 'DESTROY'
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Learn more about AWS OIDC here: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_IAM_ROLE_NAME }}
+          role-session-name: djoz-portfolio-session
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Initialize, Plan, and Destroy Terraform
+        working-directory: ./terraform
+        run: |
+          terraform init -backend-config=state.config
+          terraform plan
+          terraform destroy -auto-approve -input=false

@@ -3,6 +3,7 @@ import {
 	ExternalLink
 } from "lucide-react";
 import {
+	footerLink,
 	intro,
 	links,
 	name,
@@ -220,8 +221,22 @@ const App = () => {
 				</section>
 
 				{/* Footer Section */}
-				<section className="flex flex-col items-center py-8">
-					<p className="pl-6 text-gray-400">{name} · All rights reserved</p>
+				<section className="flex flex-col items-center mx-8 text-center my-14">
+					<p className="text-gray-400">{name} · All rights reserved</p>
+
+					{
+						footerLink
+							? (
+								<a
+									className="mt-4 text-blue-400 underline"
+									href={ footerLink.href }
+									rel="noreferrer"
+									target="_blank">
+									{footerLink.label}
+								</a>
+							)
+							: null
+					}
 				</section>
 			</main>
 		</div>
