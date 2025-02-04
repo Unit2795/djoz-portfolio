@@ -52,6 +52,7 @@ const ContactForm = () => {
 
 	const onSubmit = async( event: FormEvent<HTMLFormElement> ) => {
 		event.preventDefault();
+		const form = event.currentTarget; // Store the form reference
 		setFormResult( "pending" );
 
 		try {
@@ -66,7 +67,7 @@ const ContactForm = () => {
 
 			if ( response.ok ) {
 				setFormResult( "success" );
-				event.currentTarget.reset();
+				form.reset();
 			} else {
 				setFormResult( "error" );
 			}
