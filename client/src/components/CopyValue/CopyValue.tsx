@@ -66,7 +66,7 @@ const CopyValue = (
 			}>
 			<button
 				aria-label={ label }
-				className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
+				className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fade-up"
 				style={
 					{
 						animationDelay: `${ String( animationDelay ) }ms`,

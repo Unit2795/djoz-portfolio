@@ -64,7 +64,7 @@ const App = () => {
 							}/>
 
 						<p
-							className="sm:text-xl text-md text-gray-400 mb-8 motion-safe:animate-fadeUp"
+							className="sm:text-xl text-md text-gray-400 mb-8 motion-safe:animate-fade-up"
 							style={
 								{
 									animationDelay: "250ms",
@@ -89,7 +89,7 @@ const App = () => {
 										return (
 											<a
 												aria-label={ label }
-												className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fadeUp"
+												className="p-2 hover:text-blue-400 transition-colors motion-safe:animate-fade-up"
 												href={ link }
 												key={ link }
 												rel="noreferrer"
@@ -119,7 +119,7 @@ const App = () => {
 
 						<a
 							aria-label="Scroll to projects section"
-							className="inline-block motion-safe:animate-fadeUp"
+							className="inline-block motion-safe:animate-fade-up"
 							href={ `#${ sections.PROJECTS }` }
 							style={
 								{
@@ -131,7 +131,7 @@ const App = () => {
 								<span className="pr-6 text-nowrap">{nextButton}</span>
 
 								<ChevronDown
-									className="motion-safe:group-hover:animate-bounceMid"
+									className="motion-safe:group-hover:animate-bounce-mid"
 									size={ 24 }/>
 							</Button>
 						</a>
