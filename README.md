@@ -328,6 +328,9 @@ Using another DNS provider? See [Alternative DNS Setup](#alternative-dns-setup).
     dynamodb_table = "tf-state-djoz-portfolio-lock"
     region = "us-east-1"
    ```
+   
+3. (Optional) Select SES Email sending identity:
+    - By default, the template uses `Email-Based` sending identity for SES. If you have a verified domain, you can switch to the `Domain-Based` sending identity by updating the [ses.tf](./terraform/ses.tf) file.
 
 #### 5. Deployment
 
@@ -340,8 +343,8 @@ Using another DNS provider? See [Alternative DNS Setup](#alternative-dns-setup).
 
 2. Monitor the deployment:
     - Check GitHub Actions tab
-    - You'll receive an email from Amazon SES to verify your `admin_email` address provided in
-      the [terraform.tfvars](./terraform/terraform.tfvars) file. You must click the verification link before you can
+    - **If you are using the Email-Based sending identity for SES**: You'll receive an email from Amazon SES to verify your `admin_email` address provided in
+      the [terraform.tfvars](./terraform/terraform.tfvars) file if you haven't already added this email to SES before. You must click the verification link before you can
       send emails from/to this address. This admin email is where you will receive contact form submissions.
     - Wait for CloudFront distribution (~15-30 min)
 

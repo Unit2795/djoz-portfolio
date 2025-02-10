@@ -54,8 +54,7 @@ exports.handler = async (event) => {
 		return {
 			statusCode: 500,
 			body: JSON.stringify({
-				message: "Error processing request",
-				error: error.message
+				message: "Error processing request"
 			})
 		};
 	}
