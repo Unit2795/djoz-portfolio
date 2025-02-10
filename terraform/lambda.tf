@@ -60,7 +60,7 @@ resource "aws_iam_role_policy" "lambda_ses" {
 					"ses:SendRawEmail"
 				]
 				Resource = [
-					aws_ses_email_identity.admin.arn
+					aws_ses_domain_identity.admin.arn
 				]
 			}
 		]
