@@ -31,8 +31,8 @@ jobs:
       - name: Setup Terraform State Backend
         working-directory: ./terraform/bootstrap
         run: |
-          chmod +x ./boostrap-state.sh
-          ./boostrap-state.sh
+          chmod +x ./bootstrap-state.sh
+          ./bootstrap-state.sh
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
