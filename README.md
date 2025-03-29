@@ -302,10 +302,6 @@ Using another DNS provider? See [Alternative DNS Setup](#alternative-dns-setup).
    ```bash
    AWS_ACCOUNT_ID      # Your AWS Account ID
    AWS_IAM_ROLE_NAME   # Role name from step 2
-   ```
-
-2. Add GitHub Variables:
-   ```bash
    AWS_DEFAULT_REGION  # e.g., us-east-1
    ```
 
