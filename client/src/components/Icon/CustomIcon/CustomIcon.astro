@@ -1,0 +1,21 @@
+---
+import GitHub from "@/components/Icon/CustomIcon/Icons/GitHub.astro";
+import LinkedIn from "@/components/Icon/CustomIcon/Icons/LinkedIn.astro";
+import type { HTMLAttributes } from "astro/types";
+
+export const icons = {
+	GitHub,
+	LinkedIn,
+};
+
+export type CustomIcons = keyof typeof icons;
+
+export interface Props extends HTMLAttributes<"svg"> {
+	name: CustomIcons;
+}
+
+const { name, ...props } = Astro.props;
+const Icon = icons[name];
+---
+
+<Icon {...props} />

@@ -1,0 +1,38 @@
+---
+import Icon, { type IconType } from "@/components/Icon/Icon.astro";
+import type { AstroBuiltinAttributes } from "astro";
+
+interface Props {
+	icon: IconType;
+	class?: string;
+	hexClass?: string;
+	iconClass?: AstroBuiltinAttributes["class:list"];
+}
+
+const { icon, class: baseClass, hexClass, iconClass } = Astro.props;
+---
+
+<div class:list={[baseClass, "relative aspect-square"]}>
+	<!-- Hover pulse effect -->
+	<div
+		class="pointer-events-none absolute h-full w-full bg-white mask-[url('/hexagon.svg')] mask-contain mask-center mask-no-repeat opacity-0 group-hover:opacity-10 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:group-hover:animate-ping"
+	>
+	</div>
+	<!-- Hexagon background -->
+	<div
+		class:list={[
+			hexClass,
+			"absolute inset-0 h-full w-full bg-linear-to-r mask-[url('/hexagon.svg')] mask-contain mask-center mask-no-repeat",
+		]}
+	>
+	</div>
+	<!-- Icon inside of hexagon -->
+	<Icon
+		aria-hidden
+		class:list={[
+			iconClass,
+			"pointer-events-none absolute inset-0 top-1/2 left-1/2 z-10 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 transform",
+		]}
+		{...icon}
+	/>
+</div>

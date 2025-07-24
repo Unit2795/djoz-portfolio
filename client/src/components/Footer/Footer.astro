@@ -1,0 +1,20 @@
+---
+import { footer } from "@/content";
+---
+
+{
+	footer && (
+		<footer class="relative z-10 mx-8 my-14 flex flex-col items-center gap-4 text-center">
+			{footer.items &&
+				footer.items.map((item) => {
+					return item.href ? (
+						<a class="text-blue-400 underline" href={item.href} rel="noreferrer" target="_blank">
+							{item.label}
+						</a>
+					) : (
+						<p class="text-gray-400">{item.label}</p>
+					);
+				})}
+		</footer>
+	)
+}

@@ -1,0 +1,66 @@
+---
+import type { SnowEffectConfig } from "@/components/SnowParticles/utils/snowEffect";
+import { props } from "@/utils/customEl/server";
+
+interface Props {
+	config: SnowEffectConfig;
+}
+
+const {
+	config = {
+		density: 20,
+		angle: { from: 0, to: 45 },
+		velocity: { from: 150, to: 250 },
+		opacity: { from: 0.05, to: 0.1 },
+		size: { from: 1, to: 3 },
+		colors: ["#ffffff"],
+	},
+} = Astro.props;
+
+export type Expose = Pick<Props, "config">;
+---
+
+<snow-particles
+	class="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden"
+	{...props<Expose>({ config })}
+>
+	<canvas class="absolute top-0 left-0 h-full w-full bg-transparent"></canvas>
+</snow-particles>
+
+<script>
+	import { customEl, CustomEl } from "@/utils/customEl/client";
+	import { SnowEffect } from "@/components/SnowParticles/utils/snowEffect";
+	import type { Expose } from "@/components/SnowParticles/SnowParticles.astro";
+
+	customEl(
+		"snow-particles",
+		class extends CustomEl<Expose> {
+			canvas = this.querySelector<HTMLCanvasElement>("canvas");
+
+			connectedCallback() {
+				// Initialize navbar features when DOM is ready
+				// Respect user preference for reduced motion, disabling animation if needed
+				if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+					console.log("Reduced motion preference detected, will not render snow effect particles");
+					return;
+				}
+
+				const { canvas } = this;
+
+				if (!canvas) {
+					console.error("Canvas element not found");
+					return;
+				}
+
+				// Ensure canvas 2D context is available
+				const context = canvas.getContext("2d");
+				if (!context) {
+					console.error("Failed to get canvas context, will not render snow effect particles");
+					return;
+				}
+
+				new SnowEffect(canvas, context, this.props.config);
+			}
+		},
+	);
+</script>

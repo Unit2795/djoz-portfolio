@@ -1,0 +1,41 @@
+---
+import { type Section } from "@/content/types";
+
+interface Props {
+	section: Section;
+	solidBackground?: boolean;
+	hideHeader?: boolean;
+	containerClass?: string;
+	sectionClass?: string;
+}
+
+const { section, solidBackground, hideHeader, containerClass, sectionClass } = Astro.props;
+
+const headerClass = hideHeader ? "sr-only" : "mb-8 text-center text-4xl font-bold heading-accent";
+const descriptionClass = hideHeader || section.hideDescription ? "sr-only" : "text-center text-xl text-gray-400";
+const getHeaderArias = (section: Section) => ({
+	"aria-labelledby": getLabelId(section),
+	"aria-describedby": section.description ? getDescriptionId(section) : undefined,
+});
+const getLabelId = (section: Section) => `${section.id}-label`;
+const getDescriptionId = (section: Section) => `${section.id}-description`;
+---
+
+<section
+	class:list={["py-20", solidBackground && "bg-gray-900", sectionClass]}
+	id={section.id}
+	{...getHeaderArias(section)}
+>
+	<div class:list={["container mx-auto px-6", containerClass]}>
+		<h1 class={headerClass} id={getLabelId(section)}>
+			{section.header || section.navTitle}
+		</h1>
+		{
+			section.description && (
+				<p class={descriptionClass} set:html={section.description} id={getDescriptionId(section)} />
+			)
+		}
+
+		<slot />
+	</div>
+</section>

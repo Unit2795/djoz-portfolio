@@ -1,0 +1,6 @@
+{
+	"npm.packageManager": "pnpm",
+	"npm.scriptRunner": "pnpm",
+	"typescript.preferences.importModuleSpecifier": "non-relative",
+	"javascript.preferences.importModuleSpecifier": "non-relative"
+}

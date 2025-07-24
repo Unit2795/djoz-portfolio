@@ -1,0 +1,23 @@
+---
+import * as icons from "simple-icons";
+import type { SimpleIcon as SimpleIconType } from "simple-icons";
+import type { HTMLAttributes } from "astro/types";
+
+type IconKey = keyof typeof icons;
+// Strip the 'si' prefix if it exists
+type CleanIconKey<K extends string> = K extends `si${infer Rest}` ? Rest : K;
+export type SimpleIcons = CleanIconKey<IconKey>;
+
+export interface Props extends HTMLAttributes<"span"> {
+	name: SimpleIcons;
+}
+
+const { name, ...rest } = Astro.props;
+
+const iconKey = `si${name}` as IconKey;
+const path = (icons[iconKey] as SimpleIconType)?.path;
+---
+
+<svg fill="currentColor" viewBox="0 0 24 24" height="24" width="24" xmlns="http://www.w3.org/2000/svg" {...rest}>
+	<path d={path}></path>
+</svg>

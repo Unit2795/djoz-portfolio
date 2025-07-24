@@ -1,0 +1,32 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"div">;
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class="group relative inline-block">
+	<slot name="trigger" />
+
+	<div
+		role="tooltip"
+		class:list={[
+			/* Interactivity */
+			"absolute hidden group-hover:block group-has-[:focus-visible]:block",
+			/* Positioning */
+			"absolute left-1/2 z-10 mt-3 w-max -translate-x-1/2",
+			/* Visual style of the tooltip */
+			"rounded-lg bg-gray-600 p-2 shadow-lg",
+			className,
+		]}
+		{...rest}
+	>
+		<!-- Arrow pointer connecting the popover to the button -->
+		<div class="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-gray-600"></div>
+
+		<div>
+			<slot name="content" />
+		</div>
+	</div>
+</div>

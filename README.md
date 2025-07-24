@@ -14,7 +14,6 @@
 * [Features](#features)
   * [⚡️ **Performance**](#-performance)
   * [🎨 **Design & Content**](#-design--content)
-  * [🛠 **Developer Experience**](#-developer-experience)
   * [🚀 **Deployment**](#-deployment)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
@@ -40,7 +39,7 @@
     * [Manually Rebuilding the Site & Forcing Cache Invalidation](#manually-rebuilding-the-site--forcing-cache-invalidation)
   * [(Optional) Destroying the AWS Infrastructure](#optional-destroying-the-aws-infrastructure)
 * [Good to Know](#good-to-know)
-  * [React SPA](#react-spa)
+  * [Astro Site](#astro-site)
   * [Terraform](#terraform)
   * [Lambda Functions](#lambda-functions)
     * [Contact Form Submission](#contact-form-submission)
@@ -51,51 +50,46 @@
 <!-- TOC -->
 
 # Overview
+Thank you for checking out my portfolio template! Click "use this template" and follow the instructions below if you'd like to get a copy of this website for yourself! Need help or have a suggestion? Please create a GitHub issue.
 
-This portfolio template provides a production-ready website solution combining modern frontend technologies with
-automated cloud deployment. Built with React and TypeScript, it delivers exceptional performance while maintaining full
-SEO optimization and accessibility standards.
+I wanted to build a portfolio completely from scratch using vanilla HTML and JS. I didn't utilize any libraries besides Astro, TailwindCSS, and Lucide & Simple Icons (for SVG icons).
 
+My priorities were performance, accessibility, and reusability. I wanted something that loaded fast, was accessible and enjoyable to use with a screen reader, didn't need JS to function, and could easily be adjusted to be used by other people. The little JS this site ships is used for progressive enhancements, like its particle effects.
+
+This is an ongoing project, more features will be released in the future!
 # Features
 
 ## ⚡️ **Performance**
 
-- Perfect 100/100 [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview) score for performance,
-  accessibility, best practices, and SEO
-- CDN-powered global content delivery for fast load times
-- Optimal SEO configuration
-- Fully statically rendered
+- Fully statically rendered, ships a very small website (> 170 KB)
+- Perfect 100/100 [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview) score
+- CDN-powered delivery for fast load times globally
+- Completely functional without Javascript
+- CSS/JS is built into the index.html file to reduce network requests
 
 ## 🎨 **Design & Content**
 
 - Modern glassmorphic design
-- Responsive single-page application
-- Easy content customization through a single file ([content.tsx](./client/src/content.tsx))
+- WCAG 2.2 compliant accessibility
+- Fully responsive down to 320 pixels
+- Easy content customization through a single file ([content/index.ts](./client/src/content/index.ts))
 - Eye-catching animations, disabled if user prefers reduced motion
-
-## 🛠 **Developer Experience**
-
-- Built with TypeScript & React
-- Automated, low-cost, and secure AWS deployment pipeline (less than $5 per month)
-- Integrated contact form system
 
 ## 🚀 **Deployment**
 
-- Terraform configuration for easy setup
+- Automated, low-cost, and secure AWS deployment (less than $2 per month) with Terraform for easy setup
 - GitHub Actions for CI/CD when code changes
-- CloudFormation for bootstrapping Terraform state storage
+- CloudFormation script for bootstrapping Terraform state storage in AWS S3
+- Integrated contact form system
 
 # Getting Started
 
-If you'd like to use this template to create your own portfolio website,
-click ["use this template"](https://github.com/new?template_name=djoz-portfolio&template_owner=Unit2795) at the top of
-the repository. You can then clone your new repository and follow the instructions below to build and deploy your site.
+If you'd like to use this template to create your own portfolio website, click ["use this template"](https://github.com/new?template_name=djoz-portfolio&template_owner=Unit2795) at the top of the repository. You can then clone your new repository and follow the instructions below to build and deploy your site.
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/en/) >= 22
-- [pnpm](https://pnpm.io/installation) >= 9.0
-- Basic familiarity with React, TypeScript, and GitHub
+- [pnpm](https://pnpm.io/installation) >= 10.0
 - A code editor like [VS Code](https://code.visualstudio.com/) or [WebStorm](https://www.jetbrains.com/webstorm/)
 - (Optional) AWS account for cloud deployment
 - (Optional) Domain name for live deployment
@@ -118,17 +112,13 @@ In order to build the website's static files, you'll need to follow these steps:
 ### Content Customization
 
 2. **Update Site Content**
-   The site's content is managed through a single file ([content.tsx](./client/src/content.tsx)) for simplicity:
+   The site's content is managed through a single file ([content/index.ts](./client/src/content/index.ts)) as a sort of Git-based CMS:
    ```bash
    # Edit the main content file
-   vim src/content.tsx  # or use your preferred editor
+   vim client/src/content/index.ts  # or use your preferred editor
    ```
    > **Why Static Content?**
-   > This portfolio uses static content generation for optimal performance and SEO. While this means content updates
-   require a rebuild, it eliminates the overhead and complexity of a CMS. For simple portfolio sites, this tradeoff
-   improves page load times and reduces hosting costs.
-   >
-   > If you need dynamic content, you can modify `content.tsx` to fetch data from a headless CMS or API.
+   > This portfolio uses static site generation for optimal performance and SEO. While this means content updates require a rebuild, it eliminates the overhead and complexity of a CMS. For simple portfolio sites, this tradeoff improves page load times and reduces hosting costs. If you need dynamic content, you can modify `content.tsx` to fetch data from a headless CMS or API or host Astro on a server and switch to using server rendering.
 
 3. **Replace Images**
    ```bash
@@ -156,7 +146,7 @@ In order to build the website's static files, you'll need to follow these steps:
    pnpm dev
    
    # Access your site at
-   http://localhost:5173
+   http://localhost:4321/
    ```
 
 5. **Build for Production**
@@ -184,8 +174,8 @@ In order to build the website's static files, you'll need to follow these steps:
         - GitHub Pages
     - Configure contact form:
       ```typescript
-      // Edit src/components/ContactForm/ContactForm.tsx
-      // Modify the onSubmit handler to accomodate to your form service
+      // Edit src/components/sections/ContactForm/ContactForm.astro
+      // Modify the form to accomodate to your form service
       ```
     - Some available form services:
         - [Formspree](https://formspree.io/)
@@ -222,13 +212,11 @@ To merge updates from the template repository:
 
 > 💡 Optional Deployment: You can alternatively host on platforms like Netlify or Vercel
 >
-> ⚠️ Warning: AWS services used in this deployment will incur costs (less than $5 per month). Make sure to monitor your
-> usage to avoid unexpected charges.
+> ⚠️ Warning: AWS services used in this deployment will incur costs (less than $2 per month). Make sure to monitor your usage to avoid unexpected charges.
 
 ### Overview
 
-This guide walks you through deploying your portfolio using AWS infrastructure. The deployment is automated using GitHub
-Actions and Terraform, providing you with a production-grade setup including CDN delivery and a serverless backend.
+This guide walks you through deploying your portfolio using AWS infrastructure. The deployment is automated using GitHub Actions and Terraform, providing you with a production-grade setup including CDN delivery and a serverless backend.
 
 ### Infrastructure Overview
 
@@ -339,9 +327,7 @@ Using another DNS provider? See [Alternative DNS Setup](#alternative-dns-setup).
 
 2. Monitor the deployment:
     - Check GitHub Actions tab
-    - **If you are using the Email-Based sending identity for SES**: You'll receive an email from Amazon SES to verify your `admin_email` address provided in
-      the [terraform.tfvars](./terraform/terraform.tfvars) file if you haven't already added this email to SES before. You must click the verification link before you can
-      send emails from/to this address. This admin email is where you will receive contact form submissions.
+    - **If you are using the Email-Based sending identity for SES**: You'll receive an email from Amazon SES to verify your `admin_email` address provided in the [terraform.tfvars](./terraform/terraform.tfvars) file if you haven't already added this email to SES before. You must click the verification link before you can send emails from/to this address. This admin email is where you will receive contact form submissions.
     - Wait for CloudFront distribution (~15-30 min)
 
 ### Alternative DNS Setup
@@ -357,47 +343,34 @@ If not using Route 53:
 
 ### Deploying Locally
 
-If you prefer not to use GitHub Actions, you can deploy the site locally using the AWS CLI and Terraform CLI. You'll
-need to install and configure the AWS CLI and Terraform CLI.
+If you prefer not to use GitHub Actions, you can deploy the site locally using the AWS CLI and Terraform CLI. You'll need to install and configure the AWS CLI and Terraform CLI.
 
 ### Manually Rebuilding the Site & Forcing Cache Invalidation
 
-If you need to manually rebuild the site and force cache invalidation on CloudFront, you can set the
-`FORCE_INVALIDATION` environment variable to `1` in your GitHub repository. Then manually trigger the "Build and Deploy"
-workflow. This will trigger a cache invalidation on CloudFront after the deployment.
+If you need to manually rebuild the site and force cache invalidation on CloudFront, you can set the `FORCE_INVALIDATION` environment variable to `1` in your GitHub repository. Then manually trigger the "Build and Deploy" workflow. This will trigger a cache invalidation on CloudFront after the deployment.
 
 ## (Optional) Destroying the AWS Infrastructure
 
-If you want to take down the website, you can run the `terraform-destroy` workflow in the GitHub Actions tab of your
-repository. This will remove all the AWS resources that were created by Terraform. You may also manually run
-`terraform destroy` from your local machine if you have the AWS and Terraform CLIs installed and configured.
+If you want to take down the website, you can run the `terraform-destroy` workflow in the GitHub Actions tab of your repository. This will remove all the AWS resources that were created by Terraform. You may also manually run `terraform destroy` from your local machine if you have the AWS and Terraform CLIs installed and configured.
 
 # Good to Know
 
-## React SPA
+## Astro Site
 
-1. The majority of the site's content is stored in the [content.tsx](./client/src/content.tsx) file. Some content can be
-   disabled entirely.
+1. The majority of the site's content is stored in the ([content/index.ts](./client/src/content/index.ts)) file. Some content can be disabled entirely, there are a lot of options!
 2. All of the animations are disabled if the user prefers reduced motion.
-3. The site is fully responsive and optimized for mobile devices.
-4. The most complex part of the React code is the [Navbar](./client/src/components/Navbar/Navbar.tsx) component, which
-   handles the dynamically resizing navbar and the smooth scrolling to sections.
+3. The site is fully responsive and optimized for mobile devices and zooming
+4. The most complex part of the Astro code is the [SnowParticles](./client/src/components/SnowParticles) component, which sets up the snowfall particle effect.
 
 ## Terraform
 
-1. All user-provided variables are stored in the [terraform.tfvars](./terraform/terraform.tfvars)
-   and [state.config](./terraform/state.config) files.
-2. The `/bootstrap` directory contains the CloudFormation code and shell script that creates the S3 bucket and DynamoDB
-   table for Terraform state storage.
+1. All user-provided variables are stored in the [terraform.tfvars](./terraform/terraform.tfvars) and [state.config](./terraform/state.config) files.
+2. The `/bootstrap` directory contains the CloudFormation code and shell script that creates the S3 bucket and DynamoDB table for Terraform state storage.
 3. The DNS records for the `www.` subdomain are created automatically in addition to the root domain you provide.
-4. The `admin_email` variable in the [terraform.tfvars](./terraform/terraform.tfvars) file is used for receiving contact
-   form submissions. If this has not already been verified in SES, an email with a verification link will be sent.
-5. If you create multiple instances of this portfolio, you will need to update the variable files to ensure the
-   important variables are unique or the deploy will fail.
-6. The `terraform-destroy` workflow in the GitHub Actions tab will remove all the AWS resources that were created by
-   Terraform.
-7. The `terraform-apply` workflow in the GitHub Actions tab will apply the Terraform configuration to create the AWS
-   resources, build the site, upload it, and invalidate the CloudFront cache.
+4. The `admin_email` variable in the [terraform.tfvars](./terraform/terraform.tfvars) file is used for receiving contact form submissions. If this email has not already been verified in SES, an email with a verification link will be sent when terraform provisions your infrastructure
+5. If you create multiple instances of this portfolio, you will need to update the variable files to ensure the important variables are unique or the deploy will fail.
+6. The `terraform-destroy` workflow can be run manually in the GitHub Actions tab and will remove all the AWS resources that were created by Terraform.
+7. The `terraform-apply` workflow in the GitHub Actions tab will create AWS resources, build the site, upload it, and invalidate the CloudFront cache.
 
 ## Lambda Functions
 
@@ -405,50 +378,47 @@ repository. This will remove all the AWS resources that were created by Terrafor
 
 1. The [index.js](./lambda/index.js) file contains the Lambda function code for the contact form submission.
 2. This function is triggered by an API Gateway POST request.
-3. The function sends an email to the `admin_email` address provided in
-   the [terraform.tfvars](./terraform/terraform.tfvars) file.
+3. The function sends an email to the `admin_email` address provided in the [terraform.tfvars](./terraform/terraform.tfvars) file.
 
 ### API Gateway Authorizer
 
 1. The [auth.js](./lambda/auth.js) file contains the Lambda function code for the API Gateway authorizer.
 2. This authorizer prevents too many requests from being made to the contact form submission endpoint.
 3. The default rate limit is 10 successful requests per month.
-4. The lambda function is triggered by an API Gateway request.
+4. This lambda function is triggered by an API Gateway request to the contact form endpoint
 5. The information about the number of requests that have been made is stored in a DynamoDB table.
 
 # Key Technologies
 
-- [React](https://react.dev/)
-    - Library for building the single-page application
+- [Astro](https://astro.build/)
+    - Library for building the static generated site
+- [Tailwind CSS](https://tailwindcss.com/)
+    - Utility-first CSS styling for the React site
 - [TypeScript](https://www.typescriptlang.org/)
-    - Type safety for the React site
+    - Type safety for the site
 - [PNPM](https://pnpm.io/)
     - Efficient package manager
 - [ESLint](https://eslint.org/)
-    - Linter for JavaScript and TypeScript
-- [Spacey](https://github.com/Unit2795/spacey)
-    - ESLint shared config styleguide for TypeScript React projects
-- [Tailwind CSS](https://tailwindcss.com/)
-    - Utility-first CSS styling for the React site
+    - Linter for TypeScript & HTML
+- [Prettier]([Prettier](https://prettier.io/))
+    - Code formatting for Typescript, CSS, and HTML
 - [Vite](https://vite.dev/)
-    - Build tool for the React site
+    - Build tool used by Astro
 - [Terraform](https://www.terraform.io/)
-    - Deploys the site to AWS CloudFront and sets up a back-end for receiving contact form submissions
+    - Infrastructure as Code library that deploys the site to AWS CloudFront and sets up a back-end for receiving contact form submissions
 - [GitHub Actions](https://github.com/features/actions)
-    - Automates the deployment of the site to AWS using Terraform
+    - Automates the deployment of the site to AWS using Terraform and Linux
 - [CloudFormation](https://aws.amazon.com/cloudformation/)
     - Bootstraps the Terraform state backend in AWS
 
 # License
 
-This project is licensed under the MIT License. You are free to use, modify, and distribute this code as you see fit.
-See the [LICENSE](./LICENSE) file for more information.
+This project is licensed under the MIT License. You are free to use, modify, and distribute this code as you see fit. See the [LICENSE](./LICENSE) file for more information.
 
 # Contributing
 
-If you have any suggestions, improvements, or issues, please open an issue or a pull request. I'd love to hear your
-feedback!
+If you have any suggestions, improvements, or issues, please open an issue or a pull request. I'd love to hear your feedback!
 
 --------
 
-<p align="center"><img src="./docs/lighthouse.png" alt="LightHouse Score" width="400"/></p>
+<p align="center"><img src="./docs/lighthouse.jpg" alt="LightHouse Score" width="400"/></p>

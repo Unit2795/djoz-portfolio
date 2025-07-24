@@ -1,0 +1,81 @@
+---
+import Tooltip from "@/components/Tooltip/Tooltip.astro";
+import { props } from "@/utils/customEl/server";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"button"> & {
+	value: string;
+};
+
+const { value, ...rest } = Astro.props;
+const { getId } = Astro.locals;
+const tooltipId = getId();
+
+export type Expose = Pick<Props, "value">;
+---
+
+<copy-value {...props<Expose>({ value })}>
+	<Tooltip
+		data-copy-tooltip
+		data-success="false"
+		class={"[&[data-success=false]_.copy-success]:hidden [&[data-success=true]_.copy-message]:hidden data-[success=true]:border border-green-500 border-0"}
+		id={tooltipId}
+	>
+		<button data-copy-trigger slot="trigger" aria-describedby={tooltipId} {...rest}>
+			<slot name="trigger" />
+		</button>
+		<Fragment slot="content">
+			<span class="copy-success">
+				<slot name="success" />
+			</span>
+			<span class="copy-message">
+				<slot name="content" />
+			</span>
+		</Fragment>
+	</Tooltip>
+</copy-value>
+
+<script>
+	import type { Expose } from "@/components/CopyValue/CopyValue.astro";
+	import { CustomEl, customEl } from "@/utils/customEl/client";
+
+	customEl(
+		"copy-value",
+		class extends CustomEl<Expose> {
+			trigger = this.querySelector<HTMLButtonElement>("[data-copy-trigger]");
+			tooltip = this.querySelector<HTMLDivElement>("[data-copy-tooltip]");
+			timeoutId: NodeJS.Timeout | null = null;
+			value = this.props.value;
+
+			connectedCallback() {
+				document.addEventListener("DOMContentLoaded", () => {
+					/* Attach the click event listener to the trigger button */
+					this.trigger?.addEventListener("click", this.handleCopy.bind(this));
+
+					this.trigger?.addEventListener("blur", this.disconnectTimeout.bind(this));
+					this.trigger?.addEventListener("mouseleave", this.disconnectTimeout.bind(this));
+				});
+			}
+
+			// Remove the success message when the user interacts elewhere and clear the timeout
+			// Prevents multiple timeouts from stacking up and causing unexpected behavior
+			private disconnectTimeout() {
+				if (this.timeoutId) {
+					clearTimeout(this.timeoutId);
+					this.tooltip!.setAttribute("data-success", "false");
+					this.timeoutId = null;
+				}
+			}
+
+			private handleCopy() {
+				this.tooltip!.setAttribute("data-success", "true");
+				// Hide the success message after a delay
+				this.timeoutId = setTimeout(() => {
+					this.tooltip!.setAttribute("data-success", "false");
+				}, 2500);
+
+				navigator.clipboard.writeText(this.value);
+			}
+		},
+	);
+</script>

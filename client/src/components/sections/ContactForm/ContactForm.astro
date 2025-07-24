@@ -1,0 +1,134 @@
+---
+import { contactForm, copyValue } from "@/content";
+import { CircleCheckBig, Send } from "@lucide/astro";
+import Section from "@/components/Section/Section.astro";
+import { sections } from "@/content";
+import Icon from "@/components/Icon/Icon.astro";
+import CopyValue from "@/components/CopyValue/CopyValue.astro";
+
+const fieldClasses = "has-invalid";
+const labelClasses = "block text-md text-gray-300 mb-1 motion-safe:transition motion-safe:duration-300";
+const inputClasses =
+	"w-full p-3 border rounded-lg border-gray-500 bg-transparent text-white user-invalid:border-red-500 user-invalid:text-red-600 motion-safe:transition motion-safe:duration-300";
+
+const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/contact-form";
+---
+
+<Section section={sections.CONTACT} solidBackground={sections.CONTACT.solidBackground}>
+	<div class="mt-6">
+		{
+			contactForm.links && contactForm.links.length > 0 && (
+				<ul class:list={["mt-14 flex justify-center gap-8"]}>
+					{contactForm.links.map(({ link, value, icon, label }, i) => {
+						const delay = i * 250 + 500;
+						if (link) {
+							return (
+								<li>
+									<a
+										aria-label={label}
+										class="motion-safe:animate-fade-up block h-6 w-6 hover:text-blue-400 motion-safe:transition-colors"
+										href={link}
+										rel="noreferrer"
+										style={{
+											animationDelay: `${delay}ms`,
+											animationFillMode: "both",
+										}}
+										target="_blank"
+									>
+										<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
+									</a>
+								</li>
+							);
+						} else if (value) {
+							return (
+								<li>
+									<CopyValue
+										aria-label={label}
+										value={value}
+										class="motion-safe:animate-fade-up hover:text-blue-400 motion-safe:transition-colors"
+										style={{
+											animationDelay: `${delay}ms`,
+											animationFillMode: "both",
+										}}
+									>
+										<span slot="trigger">
+											<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
+										</span>
+										<span slot="content">
+											<p class="text-center">
+												<span class="mb-1 block text-sm text-nowrap text-gray-300">
+													{copyValue.text ?? "Click to copy:"}
+												</span>
+
+												<span class="block">{value}</span>
+											</p>
+										</span>
+										<span slot="success">
+											<div class="flex items-center text-nowrap">
+												<CircleCheckBig class="mr-2 text-green-500" aria-hidden="true" />
+
+												<p>{copyValue.successText ?? "Copied successfully!"}</p>
+											</div>
+										</span>
+									</CopyValue>
+								</li>
+							);
+						}
+					})}
+				</ul>
+			)
+		}
+		<div class="mx-auto max-w-2xl p-6">
+			<form class="mb-8 space-y-6" aria-label="Contact form" method="post" action={apiEndpoint}>
+				<div class={fieldClasses}>
+					<label class={labelClasses} for="name">{contactForm.name.label}</label>
+					<input
+						class={inputClasses}
+						id="name"
+						maxlength={50}
+						minlength={2}
+						name="name"
+						placeholder={contactForm.name.placeholder}
+						autocomplete="name"
+						required
+						type="text"
+					/>
+				</div>
+				<div class={fieldClasses}>
+					<label class={labelClasses} for="email">{contactForm.email.label}</label>
+					<input
+						class={inputClasses}
+						id="email"
+						name="email"
+						placeholder={contactForm.email.placeholder}
+						autocomplete="email"
+						required
+						type="email"
+					/>
+				</div>
+				<div class={fieldClasses}>
+					<label class={labelClasses} for="message">{contactForm.message.label}</label>
+					<textarea
+						class={inputClasses}
+						id="message"
+						name="message"
+						placeholder={contactForm.message.placeholder}
+						maxlength={1000}
+						minlength={12}
+						required
+						rows={4}></textarea>
+					<p class="text-right text-xs text-gray-400" aria-hidden="true">1000 characters max</p>
+				</div>
+				<button
+					class="w-full rounded-lg bg-blue-600 px-6 py-3 text-white transition duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-hidden disabled:cursor-not-allowed disabled:bg-stone-600 disabled:text-stone-300"
+					type="submit"
+				>
+					<span class="flex items-center justify-center gap-2">
+						<Send height={16} width={16} aria-hidden />
+						{contactForm.button}
+					</span>
+				</button>
+			</form>
+		</div>
+	</div>
+</Section>

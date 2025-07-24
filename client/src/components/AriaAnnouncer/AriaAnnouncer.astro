@@ -1,0 +1,36 @@
+<aria-announcer>
+	<div data-polite class="sr-only" aria-live="polite" aria-atomic="true"></div>
+	<div data-assertive class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+</aria-announcer>
+
+<script>
+	import { CustomEl, customEl } from "@/utils/customEl/client";
+
+	customEl(
+		"aria-announcer",
+		class extends CustomEl {
+			politeRegion = this.querySelector("[data-polite]");
+			assertiveRegion = this.querySelector("[data-assertive]");
+
+			connectedCallback() {
+				document.addEventListener("DOMContentLoaded", () => {
+					window.announce = this.announce.bind(this);
+				});
+			}
+
+			private announce(message: string, priority: "polite" | "assertive" = "polite", dontClear = false) {
+				const region = priority === "assertive" ? this.assertiveRegion : this.politeRegion;
+
+				if (!region) return;
+
+				region.textContent = message;
+
+				if (dontClear) return;
+				// Clear after announcement to keep DOM clean
+				setTimeout(() => {
+					region.textContent = "";
+				}, 1000);
+			}
+		},
+	);
+</script>
