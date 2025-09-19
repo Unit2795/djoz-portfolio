@@ -13,6 +13,8 @@ resource "aws_lambda_function" "contact_function" {
 	function_name    = "contact-me-${var.bucket_name}"
 	filename         = data.archive_file.lambda_zip.output_path
 	source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+	timeout = 10
+	memory_size      = 128
 	handler          = "index.handler"
 	runtime          = "nodejs22.x"
 	role             = aws_iam_role.lambda_exec.arn
@@ -93,8 +95,10 @@ resource "aws_lambda_function" "quota_authorizer" {
 	filename = data.archive_file.authorizer_zip.output_path
 	source_code_hash = data.archive_file.authorizer_zip.output_base64sha256
 	role = aws_iam_role.authorizer_role.arn
+	timeout = 5
 	handler = "auth.handler"
 	runtime = "nodejs22.x"
+	memory_size = 128
 
 	environment {
 		variables = {
