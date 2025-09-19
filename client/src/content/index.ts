@@ -367,3 +367,6 @@ export const disableSnow = false;
 export const disableNavbar = false;
 // Set this to true if you want to disable the dynamic resizing on the navbar
 export const disableDynamicNavbar = false;
+// Set this to true if you want to disable analytics features.
+// NOTE!: Remember to also update your terraform variables to also disable deploying analytics infrastructure!
+export const disableAnalytics = false;

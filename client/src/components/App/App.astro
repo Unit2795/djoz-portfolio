@@ -1,8 +1,8 @@
 ---
-/* TODO: Add intersectionobserver animations to projects, skills, and contact section. */
 /* TODO: implement analytics */
 /* TODO: Ensure that all HTML comments are stripped and all JS and CSS is inlined */
 /* TODO: update documentation */
+/* TODO: Add intersectionobserver animations to projects, skills, and contact section. */
 /* TODO: Maybe add some custom color themes that people can pick from? */
 /* TODO: Add localization support */
 import AvailabilityBadge from "@/components/AvailabilityBadge/AvailabilityBadge.astro";
@@ -14,9 +14,11 @@ import AriaAnnouncer from "@/components/AriaAnnouncer/AriaAnnouncer.astro";
 import Intro from "@/components/sections/Intro/Intro.astro";
 import ContactForm from "@/components/sections/ContactForm/ContactForm.astro";
 import Footer from "@/components/Footer/Footer.astro";
-import { disableNavbar, sections } from "@/content";
+import { disableAnalytics, disableNavbar, sections } from "@/content";
+import Analytics from "@/components/Analytics/Analytics.astro";
 ---
 
+{!disableAnalytics && <Analytics />}
 <AriaAnnouncer />
 {!disableNavbar && <Nav />}
 <main class:list={["relative z-10"]} id="maincontent">
