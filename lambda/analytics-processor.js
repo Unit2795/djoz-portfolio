@@ -61,7 +61,7 @@ exports.handler = async (event, context) => {
 			receipts.push(m.ReceiptHandle);
 			try {
 				const body = JSON.parse(m.Body);
-				const { events, schemaVersion, timestamp } = body;
+				const { events, schemaVersion, timestamp, userAgent, ip, proxiedIp } = body;
 				if (!Array.isArray(body.events) || body.events.length === 0) {
 					// skip invalid messages
 					continue;
@@ -99,6 +99,9 @@ exports.handler = async (event, context) => {
 						...item,
 						schemaVersion,
 						timestamp,
+						userAgent,
+						ip,
+						proxiedIp,
 					});
 				}
 			} catch {
