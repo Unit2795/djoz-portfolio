@@ -6,9 +6,10 @@ import Icon from "@/components/Icon/Icon.astro";
 import RotatingText from "@/components/RotatingText/RotatingText.astro";
 import Section from "@/components/Section/Section.astro";
 import { copyValue, intro, sections } from "@/content";
+import { getAnalyticsAttribute } from "@/utils/analytics";
 import { CircleCheckBig, ChevronDown } from "@lucide/astro";
 
-const { aboutMe, contactButton, projectButton, links, heading, subHeading } = intro;
+const { aboutMe, contactButton, projectButton, links, heading, subHeading, disableAnalytics } = intro;
 
 const headerId = heading ? "intro-tagline-header" : undefined;
 const descriptionId = subHeading ? "intro-tagline-description" : undefined;
@@ -19,6 +20,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 	sectionClass="min-h-lvh flex items-center"
 	hideHeader
 	solidBackground={sections.INTRO.solidBackground}
+	analyticsId="Intro"
 >
 	<div class:list={["my-6 grid items-center gap-10", aboutMe && "lg:grid-cols-2"]}>
 		<section
@@ -69,6 +71,11 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 												animationFillMode: "both",
 											}}
 											target="_blank"
+											{...getAnalyticsAttribute(
+												"interact",
+												`IntroLink-${label.replace(/\s+/g, "")}`,
+												disableAnalytics,
+											)}
 										>
 											<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
 										</a>
@@ -85,6 +92,11 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 												animationDelay: `${delay}ms`,
 												animationFillMode: "both",
 											}}
+											{...getAnalyticsAttribute(
+												"interact",
+												`IntroCopyVal-${label.replace(/\s+/g, "")}`,
+												disableAnalytics,
+											)}
 										>
 											<span slot="trigger">
 												<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
@@ -127,6 +139,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 									animationDelay: "500ms",
 									animationFillMode: "both",
 								}}
+								{...getAnalyticsAttribute("interact", `ScrollToProjects`, disableAnalytics)}
 							>
 								<span class="pr-2" aria-hidden>
 									{projectButton.text}
@@ -149,6 +162,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 									animationDelay: "750ms",
 									animationFillMode: "both",
 								}}
+								{...getAnalyticsAttribute("interact", `ScrollToContact`, disableAnalytics)}
 							>
 								{contactButton.text}
 							</GlassButton>

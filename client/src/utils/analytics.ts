@@ -1,9 +1,8 @@
-import { throttle } from "@/utils/throttle";
+import { disableAnalytics } from "@/content";
 
 const analyticsEndpoint = (import.meta.env.VITE_INGEST_ENDPOINT as string) ?? "/analytics";
 const FLUSH_INTERVAL_MS = 5000; // 5 seconds
 const BATCH_SIZE = 10;
-let lastScrollY = 0;
 
 const events = {
 	exit: "exit",
@@ -40,6 +39,17 @@ export const analyticsEvent = (eventName: EventName, memo?: string) => {
 	}
 };
 
+// Add data attributes to elements for analytics tracking
+// Scroll captures intersection, interact captures clicks, focus, hovers, keydowns
+export const getAnalyticsAttribute = (
+	eventName: "scroll" | "interact",
+	id: string | boolean,
+	isDisabled?: boolean | null,
+) => {
+	if (isDisabled || disableAnalytics) return {};
+	return { [`data-analytics-${eventName}`]: id };
+};
+
 // Send a single event immediately (for critical events like page visit)
 const sendImmediateEvent = (eventName: EventName, memo?: string) => {
 	return sendEvents([createEvent(eventName, memo)]);
@@ -65,32 +75,49 @@ const handleVisibilityChange = () => {
 	}
 };
 
-const handleScroll = () => {
-	const deltaScroll = Math.abs(window.scrollY - lastScrollY);
-	if (deltaScroll < 500) return; // Only log significant scrolls
-	lastScrollY = window.scrollY;
+const scrollWatcher = () => {
+	const io = new IntersectionObserver(
+		(entries, obs) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					const target = entry.target as HTMLElement;
+					obs.unobserve(target);
+					analyticsEvent("scroll", target.dataset?.analyticsScroll);
+				}
+			});
+		},
+		// Adjust rootMargin to trigger after before the element is fully in view
+		{ threshold: 0, rootMargin: "0px 0px -20px 0px" },
+	);
 
-	analyticsEvent(events.scroll, deltaScroll.toString());
+	const scrollElements = document.querySelectorAll<HTMLElement>("[data-analytics-scroll]");
+	scrollElements.forEach((el) => {
+		io.observe(el);
+	});
 };
 
-/* function attachInteractionHandlers() {
-	const elements = document.querySelectorAll<HTMLElement>("[data-analytics]");
-
+const interactWatcher = () => {
+	const elements = document.querySelectorAll<HTMLElement>("[data-analytics-interact]");
 	elements.forEach((el) => {
-		console.log(el.dataset?.analytics);
-
-		el.addEventListener("focus", () => analyticsEvent("focus"));
-		el.addEventListener("mouseenter", () => analyticsEvent("hover"));
+		el.addEventListener("click", () => analyticsEvent("click", el.dataset?.analyticsInteract), { once: true });
+		el.addEventListener("focus", () => analyticsEvent("focus", el.dataset?.analyticsInteract), { once: true });
+		el.addEventListener("mouseenter", () => analyticsEvent("hover", el.dataset?.analyticsInteract), { once: true });
+		el.addEventListener(
+			"keydown",
+			(event) => {
+				if (event.code === "Space" || event.code === "Enter") {
+					analyticsEvent("keydown", el.dataset?.analyticsInteract);
+				}
+			},
+			{ once: true },
+		);
 	});
+};
 
-	window.addEventListener("click", () => analyticsEvent("click"));
-	window.addEventListener("keydown", (event) => {
-		console.log(event.target.dataset?.analytics);
-		if (event.code === "Space" || event.code === "Enter") {
-			analyticsEvent("keydown");
-		}
-	});
-} */
+function attachInteractionHandlers() {
+	scrollWatcher();
+	interactWatcher();
+}
 
 // Create an analytics event object with the required metadata
 const createEvent = (eventName: EventName, memo?: string): AnalyticsEvent => ({
@@ -136,10 +163,8 @@ export const initAnalytics = () => {
 	// Start the flush timer
 	timer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
 
-	handleScroll();
-	// attachInteractionHandlers();
+	attachInteractionHandlers();
 
 	document.addEventListener("visibilitychange", handleVisibilityChange);
 	window.addEventListener("pagehide", handlePageClose, { capture: true });
-	window.addEventListener("scroll", throttle(handleScroll, 1000), { capture: true });
 };

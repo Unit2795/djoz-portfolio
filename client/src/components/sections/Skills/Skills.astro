@@ -5,6 +5,7 @@ import { shuffleDeterministic } from "@/utils/shuffle";
 import Hexagon from "@/components/Icon/Hexagon.astro";
 import Section from "@/components/Section/Section.astro";
 import { sections } from "@/content";
+import { getAnalyticsAttribute } from "@/utils/analytics";
 
 const themes = [
 	{
@@ -57,7 +58,7 @@ const colorOrder = shuffleDeterministic(
 );
 ---
 
-<Section section={sections.SKILLS} solidBackground={sections.SKILLS.solidBackground}>
+<Section section={sections.SKILLS} solidBackground={sections.SKILLS.solidBackground} analyticsId="Skills">
 	<div class="mt-12">
 		<ul class="mx-auto grid grid-cols-1 gap-8 space-y-4 md:grid-cols-2 xl:grid-cols-3">
 			{
@@ -71,6 +72,11 @@ const colorOrder = shuffleDeterministic(
 								"motion-safe:hover-shimmer group relative overflow-hidden rounded-2xl border bg-gray-900/40 p-6 shadow-md/50 backdrop-blur-xs hover:shadow-2xl motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.02]",
 								theme.border,
 							]}
+							{...getAnalyticsAttribute(
+								"interact",
+								`SkillCard-${skill.name.replace(/\s+/g, "")}`,
+								sections.SKILLS.disableAnalytics,
+							)}
 						>
 							{/* Hover background color glow effect */}
 							<div

@@ -1,6 +1,8 @@
 ---
 import Quote from "@/components/Icon/Quote.astro";
+import { sections } from "@/content";
 import type { AboutMeContent } from "@/content/types";
+import { getAnalyticsAttribute } from "@/utils/analytics";
 
 interface Props {
 	about: AboutMeContent;
@@ -20,6 +22,7 @@ const descriptionId = about.aria?.description ? "intro-aboutme-description" : un
 	}}
 	aria-labelledby={headerId}
 	aria-describedby={descriptionId}
+	{...getAnalyticsAttribute("interact", `AboutMeCard`, sections.INTRO.disableAnalytics)}
 >
 	<h2 id={headerId} class="sr-only">{about.aria?.title}</h2>
 	{

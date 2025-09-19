@@ -5,6 +5,7 @@ import Section from "@/components/Section/Section.astro";
 import { sections } from "@/content";
 import Icon from "@/components/Icon/Icon.astro";
 import CopyValue from "@/components/CopyValue/CopyValue.astro";
+import { getAnalyticsAttribute } from "@/utils/analytics";
 
 const fieldClasses = "has-invalid";
 const labelClasses = "block text-md text-gray-300 mb-1 motion-safe:transition motion-safe:duration-300";
@@ -12,9 +13,11 @@ const inputClasses =
 	"w-full p-3 border rounded-lg border-gray-500 bg-transparent text-white user-invalid:border-red-500 user-invalid:text-red-600 motion-safe:transition motion-safe:duration-300";
 
 const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/contact-form";
+
+const disableAnalytics = sections.CONTACT.disableAnalytics;
 ---
 
-<Section section={sections.CONTACT} solidBackground={sections.CONTACT.solidBackground}>
+<Section section={sections.CONTACT} solidBackground={sections.CONTACT.solidBackground} analyticsId="Contact">
 	<div class="mt-6">
 		{
 			contactForm.links && contactForm.links.length > 0 && (
@@ -34,6 +37,11 @@ const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/c
 											animationFillMode: "both",
 										}}
 										target="_blank"
+										{...getAnalyticsAttribute(
+											"interact",
+											`ContactLink-${label.replace(/\s+/g, "")}`,
+											disableAnalytics,
+										)}
 									>
 										<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
 									</a>
@@ -50,6 +58,11 @@ const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/c
 											animationDelay: `${delay}ms`,
 											animationFillMode: "both",
 										}}
+										{...getAnalyticsAttribute(
+											"interact",
+											`ContactCopyVal-${label.replace(/\s+/g, "")}`,
+											disableAnalytics,
+										)}
 									>
 										<span slot="trigger">
 											<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
@@ -92,6 +105,7 @@ const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/c
 						autocomplete="name"
 						required
 						type="text"
+						{...getAnalyticsAttribute("interact", `ContactNameField`, disableAnalytics)}
 					/>
 				</div>
 				<div class={fieldClasses}>
@@ -104,6 +118,7 @@ const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/c
 						autocomplete="email"
 						required
 						type="email"
+						{...getAnalyticsAttribute("interact", `ContactEmailField`, disableAnalytics)}
 					/>
 				</div>
 				<div class={fieldClasses}>
@@ -116,12 +131,14 @@ const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/c
 						maxlength={1000}
 						minlength={12}
 						required
-						rows={4}></textarea>
+						rows={4}
+						{...getAnalyticsAttribute("interact", `ContactMessageField`, disableAnalytics)}></textarea>
 					<p class="text-right text-xs text-gray-400" aria-hidden="true">1000 characters max</p>
 				</div>
 				<button
 					class="w-full rounded-lg bg-blue-600 px-6 py-3 text-white transition duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-hidden disabled:cursor-not-allowed disabled:bg-stone-600 disabled:text-stone-300"
 					type="submit"
+					{...getAnalyticsAttribute("interact", `ContactSubmitButton`, disableAnalytics)}
 				>
 					<span class="flex items-center justify-center gap-2">
 						<Send height={16} width={16} aria-hidden />

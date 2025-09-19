@@ -19,7 +19,7 @@ resource "aws_apigatewayv2_stage" "stage" {
 
   route_settings {
     route_key              = aws_apigatewayv2_route.ingest_route.route_key
-    throttling_burst_limit = 40
+    throttling_burst_limit = 50
     throttling_rate_limit  = 10
   }
 }

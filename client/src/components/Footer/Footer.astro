@@ -1,14 +1,21 @@
 ---
 import { footer } from "@/content";
+import { getAnalyticsAttribute } from "@/utils/analytics";
 ---
 
 {
 	footer && (
 		<footer class="relative z-10 mx-8 my-14 flex flex-col items-center gap-4 text-center">
 			{footer.items &&
-				footer.items.map((item) => {
+				footer.items.map((item, index) => {
 					return item.href ? (
-						<a class="text-blue-400 underline" href={item.href} rel="noreferrer" target="_blank">
+						<a
+							class="text-blue-400 underline"
+							href={item.href}
+							rel="noreferrer"
+							target="_blank"
+							{...getAnalyticsAttribute("interact", `Footer-${index}`, footer!.disableAnalytics)}
+						>
 							{item.label}
 						</a>
 					) : (

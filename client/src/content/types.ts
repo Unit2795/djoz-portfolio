@@ -7,15 +7,17 @@ export interface Section {
 	// Human readable/formatted title for the section in the navbar
 	navTitle: string;
 	// Title that shows up on the section itself, if this is not provided, navTitle will be used
-	header?: string | null;
+	header?: string;
 	// Description that shows up under the title on the section itself
-	description?: string | null;
+	description?: string;
 	// If true, the section will have a solid background color
 	solidBackground?: boolean;
 	// If you'd like the description to be read by screenreaders, but not shown visually, set this to true
 	hideDescription?: boolean;
 	// To disable the section entirely, set this to true
 	disabled?: boolean;
+	// Disable analytics tracking for this section
+	disableAnalytics?: boolean;
 }
 
 export type Sections = Record<string, Section>;
@@ -27,24 +29,23 @@ export const sectionsArray: Section[] = Object.values(sections);
 export interface NavbarContent {
 	header?: {
 		text: string;
-		size?: string | null;
-		href?: string | null;
-		ariaLabel?: string | null;
-	} | null;
+		size?: string;
+		href?: string;
+		ariaLabel?: string;
+	};
 	moreLinks?: {
-		label?: string | null;
-		items:
-			| {
-					label: string;
-					href?: string;
-					newTab?: boolean;
-			  }[]
-			| null;
-	} | null;
-	skipLinkText?: string | null;
-	ariaLabel?: string | null;
-	hamburgerMenuAriaLabel?: string | null;
-	mobileMenuAriaLabel?: string | null;
+		label?: string;
+		items: {
+			label: string;
+			href?: string;
+			newTab?: boolean;
+		}[];
+	};
+	skipLinkText?: string;
+	ariaLabel?: string;
+	hamburgerMenuAriaLabel?: string;
+	mobileMenuAriaLabel?: string;
+	disableAnalytics?: boolean;
 }
 
 export interface IntroContent {
@@ -57,41 +58,41 @@ export interface IntroContent {
 			text: string;
 			color?: string;
 		};
-	} | null;
-	subHeading?: string | null;
+	};
+	subHeading?: string;
 	projectButton?: {
 		text: string;
 		ariaLabel?: string;
-	} | null;
+	};
 	contactButton?: {
 		text: string;
 		ariaLabel?: string;
-	} | null;
-	links?: LinkItem[] | null;
-	aboutMe: AboutMeContent | null;
+	};
+	links?: LinkItem[];
+	aboutMe?: AboutMeContent;
 }
 
 export interface AboutMeContent {
 	aria: {
 		title: string;
-		description?: string | null;
+		description?: string;
 	};
-	description: string | null;
-	quote: string | null;
+	description: string;
+	quote: string;
 	stats: {
 		items: {
 			title: string;
 			subtitle: string;
 		}[];
 		ariaLabel: string;
-	} | null;
+	};
 	highlights: {
 		ariaLabel: string;
 		items: {
 			color: string;
 			text: string;
 		}[];
-	} | null;
+	};
 }
 
 export interface ProjectItem {
@@ -103,7 +104,7 @@ export interface ProjectItem {
 }
 
 export type ProjectsContent = {
-	viewProjectText?: string | null;
+	viewProjectText?: string;
 	items: ProjectItem[];
 };
 
@@ -127,20 +128,20 @@ export interface LinkItem {
 }
 
 export interface FormStatePage {
-	icon?: IconType | null;
-	browserTitle?: string | null;
-	browserDescription?: string | null;
-	title?: string | null;
-	titleColor?: string | null;
-	message?: string | null;
-	redirectText?: string | null;
-	redirectHref?: string | null;
-	disableAutoRedirect?: boolean | null;
-	autoRedirectSeconds?: number | null;
+	icon?: IconType;
+	browserTitle?: string;
+	browserDescription?: string;
+	title?: string;
+	titleColor?: string;
+	message?: string;
+	redirectText?: string;
+	redirectHref?: string;
+	disableAutoRedirect?: boolean;
+	autoRedirectSeconds?: number;
 }
 
 export interface ContactFormContent {
-	links?: LinkItem[] | null;
+	links?: LinkItem[];
 	name: {
 		label: string;
 		placeholder: string;
@@ -165,4 +166,5 @@ export interface FooterContent {
 		label: string;
 		href?: string;
 	}[];
+	disableAnalytics?: boolean;
 }

@@ -16,8 +16,8 @@ export const description = `The personal portfolio website of ${name}`;
 
 export const keywords = "developer, software, engineer, react, typescript, terraform, devops, API";
 
-// If set to null, the availability badge will be hidden
-export const showAvailability: string | null = "Available for new opportunities!";
+// If set to undefined, the availability badge will be hidden
+export const showAvailability: string | undefined = "Available for new opportunities!";
 
 export const sections: Sections = {
 	INTRO: {
@@ -48,7 +48,7 @@ export const sections: Sections = {
 };
 
 export const navbar: NavbarContent = {
-	// Set this to null if you don't want a header in the navbar
+	// Set this to undefined if you don't want a header in the navbar
 	header: {
 		text: name,
 		// Optional size for the header, defaults to text-2xl if not provided
@@ -58,7 +58,7 @@ export const navbar: NavbarContent = {
 		href: "#top",
 		ariaLabel: "Scroll back to top of page",
 	},
-	// Set this to null if you don't want any links in the navbar
+	// Set this to undefined if you don't want any links in the navbar
 	moreLinks: {
 		label: "More",
 		items: [
@@ -81,7 +81,7 @@ export const navbar: NavbarContent = {
 };
 
 export const intro: IntroContent = {
-	// Set this to null if you don't want the heading to show up
+	// Set this to undefined if you don't want the heading to show up
 	heading: {
 		top: {
 			text: "Software That",
@@ -91,9 +91,9 @@ export const intro: IntroContent = {
 			color: "text-transparent from-primary to-secondary bg-linear-to-r bg-clip-text",
 		},
 	},
-	// Set this to null if you don't want the subheading to show up
+	// Set this to undefined if you don't want the subheading to show up
 	subHeading: "Built for users <em>and</em> developers. Quality isn't just a luxury, it's a <em>catalyst.</em>",
-	// Set these to null if you don't want the buttons to show up
+	// Set these to undefined if you don't want the buttons to show up
 	projectButton: {
 		text: "View Projects",
 		ariaLabel: "Scroll to projects section",
@@ -102,7 +102,7 @@ export const intro: IntroContent = {
 		text: "Get In Touch",
 		ariaLabel: "Scroll to contact section",
 	},
-	// Set this to null if you don't want any links to show up
+	// Set this to undefined if you don't want any links to show up
 	links: [
 		{
 			label: "Visit my GitHub profile",
@@ -126,8 +126,8 @@ export const intro: IntroContent = {
 			},
 		},
 	],
-	// Set individual fields to null if you don't want them to show up
-	// Set entire aboutMe to null if you don't want the card to show up at all
+	// Set individual fields to undefined if you don't want them to show up
+	// Set entire aboutMe to undefined if you don't want the card to show up at all
 	aboutMe: {
 		description:
 			"I'm David Jozwik, a self taught software developer that started hacking together websites for fun and made a career out of it. I've worked in a variety of industries from government to gaming as both a freelancer and full-time employee. This portfolio is a peek into my work and the philosophy behind it. <em>Welcome!</em>",
@@ -178,7 +178,7 @@ export const intro: IntroContent = {
 };
 
 export const projects: ProjectsContent = {
-	// Set this to null if you don't want the "View Project" button to show up on each project card
+	// Set this to undefined if you don't want the "View Project" button to show up on each project card
 	viewProjectText: "View Project",
 	items: [
 		{
@@ -305,7 +305,7 @@ export const contactForm: ContactFormContent = {
 			message: "Your message has been successfully submitted. I'll be in touch soon!",
 			redirectText: "Return to Home",
 			/* 
-				Optional redirect link, if value is null, will automatically detect and redirect to root of current domain "/"
+				Optional redirect link, if value is undefined, will automatically detect and redirect to root of current domain "/"
 				In development, this will always be "/" (and redirects to localhost)
 			*/
 			redirectHref: "djoz.us",
@@ -329,8 +329,8 @@ export const contactForm: ContactFormContent = {
 	},
 };
 
-// Set this to null if you don't want a footer
-export const footer: FooterContent | null = {
+// Set this to undefined if you don't want a footer
+export const footer: FooterContent | undefined = {
 	items: [
 		{
 			label: "Portfolio handcrafted with ❤️ by David Jozwik  •  Get it for yourself for free on GitHub ↗️",
@@ -341,6 +341,7 @@ export const footer: FooterContent | null = {
 			href: "https://www.whois.com/whois/djoz.us",
 		},
 	],
+	disableAnalytics: false,
 };
 
 export const copyValue = {
