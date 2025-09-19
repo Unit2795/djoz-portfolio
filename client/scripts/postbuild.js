@@ -20,10 +20,14 @@ const paths = {
 	js: join(buildRoot, "_astro"),
 };
 
+const logMessage = (message) => {
+	console.log(`\x1b[34m[POSTBUILD]\x1b[0m ${message}`);
+};
+
 (async () => {
 	const jsFiles = (await readdir(paths.js)).filter((f) => f.endsWith(".js"));
 
-	console.log(`Bundling ${jsFiles.length} JS files from ${paths.js} ...`);
+	logMessage(`Bundling ${jsFiles.length} JS files from ${paths.js} ...`);
 
 	const { outputFiles } = await esbuild.build({
 		stdin: {
@@ -42,22 +46,30 @@ const paths = {
 		treeShaking: true,
 		sourcemap: false,
 		logLevel: "info",
+		minifyWhitespace: true,
+		minifyIdentifiers: true,
+		minifySyntax: true,
 	});
 
-	console.log(`Deleting original JS files from ${paths.js} ...`);
+	logMessage(`Deleting original JS files from ${paths.js} ...`);
 
-	// Remove the original JS files and directory
-	await rm(paths.js, { recursive: true, force: true });
+	// Only delete the JS files we bundled
+	await Promise.all(jsFiles.map((f) => rm(join(paths.js, f))));
+
+	// Remove _astro directory if empty
+	if ((await readdir(paths.js)).length === 0) {
+		await rm(paths.js, { recursive: true });
+	}
 
 	const html = await readFile(paths.html, "utf8");
 	const $ = cheerio.load(html);
 
-	console.log(`Inlining bundled JS into ${paths.html} ...`);
+	logMessage(`Inlining bundled JS into ${paths.html} ...`);
 	// remove all <script src="..._astro..."> since they are now bundled and deleted
 	$('script[src*="_astro"]').remove();
 	$("head").append(`<script type="module">${outputFiles[0].text}</script>`);
 
-	console.log(`Minifying ${paths.html} ...`);
+	logMessage(`Minifying ${paths.html} ...`);
 
 	const minified = await minify($.html(), {
 		collapseWhitespace: true,
@@ -73,5 +85,5 @@ const paths = {
 	});
 
 	await writeFile(paths.html, minified);
-	console.log(`✓ Bundled ${jsFiles.length} JS files → index.html`);
+	logMessage(`✓ Bundled ${jsFiles.length} JS files → index.html`);
 })();

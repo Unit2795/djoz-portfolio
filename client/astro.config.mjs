@@ -8,6 +8,9 @@ export default defineConfig({
 	compressHTML: true,
 	vite: {
 		plugins: [tailwindcss()],
+		build: {
+			assetsInlineLimit: 100000,
+		},
 	},
 	build: {
 		inlineStylesheets: "always",
