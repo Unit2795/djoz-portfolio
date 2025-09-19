@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "bucket_name" {
-	description = "Name of the S3 bucket to store the React app"
+	description = "Name of the S3 bucket to store the app"
 	type        = string
 }
 

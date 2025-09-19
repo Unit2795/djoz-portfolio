@@ -9,12 +9,43 @@ const maxRequestsPerMonth = process.env.MONTHLY_LIMIT;
 exports.handler = async (event) => {
 	console.time();
 	try {
-		const {Item} = await dynamo.send(
+		if (event.body && event.body.length > 2000) {
+			return {
+				statusCode: 500,
+				body: JSON.stringify({
+					message: "Error processing request",
+				}),
+			};
+		}
+		
+		const body = JSON.parse(event.body);
+		const { message, name, email } = body;
+		// Validate inputs
+		if (
+			!message ||
+			message.length < 12 ||
+			message.length > 1000 ||
+			!name ||
+			name.length < 2 ||
+			name.length > 50 ||
+			!email ||
+			email.length < 5 ||
+			!email.includes("@")
+		) {
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					message: "Missing required fields: message, name, and email are required",
+				}),
+			};
+		}
+
+		const { Item } = await dynamo.send(
 			new GetCommand({
 				TableName: tableName,
 				Key: {
-					id: 1
-				}
+					id: 1,
+				},
 			})
 		);
 		console.timeEnd();
@@ -22,7 +53,7 @@ exports.handler = async (event) => {
 		const currentMonth = new Date().getUTCMonth();
 
 		// If user has exceeded 10 requests this month, deny access
-		if(Item?.count >= maxRequestsPerMonth && Item?.month === currentMonth) {
+		if (Item?.count >= maxRequestsPerMonth && Item?.month === currentMonth) {
 			console.timeEnd();
 			console.error("Exceeded max requests");
 			return { isAuthorized: false };
@@ -34,16 +65,16 @@ exports.handler = async (event) => {
 			new UpdateCommand({
 				TableName: tableName,
 				Key: {
-					id: 1
+					id: 1,
 				},
 				UpdateExpression: `SET #month = :currentMonth, #count = :newCount`,
 				ExpressionAttributeValues: {
 					":currentMonth": currentMonth,
-					":newCount": newCount
+					":newCount": newCount,
 				},
 				ExpressionAttributeNames: {
 					"#count": "count",
-					"#month": "month"
+					"#month": "month",
 				},
 			})
 		);
