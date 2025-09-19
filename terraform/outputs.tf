@@ -22,3 +22,18 @@ output "api_endpoint" {
 	description = "Endpoint of the API Gateway where the contact form is deployed"
 	value = "${aws_apigatewayv2_stage.stage.invoke_url}/contact"
 }
+
+output "ingest_endpoint" {
+	description = "Endpoint of the API Gateway where the analytics ingest function is deployed"
+	value = "${aws_apigatewayv2_stage.stage.invoke_url}/ingest"
+}
+
+output "analytics_bucket_name" {
+  value       = aws_s3_bucket.analytics.bucket
+  description = "S3 bucket for gzipped NDJSON files"
+}
+
+output "analytics_queue_url" {
+  value       = aws_sqs_queue.analytics.id
+  description = "SQS queue URL for analytics processing"
+}
