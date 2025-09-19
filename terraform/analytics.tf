@@ -130,13 +130,13 @@ resource "aws_iam_role_policy" "processor_policy" {
         Effect   = "Allow"
         Resource = "${aws_s3_bucket.analytics.arn}/*"
       },
-	  {
-          Effect   = "Allow"
-          Action   = [
-            "lambda:InvokeFunction"
-          ]
-          Resource = aws_lambda_function.processor.arn
-        }
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:InvokeFunction"
+        ]
+        Resource = aws_lambda_function.processor.arn
+      }
     ]
   })
 }
@@ -187,8 +187,9 @@ resource "aws_lambda_function" "processor" {
   runtime          = "nodejs22.x"
   filename         = data.archive_file.processor_zip.output_path
   source_code_hash = data.archive_file.processor_zip.output_base64sha256
-  timeout          = 900
-  memory_size      = 512
+  #   TODO: Revert to 900 once testing is done
+  timeout     = 120
+  memory_size = 512
 
   environment {
     variables = {
@@ -203,10 +204,12 @@ resource "aws_lambda_function" "processor" {
 	======================================================================
 	CloudWatch Event to trigger the processor lambda
 	======================================================================
+
+	TODO: Revert to once a day once testing is done
 */
 resource "aws_cloudwatch_event_rule" "processor_schedule" {
   name                = "analytics-processor-event-${var.bucket_name}"
-  schedule_expression = "cron(0 0 * * ? *)"
+  schedule_expression = "rate(10 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "processor_target" {

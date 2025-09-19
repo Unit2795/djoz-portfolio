@@ -1,4 +1,4 @@
-const { SQSClient, SendMessageBatchCommand } = require("@aws-sdk/client-sqs");
+const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs");
 
 const schemaVersion = 1;
 const RESPONSE = { statusCode: 204, body: "" };
@@ -6,15 +6,8 @@ const RESPONSE = { statusCode: 204, body: "" };
 const sqs = new SQSClient({});
 const { QUEUE_URL } = process.env;
 
-function chunk(arr, maxPerChunk) {
-	const out = [];
-	for (let i = 0; i < arr.length; i += maxPerChunk) out.push(arr.slice(i, i + maxPerChunk));
-	return out;
-}
-
 exports.handler = async (event) => {
-	// If body is larger than 64KB or less than 72 bytes, ignore it
-	if (event.body.length > 64000 || event.body.length < 72) {
+	if (event.body.length > 2000 || event.body.length < 72) {
 		console.error("Invalid body length, detected: ", event.body.length);
 		return RESPONSE;
 	}
@@ -27,9 +20,9 @@ exports.handler = async (event) => {
 		return { statusCode: 204, body: "" };
 	}
 
-	// Must be an array with 1-400 events
+	// Must be an array with 1-10 events (client should not be sending more than 11 at a time)
 	// NOTE: More advanced validation is done in the processor lambda
-	if (!Array.isArray(events) || events.length === 0 || events.length > 400) {
+	if (!Array.isArray(events) || events.length === 0 || events.length > 11) {
 		if (Array.isArray(events)) {
 			console.error("Invalid events array, detected length: ", events.length);
 		} else {
@@ -39,20 +32,24 @@ exports.handler = async (event) => {
 		return RESPONSE;
 	}
 
-	const now = Date.now();
+	const timestamp = Date.now();
+	const headers = event.headers || {};
+	const userAgent = event?.requestContext?.http?.userAgent ?? headers["user-agent"] ?? headers["User-Agent"] ?? null;
+	const ip = event?.requestContext?.http?.sourceIp ?? null;
+	const proxiedIp = headers["x-forwarded-for"] ? headers["x-forwarded-for"].split(",")[0].trim() : null;
 
-	const batches = chunk(events, 50);
-	for (const [index, arr] of batches.entries()) {
-		const entry = {
-			Id: String(index),
-			MessageBody: JSON.stringify({
-				events: arr,
-				timestamp: now,
-				schemaVersion,
-			}),
-		};
-		await sqs.send(new SendMessageBatchCommand({ QueueUrl: QUEUE_URL, Entries: [entry] }));
-	}
+	const message = {
+		QueueUrl: QUEUE_URL,
+		MessageBody: JSON.stringify({
+			events,
+			timestamp,
+			schemaVersion,
+			userAgent,
+			ip,
+			proxiedIp,
+		}),
+	};
+	await sqs.send(new SendMessageCommand(message));
 
 	return RESPONSE;
 };

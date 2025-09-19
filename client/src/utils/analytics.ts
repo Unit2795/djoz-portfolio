@@ -2,6 +2,7 @@ import { disableAnalytics } from "@/content";
 
 const analyticsEndpoint = (import.meta.env.VITE_INGEST_ENDPOINT as string) ?? "/analytics";
 const FLUSH_INTERVAL_MS = 5000; // 5 seconds
+// If this batch size is changed, be sure to adjust the ingest lambda accordingly!
 const BATCH_SIZE = 10;
 
 const events = {
