@@ -10,10 +10,22 @@ export default defineConfig({
 		plugins: [tailwindcss()],
 		build: {
 			assetsInlineLimit: 100000,
+			rollupOptions: {
+				output: {
+					compact: true,
+				},
+				treeshake: {
+					preset: "smallest",
+					moduleSideEffects: false,
+					propertyReadSideEffects: false,
+					tryCatchDeoptimization: false,
+				},
+			},
+			reportCompressedSize: false,
 		},
 	},
 	build: {
 		inlineStylesheets: "always",
-		format: "preserve",
+		format: "directory",
 	},
 });

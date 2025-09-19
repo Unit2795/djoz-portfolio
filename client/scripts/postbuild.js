@@ -10,8 +10,9 @@ import { fileURLToPath } from "node:url";
 	then inline the resulting JS into `dist/index.html`, and finally minify the HTML. This results in a single 
 	HTML file with no external dependencies, ideal for static hosting and reducing network calls for JS files.
 
-	It may be that as this projects evolves, we want to split out some JS into separate files again or this interferes
-	with functionality. When this day comes, we can remove this script and the `postbuild` step in package.json.
+	It may be that as this projects evolves, we want to split out some JS into separate files again or this script interferes
+	with functionality unexpectedly. Dynamic imports or library behavior may not work as intended after this transformation.
+	When this day comes, we can remove this script and the `postbuild` step in package.json.
 */
 
 const buildRoot = join(fileURLToPath(import.meta.url), "../../dist");
