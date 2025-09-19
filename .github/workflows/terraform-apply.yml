@@ -16,13 +16,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2  # Need at least 2 commits to compare changes
 
       # Learn more about AWS OIDC here: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_IAM_ROLE_NAME }}
           role-session-name: djoz-portfolio-session
@@ -69,13 +69,13 @@ jobs:
       - name: Setup Node.js
         # Only run if the client directory has changed, FORCE_INVALIDATION is set (for manual trigger), or TERRAFORM_CHANGED is true (terraform applied changes and we need to grab the new API endpoint)
         if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 'latest'
 
       - name: Install pnpm
         if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 'latest'
           run_install: false
