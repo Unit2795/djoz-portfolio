@@ -101,22 +101,6 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 											<span slot="trigger">
 												<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
 											</span>
-											<span slot="content">
-												<p class="text-center">
-													<span class="mb-1 block text-sm text-nowrap text-gray-300">
-														{copyValue.text ?? "Click to copy:"}
-													</span>
-
-													<span class="block">{value}</span>
-												</p>
-											</span>
-											<span slot="success">
-												<div class="flex items-center text-nowrap">
-													<CircleCheckBig class="mr-2 text-green-500" aria-hidden="true" />
-
-													<p>{copyValue.successText ?? "Copied successfully!"}</p>
-												</div>
-											</span>
 										</CopyValue>
 									</li>
 								);

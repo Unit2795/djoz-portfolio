@@ -119,7 +119,7 @@ export const intro: IntroContent = {
 			},
 		},
 		{
-			label: "Copy my email address to your clipboard",
+			label: "Copy my email",
 			value: email,
 			icon: {
 				lucide: "Mail",
@@ -272,7 +272,7 @@ export const contactForm: ContactFormContent = {
 			},
 		},
 		{
-			label: "Copy my email address to your clipboard",
+			label: "Copy my email",
 			value: email,
 			icon: {
 				lucide: "Mail",
@@ -343,11 +343,6 @@ export const footer: FooterContent | undefined = {
 		},
 	],
 	disableAnalytics: false,
-};
-
-export const copyValue = {
-	successText: "Copied successfully!",
-	text: "Click to copy:",
 };
 
 // Configure the snow effect here
