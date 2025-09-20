@@ -15,8 +15,9 @@ const tooltipId = getId();
 export type Expose = Pick<Props, "value">;
 ---
 
-<copy-value {...props<Expose>({ value })} class="inline-block noscript:hidden">
+<copy-value {...props<Expose>({ value })}>
 	<Tooltip
+		role="dialog"
 		data-copy-tooltip
 		data-success="false"
 		class="border-0 border-green-500 data-[success=true]:border [&[data-success=false]_.copy-success]:hidden [&[data-success=true]_.copy-message]:hidden"
@@ -26,34 +27,30 @@ export type Expose = Pick<Props, "value">;
 			<slot name="trigger" />
 		</button>
 		<Fragment slot="content">
-			<span class="copy-success">
+			<span class="copy-success noscript:hidden">
 				<slot name="success" />
 			</span>
-			<span class="copy-message">
+			<span class="copy-message noscript:hidden">
 				<slot name="content" />
 			</span>
+			<noscript>
+				<div class="max-w-48 p-1">
+					<label class="block text-sm text-gray-300" aria-hidden="true" for={`no-js-${tooltipId}`}>
+						{rest["aria-label"]}
+					</label>
+					<input
+						id={`no-js-${tooltipId}`}
+						type="text"
+						name="copy-value"
+						class="mt-2 w-full max-w-xl rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-gray-200 inset-shadow-sm"
+						value={value}
+						readonly
+					/>
+				</div>
+			</noscript>
 		</Fragment>
 	</Tooltip>
 </copy-value>
-
-<noscript>
-	<Tooltip role="dialog" id={tooltipId + "-noscript"}>
-		<button slot="trigger" aria-describedby={tooltipId + "-noscript"} class={rest.class} style={rest.style}>
-			<slot name="trigger" />
-		</button>
-		<Fragment slot="content">
-			<label class="mb-2 block text-sm font-medium text-gray-300"
-				><span class="pb-3 pl-1">{rest["aria-label"]}</span>
-				<input
-					type="text"
-					class="w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-gray-400"
-					value={value}
-					readonly
-				/>
-			</label>
-		</Fragment>
-	</Tooltip>
-</noscript>
 
 <script>
 	import type { Expose } from "@/components/CopyValue/CopyValue.astro";
