@@ -92,7 +92,12 @@ const disableAnalytics = sections.CONTACT.disableAnalytics;
 			)
 		}
 		<div class="mx-auto max-w-2xl p-6">
-			<form class="mb-8 space-y-6" aria-label="Contact form" method="post" action={apiEndpoint}>
+			<form
+				class="mb-8 space-y-6"
+				aria-label={contactForm.formAriaLabel ?? "Contact form"}
+				method="post"
+				action={apiEndpoint}
+			>
 				<div class={fieldClasses}>
 					<label class={labelClasses} for="name">{contactForm.name.label}</label>
 					<input

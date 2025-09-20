@@ -155,6 +155,7 @@ export interface ContactFormContent {
 		placeholder: string;
 	};
 	button: string;
+	formAriaLabel?: string;
 	statusPages?: {
 		success: FormStatePage;
 		error: FormStatePage;

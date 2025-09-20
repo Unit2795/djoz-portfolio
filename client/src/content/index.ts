@@ -292,6 +292,7 @@ export const contactForm: ContactFormContent = {
 		placeholder: "Your message here...",
 	},
 	button: "Send Message",
+	formAriaLabel: "Contact form",
 	// Customize the content of the form success and error pages
 	statusPages: {
 		success: {
