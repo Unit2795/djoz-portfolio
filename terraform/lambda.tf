@@ -23,7 +23,9 @@ resource "aws_lambda_function" "contact_function" {
 
   environment {
     variables = {
-      ADMIN_EMAIL = var.admin_email
+      ADMIN_EMAIL      = var.admin_email
+      SUCCESS_REDIRECT = "https://${var.domain_name}/form-success.html"
+      ERROR_REDIRECT   = "https://${var.domain_name}/form-error.html"
     }
   }
 }

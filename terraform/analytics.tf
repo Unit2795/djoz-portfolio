@@ -175,7 +175,7 @@ resource "aws_lambda_function" "ingest" {
 
   environment {
     variables = {
-      QUEUE_URL = aws_sqs_queue.main.id
+      QUEUE_URL = aws_sqs_queue.analytics.id
     }
   }
 }
@@ -188,12 +188,12 @@ resource "aws_lambda_function" "processor" {
   filename         = data.archive_file.processor_zip.output_path
   source_code_hash = data.archive_file.processor_zip.output_base64sha256
   #   TODO: Revert to 900 once testing is done
-  timeout     = 120
-  memory_size = 512
+  timeout     = 900
+  memory_size = 2048
 
   environment {
     variables = {
-      QUEUE_URL     = aws_sqs_queue.main.id
+      QUEUE_URL     = aws_sqs_queue.analytics.id
       BUCKET        = aws_s3_bucket.analytics.bucket
       FUNCTION_NAME = "analytics-processor-${var.bucket_name}"
     }
@@ -206,10 +206,12 @@ resource "aws_lambda_function" "processor" {
 	======================================================================
 
 	TODO: Revert to once a day once testing is done
+	cron(0 0 * * ? *)
+	rate(10 minutes)
 */
 resource "aws_cloudwatch_event_rule" "processor_schedule" {
   name                = "analytics-processor-event-${var.bucket_name}"
-  schedule_expression = "rate(10 minutes)"
+  schedule_expression = "cron(0 0 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "processor_target" {
