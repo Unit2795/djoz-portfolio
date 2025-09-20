@@ -345,6 +345,8 @@ export const footer: FooterContent | undefined = {
 	disableAnalytics: false,
 };
 
+export const copyValueSuccessMessage = "Copied";
+
 // Configure the snow effect here
 export const snowConfig = {
 	density: 20,

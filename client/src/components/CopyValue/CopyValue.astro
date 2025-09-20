@@ -1,5 +1,6 @@
 ---
 import Tooltip from "@/components/Tooltip/Tooltip.astro";
+import { copyValueSuccessMessage } from "@/content";
 import { props } from "@/utils/customEl/server";
 import { CircleCheckBig, Clipboard } from "@lucide/astro";
 import type { HTMLAttributes } from "astro/types";
@@ -12,10 +13,10 @@ const { value, ...rest } = Astro.props;
 const { getId } = Astro.locals;
 const tooltipId = getId();
 
-export type Expose = Pick<Props, "value">;
+export type Expose = Pick<Props & { copyValueSuccessMessage: string }, "value" | "copyValueSuccessMessage">;
 ---
 
-<copy-value {...props<Expose>({ value })}>
+<copy-value {...props<Expose>({ value, copyValueSuccessMessage })}>
 	<Tooltip
 		role="dialog"
 		data-copy-tooltip
@@ -62,7 +63,7 @@ export type Expose = Pick<Props, "value">;
 						role="tooltip"
 						class="copy-success-message absolute bottom-full z-10 inline-block rounded-lg border border-green-500 bg-gray-600 px-3 py-2 text-sm font-medium text-white duration-300"
 					>
-						<span>Copied!</span>
+						<span>{copyValueSuccessMessage}</span>
 						<!-- Arrow pointer connecting the popover to the message -->
 						<div
 							class="absolute -bottom-2.5 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-r border-b border-green-500 bg-gray-600"
@@ -86,6 +87,7 @@ export type Expose = Pick<Props, "value">;
 			tooltip = this.querySelector<HTMLDivElement>("[data-copy-tooltip]");
 			timeoutId: NodeJS.Timeout | null = null;
 			value = this.props.value;
+			copyValueSuccessMessage = this.props.copyValueSuccessMessage;
 
 			connectedCallback() {
 				document.addEventListener("DOMContentLoaded", () => {
@@ -113,6 +115,7 @@ export type Expose = Pick<Props, "value">;
 
 			private handleCopy() {
 				this.tooltip!.setAttribute("data-success", "true");
+				window.announce(this.copyValueSuccessMessage);
 				// Hide the success message after a delay
 				this.timeoutId = setTimeout(() => {
 					this.tooltip!.setAttribute("data-success", "false");
