@@ -13,7 +13,7 @@ const { role = "tooltip", class: className, ...rest } = Astro.props;
 		role={role}
 		class:list={[
 			/* Interactivity */
-			"block opacity-0 duration-300 group-hover:opacity-100 group-has-[:focus]:opacity-100 group-has-[:focus-visible]:opacity-100 motion-safe:transition-opacity",
+			"block opacity-0 duration-300 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100 motion-safe:transition-opacity",
 			/* Positioning */
 			"absolute left-1/2 z-10 w-max -translate-x-1/2",
 			/* Visual style of the tooltip */
