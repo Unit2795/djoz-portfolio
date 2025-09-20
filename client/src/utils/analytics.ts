@@ -114,6 +114,7 @@ class SessionManager {
 		} else {
 			this._sessionID = this._generateUUID();
 			this._cacheSessionID = this._sessionID;
+			return this._sessionID;
 		}
 	}
 }
