@@ -12,12 +12,17 @@ const { role = "tooltip", class: className, ...rest } = Astro.props;
 	<div
 		role={role}
 		class:list={[
+			/* Note:
+				It's important that we use opacity and pointer-events to hide/show the tooltip instead of display or visibility
+				so that tab focus can enter the tooltip content when it's visible. An example of this being the copy value component.
+				Which allows and input field to be focused and the value to be copied from it. This is important for No JS users.
+			*/
 			/* Default display */
-			"pointer-events-none invisible opacity-0 duration-300 motion-safe:transition-opacity",
+			"pointer-events-none opacity-0 duration-300 motion-safe:transition-opacity",
 			/* Hover Display */
-			"group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100",
-			/* Interactivity */
-			"group-has-[:focus-visible]:pointer-events-auto group-has-[:focus-visible]:visible group-has-[:focus-visible]:opacity-100",
+			"group-hover:pointer-events-auto group-hover:opacity-100",
+			/* Focus inside Display */
+			"group-has-[:focus-visible]:pointer-events-auto group-has-[:focus-visible]:opacity-100",
 			/* Positioning */
 			"absolute left-1/2 z-10 block w-max -translate-x-1/2",
 			/* Visual style of the tooltip */
