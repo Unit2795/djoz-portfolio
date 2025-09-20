@@ -308,7 +308,7 @@ export const contactForm: ContactFormContent = {
 				Optional redirect link, if value is undefined, will automatically detect and redirect to root of current domain "/"
 				In development, this will always be "/" (and redirects to localhost)
 			*/
-			redirectHref: "djoz.us",
+			redirectHref: "/",
 			autoRedirectSeconds: 10,
 			disableAutoRedirect: false,
 		},
@@ -322,7 +322,7 @@ export const contactForm: ContactFormContent = {
 			titleColor: "bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent",
 			message: `Something went wrong when trying to submit the form. Please try again later or send an email directly to <a class="text-blue-500 underline" href="mailto:${email}">${email}</a>.`,
 			redirectText: "Return to Home",
-			redirectHref: "djoz.us",
+			redirectHref: "/",
 			autoRedirectSeconds: 10,
 			disableAutoRedirect: false,
 		},
