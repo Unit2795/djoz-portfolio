@@ -4,7 +4,6 @@ import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
-	output: "static",
 	compressHTML: true,
 	vite: {
 		plugins: [tailwindcss()],
@@ -26,6 +25,6 @@ export default defineConfig({
 	},
 	build: {
 		inlineStylesheets: "always",
-		format: "directory",
+		format: "preserve",
 	},
 });
