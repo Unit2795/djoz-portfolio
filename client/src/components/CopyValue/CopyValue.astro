@@ -93,6 +93,7 @@ export type Expose = Pick<Props, "value">;
 					this.trigger?.addEventListener("click", this.handleCopy.bind(this));
 					this.tooltip?.addEventListener("click", this.handleCopy.bind(this));
 					// Ensure touch devices fire the copy event immediately instead of just activating the tooltip
+					// This is due to the way touch events work in combination with hover styles
 					this.trigger?.addEventListener("touchend", this.handleCopy.bind(this));
 
 					this.trigger?.addEventListener("blur", this.disconnectTimeout.bind(this));
