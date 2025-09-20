@@ -9,37 +9,6 @@ const maxRequestsPerMonth = process.env.MONTHLY_LIMIT;
 exports.handler = async (event) => {
 	console.time();
 	try {
-		if (event.body && event.body.length > 2000) {
-			return {
-				statusCode: 500,
-				body: JSON.stringify({
-					message: "Error processing request",
-				}),
-			};
-		}
-		
-		const body = JSON.parse(event.body);
-		const { message, name, email } = body;
-		// Validate inputs
-		if (
-			!message ||
-			message.length < 12 ||
-			message.length > 1000 ||
-			!name ||
-			name.length < 2 ||
-			name.length > 50 ||
-			!email ||
-			email.length < 5 ||
-			!email.includes("@")
-		) {
-			return {
-				statusCode: 400,
-				body: JSON.stringify({
-					message: "Missing required fields: message, name, and email are required",
-				}),
-			};
-		}
-
 		const { Item } = await dynamo.send(
 			new GetCommand({
 				TableName: tableName,

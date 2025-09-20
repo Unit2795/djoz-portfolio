@@ -22,8 +22,19 @@ const { QUEUE_URL, BUCKET, FUNCTION_NAME } = process.env;
 // delete in chunks of 10
 async function deleteAll(QueueUrl, receipts) {
 	for (let i = 0; i < receipts.length; i += 10) {
-		const Entries = receipts.slice(i, i + 10).map((r) => ({ Id: i, ReceiptHandle: r }));
-		await sqs.send(new DeleteMessageBatchCommand({ QueueUrl, Entries }));
+		const chunk = receipts.slice(i, i + 10);
+		const Entries = chunk.map((r, j) => ({
+			Id: String(i + j), // unique per entry in this request AND a string
+			ReceiptHandle: r,
+		}));
+
+		const resp = await sqs.send(new DeleteMessageBatchCommand({ QueueUrl, Entries }));
+
+		// (optional but recommended) detect partial failures
+		if (resp.Failed && resp.Failed.length) {
+			console.warn("DeleteMessageBatch partial failures:", resp.Failed);
+			// you can selectively retry resp.Failed[k].ReceiptHandle if desired
+		}
 	}
 }
 
@@ -61,13 +72,13 @@ exports.handler = async (event, context) => {
 			receipts.push(m.ReceiptHandle);
 			try {
 				const body = JSON.parse(m.Body);
-				const { events, schemaVersion, timestamp, userAgent, ip, proxiedIp } = body;
-				if (!Array.isArray(body.events) || body.events.length === 0) {
+				const { events: bodyEvents, schemaVersion, timestamp, userAgent, ip, proxiedIp } = body;
+				if (!Array.isArray(bodyEvents) || bodyEvents.length === 0) {
 					// skip invalid messages
 					continue;
 				}
 
-				for (const item of events) {
+				for (const item of bodyEvents) {
 					// Invalid event structure
 					if (typeof item !== "object" || item === null) {
 						console.log("Invalid event structure");
@@ -80,7 +91,7 @@ exports.handler = async (event, context) => {
 						continue;
 					}
 					// Invalid metadata
-					if (m && (typeof m !== "string" || m.length > 50)) {
+					if (m && (typeof m !== "string" || m.length > 256)) {
 						console.log("Invalid metadata");
 						continue;
 					}
