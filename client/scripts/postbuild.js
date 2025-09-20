@@ -73,7 +73,6 @@ const logMessage = (message) => {
 	logMessage(`Minifying ${paths.html} ...`);
 
 	const minified = await minify($.html(), {
-		collapseWhitespace: true,
 		removeComments: true,
 		minifyCSS: true,
 		minifyJS: true,
