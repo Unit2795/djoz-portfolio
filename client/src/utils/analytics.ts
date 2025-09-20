@@ -31,6 +31,95 @@ interface AnalyticsEvent {
 const eventQueue: AnalyticsEvent[] = [];
 let timer: NodeJS.Timeout | null = null;
 
+// Safely get user and session IDs by leveraging localStorage and sessionStorage if available
+class SessionManager {
+	private hasLocalStorage = false;
+	private hasSessionStorage = false;
+	private _sessionID: string | null = null;
+
+	private _cacheUserID: string | null = null;
+	private _cacheSessionID: string | null = null;
+
+	constructor() {
+		this._checkStorage();
+	}
+
+	_checkStorage() {
+		this.hasLocalStorage = this._isAvailable("localStorage");
+		this.hasSessionStorage = this._isAvailable("sessionStorage");
+	}
+
+	// Test if storage API is available and functional
+	_isAvailable(type: "localStorage" | "sessionStorage") {
+		try {
+			const storage = window[type];
+			const testKey = "__storage_test__";
+			const testValue = "test";
+			storage.setItem(testKey, testValue);
+			const value = storage.getItem(testKey);
+			storage.removeItem(testKey);
+			return value === testValue;
+		} catch {
+			return false;
+		}
+	}
+
+	// Generate a UUID using crypto API if available, otherwise fallback to timestamp and random number
+	_generateUUID() {
+		if (typeof window === "undefined") return "server";
+		if (typeof crypto === "undefined" || typeof crypto.randomUUID !== "function")
+			return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+		if (crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+
+		return "uuidfailed";
+	}
+
+	get userID() {
+		if (this._cacheUserID) return this._cacheUserID;
+		try {
+			if (this.hasLocalStorage) {
+				const item = localStorage.getItem("userID");
+				if (item) {
+					this._cacheUserID = item;
+					return item;
+				} else {
+					const newID = this._generateUUID();
+					localStorage.setItem("userID", newID);
+					this._cacheUserID = newID;
+					return newID;
+				}
+			} else {
+				this._cacheUserID = "no-local-storage";
+				return "nolocalstorage";
+			}
+		} catch {
+			this._cacheUserID = "localstorageerror";
+			return "localstorageerror";
+		}
+	}
+
+	get sessionID() {
+		if (this._cacheSessionID) return this._cacheSessionID;
+		if (this.hasSessionStorage) {
+			const item = sessionStorage.getItem("sessionID");
+			if (item) {
+				this._cacheSessionID = item;
+				return item;
+			} else {
+				const newID = this._generateUUID();
+				sessionStorage.setItem("sessionID", newID);
+				this._cacheSessionID = newID;
+				return newID;
+			}
+		} else {
+			this._sessionID = this._generateUUID();
+			this._cacheSessionID = this._sessionID;
+		}
+	}
+}
+
+const sessionManager = new SessionManager();
+
 // Add an analytics event to the queue and flush if batch size reached
 export const analyticsEvent = (eventName: EventName, memo?: string) => {
 	eventQueue.push(createEvent(eventName, memo));
@@ -124,8 +213,8 @@ function attachInteractionHandlers() {
 const createEvent = (eventName: EventName, memo?: string): AnalyticsEvent => ({
 	// ⚠️If the AnalyticsEvent schema changes, be sure to adjust the ingest lambda accordingly!
 	e: eventName,
-	u: localStorage.getItem("userId"),
-	s: sessionStorage.getItem("sessionId"),
+	u: sessionManager.userID,
+	s: sessionManager.sessionID,
 	m: memo,
 });
 
@@ -153,19 +242,16 @@ const flushEvents = () => {
 };
 
 export const initAnalytics = () => {
-	sessionStorage.setItem("sessionId", crypto.randomUUID());
-	if (!localStorage.getItem("userId")) {
-		localStorage.setItem("userId", crypto.randomUUID());
-	}
+	document.addEventListener("DOMContentLoaded", () => {
+		// Send initial visit event
+		sendImmediateEvent(events.visit);
 
-	// Send initial visit event
-	sendImmediateEvent(events.visit);
+		// Start the flush timer
+		timer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
 
-	// Start the flush timer
-	timer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
+		attachInteractionHandlers();
 
-	attachInteractionHandlers();
-
-	document.addEventListener("visibilitychange", handleVisibilityChange);
-	window.addEventListener("pagehide", handlePageClose, { capture: true });
+		document.addEventListener("visibilitychange", handleVisibilityChange);
+		window.addEventListener("pagehide", handlePageClose, { capture: true });
+	});
 };
