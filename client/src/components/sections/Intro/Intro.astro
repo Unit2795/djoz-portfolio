@@ -9,7 +9,7 @@ import { copyValue, intro, sections } from "@/content";
 import { getAnalyticsAttribute } from "@/utils/analytics";
 import { CircleCheckBig, ChevronDown } from "@lucide/astro";
 
-const { aboutMe, contactButton, projectButton, links, heading, subHeading, disableAnalytics } = intro;
+const { aboutMe, contactButton, projectButton, links, heading, subHeading } = intro;
 
 const headerId = heading ? "intro-tagline-header" : undefined;
 const descriptionId = subHeading ? "intro-tagline-description" : undefined;
@@ -74,7 +74,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 											{...getAnalyticsAttribute(
 												"interact",
 												`IntroLink-${label.replace(/\s+/g, "")}`,
-												disableAnalytics,
+												sections.INTRO.disableAnalytics,
 											)}
 										>
 											<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
@@ -95,7 +95,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 											{...getAnalyticsAttribute(
 												"interact",
 												`IntroCopyVal-${label.replace(/\s+/g, "")}`,
-												disableAnalytics,
+												sections.INTRO.disableAnalytics,
 											)}
 										>
 											<span slot="trigger">
@@ -139,7 +139,11 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 									animationDelay: "500ms",
 									animationFillMode: "both",
 								}}
-								{...getAnalyticsAttribute("interact", `ScrollToProjects`, disableAnalytics)}
+								{...getAnalyticsAttribute(
+									"interact",
+									`ScrollToProjects`,
+									sections.INTRO.disableAnalytics,
+								)}
 							>
 								<span class="pr-2" aria-hidden>
 									{projectButton.text}
@@ -162,7 +166,11 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 									animationDelay: "750ms",
 									animationFillMode: "both",
 								}}
-								{...getAnalyticsAttribute("interact", `ScrollToContact`, disableAnalytics)}
+								{...getAnalyticsAttribute(
+									"interact",
+									`ScrollToContact`,
+									sections.INTRO.disableAnalytics,
+								)}
 							>
 								{contactButton.text}
 							</GlassButton>
