@@ -119,7 +119,7 @@ export const intro: IntroContent = {
 			},
 		},
 		{
-			label: "Click or press enter to copy my email address to your clipboard",
+			label: "Copy my email address to your clipboard",
 			value: email,
 			icon: {
 				lucide: "Mail",
@@ -272,7 +272,7 @@ export const contactForm: ContactFormContent = {
 			},
 		},
 		{
-			label: "Click or press enter to copy my email address to your clipboard",
+			label: "Copy my email address to your clipboard",
 			value: email,
 			icon: {
 				lucide: "Mail",

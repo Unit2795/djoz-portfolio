@@ -1,5 +1,6 @@
 ---
 import Tooltip from "@/components/Tooltip/Tooltip.astro";
+import { copyValue } from "@/content";
 import { props } from "@/utils/customEl/server";
 import type { HTMLAttributes } from "astro/types";
 
@@ -14,11 +15,11 @@ const tooltipId = getId();
 export type Expose = Pick<Props, "value">;
 ---
 
-<copy-value {...props<Expose>({ value })}>
+<copy-value {...props<Expose>({ value })} class="inline-block noscript:hidden">
 	<Tooltip
 		data-copy-tooltip
 		data-success="false"
-		class={"[&[data-success=false]_.copy-success]:hidden [&[data-success=true]_.copy-message]:hidden data-[success=true]:border border-green-500 border-0"}
+		class="border-0 border-green-500 data-[success=true]:border [&[data-success=false]_.copy-success]:hidden [&[data-success=true]_.copy-message]:hidden"
 		id={tooltipId}
 	>
 		<button data-copy-trigger slot="trigger" aria-describedby={tooltipId} {...rest}>
@@ -34,6 +35,25 @@ export type Expose = Pick<Props, "value">;
 		</Fragment>
 	</Tooltip>
 </copy-value>
+
+<noscript>
+	<Tooltip role="dialog" id={tooltipId + "-noscript"}>
+		<button slot="trigger" aria-describedby={tooltipId + "-noscript"} class={rest.class} style={rest.style}>
+			<slot name="trigger" />
+		</button>
+		<Fragment slot="content">
+			<label class="mb-2 block text-sm font-medium text-gray-300"
+				><span class="pb-3 pl-1">{rest["aria-label"]}</span>
+				<input
+					type="text"
+					class="w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-gray-400"
+					value={value}
+					readonly
+				/>
+			</label>
+		</Fragment>
+	</Tooltip>
+</noscript>
 
 <script>
 	import type { Expose } from "@/components/CopyValue/CopyValue.astro";
