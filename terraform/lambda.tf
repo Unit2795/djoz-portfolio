@@ -14,7 +14,7 @@ resource "aws_lambda_function" "contact_function" {
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   timeout          = 10
-  memory_size      = 128
+  memory_size      = 2048
   handler          = "index.handler"
   runtime          = "nodejs22.x"
   architectures    = ["arm64"]
@@ -74,6 +74,23 @@ resource "aws_iam_role_policy" "lambda_ses" {
   })
 }
 
+resource "aws_iam_role_policy" "contact_ddb_access" {
+  role = aws_iam_role.lambda_exec.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = [
+        "dynamodb:UpdateItem",
+        "dynamodb:GetItem",
+        "dynamodb:PutItem"
+      ]
+      Effect   = "Allow"
+      Resource = aws_dynamodb_table.api_quota.arn
+    }]
+  })
+}
+
 resource "aws_lambda_permission" "api" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
@@ -104,7 +121,7 @@ resource "aws_lambda_function" "quota_authorizer" {
   handler          = "auth.handler"
   runtime          = "nodejs22.x"
   architectures    = ["arm64"]
-  memory_size      = 128
+  memory_size      = 1024
 
   environment {
     variables = {
@@ -145,9 +162,7 @@ resource "aws_iam_role_policy" "dynamodb_access" {
     Version = "2012-10-17"
     Statement = [{
       Action = [
-        "dynamodb:UpdateItem",
-        "dynamodb:GetItem",
-        "dynamodb:PutItem"
+        "dynamodb:GetItem"
       ]
       Effect   = "Allow"
       Resource = aws_dynamodb_table.api_quota.arn
@@ -179,7 +194,7 @@ resource "aws_lambda_function" "stamp_function" {
   filename         = data.archive_file.stamp_zip.output_path
   source_code_hash = data.archive_file.stamp_zip.output_base64sha256
   timeout          = 3
-  memory_size      = 128
+  memory_size      = 512
   handler          = "stamp.handler"
   runtime          = "nodejs22.x"
   architectures    = ["arm64"]
