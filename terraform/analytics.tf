@@ -171,7 +171,7 @@ resource "aws_lambda_function" "ingest" {
   filename         = data.archive_file.ingest_zip.output_path
   source_code_hash = data.archive_file.ingest_zip.output_base64sha256
   timeout          = 3
-  memory_size      = 128
+  memory_size      = 256
 
   environment {
     variables = {
@@ -187,9 +187,8 @@ resource "aws_lambda_function" "processor" {
   runtime          = "nodejs22.x"
   filename         = data.archive_file.processor_zip.output_path
   source_code_hash = data.archive_file.processor_zip.output_base64sha256
-  #   TODO: Revert to 900 once testing is done
-  timeout     = 900
-  memory_size = 2048
+  timeout          = 900
+  memory_size      = 2048
 
   environment {
     variables = {
@@ -204,10 +203,6 @@ resource "aws_lambda_function" "processor" {
 	======================================================================
 	CloudWatch Event to trigger the processor lambda
 	======================================================================
-
-	TODO: Revert to once a day once testing is done
-	cron(0 0 * * ? *)
-	rate(10 minutes)
 */
 resource "aws_cloudwatch_event_rule" "processor_schedule" {
   name                = "analytics-processor-event-${var.bucket_name}"
