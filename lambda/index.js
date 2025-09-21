@@ -32,7 +32,7 @@ exports.handler = async (event) => {
 		const accept = formData.get("accept");
 
 		// If honeypot fields are filled, fail softly and redirect to success page
-		if (!honeypotDisabled && (!phone || name || accept)) {
+		if (!honeypotDisabled && (phone || name || accept)) {
 			return {
 				statusCode: 303,
 				headers: {
@@ -72,7 +72,7 @@ exports.handler = async (event) => {
 			Message: {
 				Body: {
 					Text: {
-						Data: `New Portfolio Contact Form Submission\n\n\nFrom:\n${name} (${email})\n\n\nMessage:\n${message}\n\n\nUser Agent:\n${userAgent}\n\n\nIP Address:\n${ip}\n\n\nProxied IP Address:\n${proxiedIp}\n`,
+						Data: `New Portfolio Contact Form Submission\n\n\nFrom:\n${email}\n\n\nMessage:\n${message}\n\n\nUser Agent:\n${userAgent}\n\n\nIP Address:\n${ip}\n\n\nProxied IP Address:\n${proxiedIp}\n`,
 					},
 				},
 				Subject: {
@@ -85,8 +85,9 @@ exports.handler = async (event) => {
 		// Send email using SES
 		await sesClient.send(new SendEmailCommand(params));
 
-		// Update max requests quota. If month has changed, reset count to 1
-		const newCount = Item?.month === currentMonth ? Item.count + 1 : 1;
+		const newCount = event?.requestContext?.authorizer?.newCount;
+		const currentMonth = event?.requestContext?.authorizer?.currentMonth;
+
 		await dynamo.send(
 			new UpdateCommand({
 				TableName: tableName,

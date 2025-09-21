@@ -2,10 +2,11 @@ resource "aws_apigatewayv2_api" "api" {
   name          = "contact-me-api-${var.bucket_name}"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_origins = ["https://${var.domain_name}", "https://www.${var.domain_name}"]
-    allow_methods = ["POST", "OPTIONS"]
-    allow_headers = ["content-type"]
-    max_age       = 3600
+    allow_origins     = ["https://${var.domain_name}", "https://www.${var.domain_name}"]
+    allow_methods     = ["POST", "GET", "OPTIONS"]
+    allow_headers     = ["content-type"]
+    allow_credentials = true
+    max_age           = 3600
   }
 }
 
@@ -76,8 +77,8 @@ resource "aws_apigatewayv2_integration" "stamp" {
 }
 
 resource "aws_apigatewayv2_route" "stamp" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "GET /api/stamp"
-  target    = "integrations/${aws_apigatewayv2_integration.stamp.id}"
+  api_id             = aws_apigatewayv2_api.api.id
+  route_key          = "GET /api/stamp.gif"
+  target             = "integrations/${aws_apigatewayv2_integration.stamp.id}"
   authorization_type = "NONE"
 }

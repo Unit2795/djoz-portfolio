@@ -1,11 +1,13 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, UpdateCommand, GetCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
+const { createHmac } = require("crypto");
 
 const tableName = process.env.TABLE_NAME;
 const maxRequestsPerMonth = process.env.MONTHLY_LIMIT;
 const SECRET = process.env.HMAC_SECRET;
 const MIN_DWELL_MS = process.env.MIN_DWELL * 1000;
 const MAX_DWELL_MS = process.env.MAX_DWELL * 1000;
+const COOKIE_NAME = process.env.COOKIE_NAME || "stamp";
 
 const client = new DynamoDBClient({});
 const dynamo = DynamoDBDocumentClient.from(client);
@@ -22,13 +24,13 @@ function verifyCookie(event) {
 			return [key, decodeURIComponent(v.join("="))];
 		})
 	);
-	const cookie = cookies[process.env.COOKIE_NAME || "stamp"];
+	const cookie = cookies[COOKIE_NAME];
 	if (!cookie) return { ok: false, reason: "missing" };
 
 	const [timestampString, signature] = cookie.split(".");
 	if (!timestampString || !signature) return { ok: false, reason: "bad-format" };
 
-	const expect = base64url(crypto.createHmac("sha256", SECRET).update(timestampString).digest());
+	const expect = base64url(createHmac("sha256", SECRET).update(timestampString).digest());
 	if (signature !== expect) return { ok: false, reason: "bad-signature" };
 
 	const timestamp = Number(timestampString);
@@ -66,7 +68,10 @@ exports.handler = async (event) => {
 			return { isAuthorized: false };
 		}
 
-		return { isAuthorized: true };
+		// Update max requests quota. If month has changed, reset count to 1
+		const newCount = Item?.month === currentMonth ? Item.count + 1 : 1;
+
+		return { isAuthorized: true, context: { newCount, currentMonth } };
 	} catch (error) {
 		console.error(error);
 		return { isAuthorized: false };

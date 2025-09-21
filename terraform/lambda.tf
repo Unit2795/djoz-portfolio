@@ -113,6 +113,7 @@ resource "aws_lambda_function" "quota_authorizer" {
       MIN_DWELL     = var.min_dwell_seconds
       MAX_DWELL     = var.max_dwell_seconds
       HMAC_SECRET   = var.hmac_secret
+      COOKIE_NAME   = var.dwell_cookie_name
     }
   }
 }
@@ -219,5 +220,5 @@ resource "aws_lambda_permission" "stamp_api" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.stamp_function.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/api/stamp"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/api/stamp.gif"
 }
