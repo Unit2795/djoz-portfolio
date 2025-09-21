@@ -279,10 +279,6 @@ export const contactForm: ContactFormContent = {
 			},
 		},
 	],
-	name: {
-		label: "Name",
-		placeholder: "John Doe",
-	},
 	email: {
 		label: "Email",
 		placeholder: "john@example.com",
@@ -369,3 +365,7 @@ export const disableDynamicNavbar = false;
 // Set this to true if you want to disable analytics features.
 // NOTE!: Remember to also update your terraform variables to also disable deploying analytics infrastructure!
 export const disableAnalytics = false;
+// Set this to true if you want to disable the honeypot anti-spam feature on the contact form. If you disable this and also use the terraform deploy, ensure that you update the disable honeypot variable to 'true'.
+export const disableHoneypot = false;
+// Set this to true if you want to disable the dwell time cookie feature on the contact form. If you disable this and also use the terraform deploy, ensure that you update the dwell cookie name variable to empty.
+export const disableDwellCookie = false;

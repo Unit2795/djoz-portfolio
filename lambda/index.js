@@ -1,6 +1,13 @@
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, UpdateCommand, GetCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
+
+const tableName = process.env.TABLE_NAME;
+const honeypotDisabled = process.env.IS_HONEYPOT_DISABLED === "true";
 
 const sesClient = new SESClient({ region: "us-east-1" });
+const client = new DynamoDBClient({});
+const dynamo = DynamoDBDocumentClient.from(client);
 
 exports.handler = async (event) => {
 	try {
@@ -17,18 +24,28 @@ exports.handler = async (event) => {
 
 		// Parse form data
 		const formData = new URLSearchParams(event.isBase64Encoded ? Buffer.from(body, "base64").toString() : body);
-		const message = formData.get("message");
-		const name = formData.get("name");
 		const email = formData.get("email");
+		const message = formData.get("message");
+		// Honeypot fields
+		const phone = formData.get("phone");
+		const name = formData.get("name");
+		const accept = formData.get("accept");
+
+		// If honeypot fields are filled, fail softly and redirect to success page
+		if (!honeypotDisabled && (!phone || name || accept)) {
+			return {
+				statusCode: 303,
+				headers: {
+					Location: process.env.SUCCESS_REDIRECT,
+				},
+			};
+		}
 
 		// Validate inputs
 		if (
 			!message ||
 			message.length < 12 ||
 			message.length > 1000 ||
-			!name ||
-			name.length < 2 ||
-			name.length > 50 ||
 			!email ||
 			email.length < 5 ||
 			!email.includes("@")
@@ -67,6 +84,26 @@ exports.handler = async (event) => {
 
 		// Send email using SES
 		await sesClient.send(new SendEmailCommand(params));
+
+		// Update max requests quota. If month has changed, reset count to 1
+		const newCount = Item?.month === currentMonth ? Item.count + 1 : 1;
+		await dynamo.send(
+			new UpdateCommand({
+				TableName: tableName,
+				Key: {
+					id: 1,
+				},
+				UpdateExpression: `SET #month = :currentMonth, #count = :newCount`,
+				ExpressionAttributeValues: {
+					":currentMonth": currentMonth,
+					":newCount": newCount,
+				},
+				ExpressionAttributeNames: {
+					"#count": "count",
+					"#month": "month",
+				},
+			})
+		);
 
 		return {
 			statusCode: 303,

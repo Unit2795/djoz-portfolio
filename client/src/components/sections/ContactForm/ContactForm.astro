@@ -1,6 +1,6 @@
 ---
-import { contactForm, copyValue } from "@/content";
-import { CircleCheckBig, Send } from "@lucide/astro";
+import { contactForm, disableHoneypot } from "@/content";
+import { Send } from "@lucide/astro";
 import Section from "@/components/Section/Section.astro";
 import { sections } from "@/content";
 import Icon from "@/components/Icon/Icon.astro";
@@ -82,21 +82,31 @@ const disableAnalytics = sections.CONTACT.disableAnalytics;
 				method="post"
 				action={apiEndpoint}
 			>
-				<div class={fieldClasses}>
-					<label class={labelClasses} for="name">{contactForm.name.label}</label>
-					<input
-						class={inputClasses}
-						id="name"
-						maxlength={50}
-						minlength={2}
-						name="name"
-						placeholder={contactForm.name.placeholder}
-						autocomplete="name"
-						required
-						type="text"
-						{...getAnalyticsAttribute("interact", `ContactNameField`, disableAnalytics)}
-					/>
-				</div>
+				{
+					!disableHoneypot && (
+						<div inert class="sneaky-wrapper">
+							{/* Honeypot fields - If you change these fields, ensure that you also update the contact lambda */}
+							<div>
+								<label for="phone">Phone</label>
+								<input
+									id="phone"
+									name="phone"
+									type="tel"
+									autocomplete="off"
+									placeholder="123-456-7890"
+								/>
+							</div>
+							<div>
+								<label for="name">Name</label>
+								<input id="name" name="name" type="text" autocomplete="off" placeholder="John Doe" />
+							</div>
+							<div>
+								<label for="accept">Accept</label>
+								<input id="accept" name="accept" type="checkbox" autocomplete="off" />
+							</div>
+						</div>
+					)
+				}
 				<div class={fieldClasses}>
 					<label class={labelClasses} for="email">{contactForm.email.label}</label>
 					<input
@@ -138,3 +148,18 @@ const disableAnalytics = sections.CONTACT.disableAnalytics;
 		</div>
 	</div>
 </Section>
+<style>
+	/* Honeypot field style */
+	.sneaky-wrapper {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		border: 0;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+</style>

@@ -74,7 +74,7 @@ resource "aws_lambda_permission" "apigw_invoke_ingest" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.ingest.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/ingest"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/api/ingest"
 }
 
 resource "aws_iam_role_policy_attachment" "ingest_basic" {

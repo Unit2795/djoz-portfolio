@@ -142,10 +142,6 @@ export interface FormStatePage {
 
 export interface ContactFormContent {
 	links?: LinkItem[];
-	name: {
-		label: string;
-		placeholder: string;
-	};
 	email: {
 		label: string;
 		placeholder: string;
