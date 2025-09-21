@@ -11,7 +11,7 @@ resource "aws_apigatewayv2_api" "api" {
 
 resource "aws_apigatewayv2_stage" "stage" {
   api_id      = aws_apigatewayv2_api.api.id
-  name        = "prod"
+  name        = "$default"
   auto_deploy = true
 
   default_route_settings {
@@ -36,7 +36,7 @@ resource "aws_apigatewayv2_integration" "lambda" {
 
 resource "aws_apigatewayv2_route" "route" {
   api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /contact"
+  route_key = "POST /api/contact"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 
   authorization_type = "CUSTOM"
@@ -62,7 +62,7 @@ resource "aws_apigatewayv2_integration" "ingest" {
 
 resource "aws_apigatewayv2_route" "ingest_route" {
   api_id             = aws_apigatewayv2_api.api.id
-  route_key          = "POST /ingest"
+  route_key          = "POST /api/ingest"
   target             = "integrations/${aws_apigatewayv2_integration.ingest.id}"
   authorization_type = "NONE"
 }
