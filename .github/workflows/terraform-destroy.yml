@@ -9,8 +9,8 @@ on:
         type: string
 
 permissions:
-    id-token: write # This is required for requesting the AWS OIDC JWT
-    contents: read # This is required for actions/checkout and AWS OIDC JWT
+  id-token: write # This is required for requesting the AWS OIDC JWT
+  contents: read # This is required for actions/checkout and AWS OIDC JWT
 
 jobs:
   terraform_destroy:
@@ -18,7 +18,6 @@ jobs:
 
     # Additional safety check
     if: github.event.inputs.confirm_destroy == 'DESTROY'
-
 
     steps:
       - name: Checkout repository
@@ -44,3 +43,11 @@ jobs:
           terraform init -backend-config=state.config
           terraform plan
           terraform destroy -auto-approve -input=false
+
+      # Assuming the Terraform destroy was successful, clean up the CloudFormation stack used for the TF state backend
+      - name: Destroy CloudFormation TF State Backend
+        if: ${{ success() }}
+        working-directory: ./terraform/bootstrap
+        run: |
+          chmod +x ./delete-stack.sh
+          ./delete-stack.sh
