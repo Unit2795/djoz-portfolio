@@ -39,18 +39,7 @@ resource "aws_apigatewayv2_route" "route" {
   api_id    = aws_apigatewayv2_api.api.id
   route_key = "POST /api/contact"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-
-  authorization_type = "CUSTOM"
-  authorizer_id      = aws_apigatewayv2_authorizer.quota.id
-}
-
-resource "aws_apigatewayv2_authorizer" "quota" {
-  api_id                            = aws_apigatewayv2_api.api.id
-  authorizer_type                   = "REQUEST"
-  authorizer_uri                    = aws_lambda_function.quota_authorizer.invoke_arn
-  name                              = "quota-authorizer-${var.bucket_name}"
-  authorizer_payload_format_version = "2.0"
-  enable_simple_responses           = true
+  authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_integration" "ingest" {

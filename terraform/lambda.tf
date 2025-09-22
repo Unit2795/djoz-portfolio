@@ -29,6 +29,11 @@ resource "aws_lambda_function" "contact_function" {
       ERROR_REDIRECT       = "https://${var.domain_name}/form-error.html"
       TABLE_NAME           = aws_dynamodb_table.api_quota.name
       IS_HONEYPOT_DISABLED = var.disable_honeypot
+      MONTHLY_LIMIT        = var.contact_max
+      MIN_DWELL            = var.min_dwell_seconds
+      MAX_DWELL            = var.max_dwell_seconds
+      HMAC_SECRET          = var.hmac_secret
+      COOKIE_NAME          = var.dwell_cookie_name
     }
   }
 }
@@ -97,85 +102,6 @@ resource "aws_lambda_permission" "api" {
   function_name = aws_lambda_function.contact_function.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/api/contact"
-}
-
-
-
-/*
-	======================================================================
-	AUTHORIZER LAMBDA
-	======================================================================
-*/
-data "archive_file" "authorizer_zip" {
-  type        = "zip"
-  source_file = "${path.cwd}/../lambda/auth.js"
-  output_path = "${path.module}/../lambda/auth_function.zip"
-}
-
-resource "aws_lambda_function" "quota_authorizer" {
-  function_name    = "authorizer-${var.bucket_name}"
-  filename         = data.archive_file.authorizer_zip.output_path
-  source_code_hash = data.archive_file.authorizer_zip.output_base64sha256
-  role             = aws_iam_role.authorizer_role.arn
-  timeout          = 5
-  handler          = "auth.handler"
-  runtime          = "nodejs22.x"
-  architectures    = ["arm64"]
-  memory_size      = 1024
-
-  environment {
-    variables = {
-      TABLE_NAME    = aws_dynamodb_table.api_quota.name
-      MONTHLY_LIMIT = var.contact_max
-      MIN_DWELL     = var.min_dwell_seconds
-      MAX_DWELL     = var.max_dwell_seconds
-      HMAC_SECRET   = var.hmac_secret
-      COOKIE_NAME   = var.dwell_cookie_name
-    }
-  }
-}
-
-resource "aws_iam_role" "authorizer_role" {
-  name = "authorizer-role-${var.bucket_name}"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "lambda.amazonaws.com"
-      }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "auth_basic" {
-  role       = aws_iam_role.authorizer_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy" "dynamodb_access" {
-  role = aws_iam_role.authorizer_role.name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = [
-        "dynamodb:GetItem"
-      ]
-      Effect   = "Allow"
-      Resource = aws_dynamodb_table.api_quota.arn
-    }]
-  })
-}
-
-resource "aws_lambda_permission" "auth_api" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.quota_authorizer.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
 
 /*
