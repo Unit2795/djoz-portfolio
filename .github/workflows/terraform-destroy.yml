@@ -8,6 +8,10 @@ on:
         required: true
         type: string
 
+permissions:
+    id-token: write # This is required for requesting the AWS OIDC JWT
+    contents: read # This is required for actions/checkout and AWS OIDC JWT
+
 jobs:
   terraform_destroy:
     runs-on: ubuntu-latest
