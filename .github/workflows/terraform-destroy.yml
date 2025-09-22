@@ -41,8 +41,8 @@ jobs:
         working-directory: ./terraform
         run: |
           terraform init -backend-config=state.config
-          terraform plan
-          terraform destroy -auto-approve -input=false
+          terraform plan -lock=false
+          terraform destroy -auto-approve -input=false -lock=false
 
       # Assuming the Terraform destroy was successful, clean up the CloudFormation stack used for the TF state backend
       - name: Destroy CloudFormation TF State Backend
