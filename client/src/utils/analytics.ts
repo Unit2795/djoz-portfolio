@@ -1,6 +1,6 @@
 import { disableAnalytics } from "@/content";
 
-const analyticsEndpoint = (import.meta.env.PUBLIC_API_INGEST_ENDPOINT as string) ?? "/analytics";
+const analyticsEndpoint = (import.meta.env.PUBLIC_API_INGEST_ENDPOINT as string) ?? "/api/ingest";
 const FLUSH_INTERVAL_MS = 5000; // 5 seconds
 // If this batch size is changed, be sure to adjust the ingest lambda accordingly!
 const BATCH_SIZE = 10;
@@ -226,7 +226,21 @@ const sendEvents = async (events: AnalyticsEvent[], useBeacon = false) => {
 	const payload = JSON.stringify({ events });
 
 	if (useBeacon) {
-		return navigator.sendBeacon(analyticsEndpoint, payload);
+		// Give the server a JSON Content-Type even though we can't set headers
+		const blob = new Blob([payload], { type: "application/json; charset=UTF-8" });
+		const queued = navigator.sendBeacon(analyticsEndpoint, blob);
+
+		// If the beacon queue rejects (too big), fall back to fetch
+		if (!queued) {
+			return fetch(analyticsEndpoint, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: payload,
+				keepalive: true,
+			});
+		}
+
+		return;
 	}
 
 	return fetch(analyticsEndpoint, {
@@ -243,16 +257,14 @@ const flushEvents = () => {
 };
 
 export const initAnalytics = () => {
-	document.addEventListener("DOMContentLoaded", () => {
-		// Send initial visit event
-		sendImmediateEvent(events.visit);
+	// Send initial visit event
+	sendImmediateEvent(events.visit);
 
-		// Start the flush timer
-		timer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
+	// Start the flush timer
+	timer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
 
-		attachInteractionHandlers();
+	attachInteractionHandlers();
 
-		document.addEventListener("visibilitychange", handleVisibilityChange);
-		window.addEventListener("pagehide", handlePageClose, { capture: true });
-	});
+	document.addEventListener("visibilitychange", handleVisibilityChange);
+	window.addEventListener("pagehide", handlePageClose, { capture: true });
 };

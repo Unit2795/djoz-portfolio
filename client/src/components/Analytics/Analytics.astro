@@ -1,5 +1,9 @@
 <script>
 	import { initAnalytics } from "@/utils/analytics";
 
-	initAnalytics();
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", initAnalytics);
+	} else {
+		initAnalytics();
+	}
 </script>

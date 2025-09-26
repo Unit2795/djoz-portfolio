@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 
+// Generates globally unique IDs (unique per page), mainly for accessibility attributes.
 // https://andrewmara.com/blog/generate-unique-ids-per-request-in-astro
 export const onRequest = defineMiddleware(async (context, next) => {
 	context.locals.getId = (() => {

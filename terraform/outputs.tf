@@ -1,16 +1,16 @@
 output "cloudfront_distribution_domain" {
   description = "Domain name of the CloudFront distribution"
-  value       = aws_cloudfront_distribution.spa_distribution.domain_name
+  value       = aws_cloudfront_distribution.distro.domain_name
 }
 
 output "cloudfront_distribution_id" {
   description = "ID of the CloudFront distribution"
-  value       = aws_cloudfront_distribution.spa_distribution.id
+  value       = aws_cloudfront_distribution.distro.id
 }
 
 output "s3_bucket_name" {
   description = "Name of the S3 bucket containing your static files"
-  value       = aws_s3_bucket.spa_bucket.id
+  value       = aws_s3_bucket.website_bucket.id
 }
 
 output "route53_domain" {
@@ -29,11 +29,11 @@ output "ingest_endpoint" {
 }
 
 output "analytics_bucket_name" {
-  value       = aws_s3_bucket.analytics.bucket
+  value       = try(aws_s3_bucket.analytics[0].bucket, null)
   description = "S3 bucket for gzipped NDJSON files"
 }
 
 output "analytics_queue_url" {
-  value       = aws_sqs_queue.analytics.id
+  value       = try(aws_sqs_queue.analytics[0].id, null)
   description = "SQS queue URL for analytics processing"
 }

@@ -74,8 +74,8 @@ const colorOrder = shuffleDeterministic(
 							]}
 							{...getAnalyticsAttribute(
 								"interact",
-								`SkillCard-${skill.name.replace(/\s+/g, "")}`,
-								sections.SKILLS.disableAnalytics,
+								`SkillCard-${skill.analyticsLabel}`,
+								sections.SKILLS.disableAnalytics || !skill.analyticsLabel,
 							)}
 						>
 							{/* Hover background color glow effect */}
@@ -93,9 +93,9 @@ const colorOrder = shuffleDeterministic(
 										hexClass={theme.gradient}
 									/>
 									<div class="ml-2 flex flex-col justify-center">
-										<h2 class="text-md font-semibold text-gray-100 md:text-lg lg:text-xl">
+										<h3 class="text-md font-semibold text-gray-100 md:text-lg lg:text-xl">
 											{skill.name}
-										</h2>
+										</h3>
 										<p class:list={["text-sm", theme.subtitle]}>{skill.subtitle}</p>
 									</div>
 								</div>

@@ -5,9 +5,9 @@ import GlassButton from "@/components/GlassButton/GlassButton.astro";
 import Icon from "@/components/Icon/Icon.astro";
 import RotatingText from "@/components/RotatingText/RotatingText.astro";
 import Section from "@/components/Section/Section.astro";
-import { copyValue, intro, sections } from "@/content";
+import { intro, sections } from "@/content";
 import { getAnalyticsAttribute } from "@/utils/analytics";
-import { CircleCheckBig, ChevronDown } from "@lucide/astro";
+import { ChevronDown } from "@lucide/astro";
 
 const { aboutMe, contactButton, projectButton, links, heading, subHeading } = intro;
 
@@ -56,14 +56,14 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 			{
 				links && links.length > 0 && (
 					<ul class:list={["mt-6 flex justify-center gap-8", aboutMe && "lg:justify-start"]}>
-						{links.map(({ link, value, icon, label }, i) => {
+						{links.map(({ link, value, icon, label, analyticsLabel }, i) => {
 							const delay = i * 250 + 500;
 							if (link) {
 								return (
 									<li>
 										<a
 											aria-label={label}
-											class="motion-safe:animate-fade-up block h-6 w-6 hover:text-blue-400 motion-safe:transition-colors"
+											class="motion-safe:animate-fade-up block h-6 w-6"
 											href={link}
 											rel="noreferrer"
 											style={{
@@ -73,11 +73,15 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 											target="_blank"
 											{...getAnalyticsAttribute(
 												"interact",
-												`IntroLink-${label.replace(/\s+/g, "")}`,
-												sections.INTRO.disableAnalytics,
+												`IntroLink-${analyticsLabel}`,
+												sections.INTRO.disableAnalytics || !analyticsLabel,
 											)}
 										>
-											<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
+											<Icon
+												class="h-6 w-6 text-white duration-300 hover:text-blue-400 motion-safe:transition-colors"
+												aria-hidden
+												{...icon}
+											/>
 										</a>
 									</li>
 								);
@@ -87,19 +91,23 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 										<CopyValue
 											aria-label={label}
 											value={value}
-											class="motion-safe:animate-fade-up hover:text-blue-400 motion-safe:transition-colors"
+											class="motion-safe:animate-fade-up"
 											style={{
 												animationDelay: `${delay}ms`,
 												animationFillMode: "both",
 											}}
 											{...getAnalyticsAttribute(
 												"interact",
-												`IntroCopyVal-${label.replace(/\s+/g, "")}`,
-												sections.INTRO.disableAnalytics,
+												`IntroCopyVal-${analyticsLabel}`,
+												sections.INTRO.disableAnalytics || !analyticsLabel,
 											)}
 										>
 											<span slot="trigger">
-												<Icon class="h-6 w-6 text-white" aria-hidden {...icon} />
+												<Icon
+													class="h-6 w-6 text-white duration-300 hover:text-blue-400 motion-safe:transition-colors"
+													aria-hidden
+													{...icon}
+												/>
 											</span>
 										</CopyValue>
 									</li>

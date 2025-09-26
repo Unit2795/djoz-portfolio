@@ -8,13 +8,13 @@ import type {
 	SkillsContent,
 } from "@/content/types";
 
-export const name = "David Jozwik";
+export const title = "Your Name - Your Profession";
 
-export const email = "d@djoz.us";
+export const name = "Your Name";
 
-export const description = `The personal portfolio website of ${name}`;
+export const email = "youremail@example.com";
 
-export const keywords = "developer, software, engineer, react, typescript, terraform, devops, API";
+export const description = `Your Profession based in Your Location. I specialize in Your Specializations with a focus on Your Focus Areas.`;
 
 // If set to undefined, the availability badge will be hidden
 export const showAvailability: string | undefined = "Available for new opportunities!";
@@ -23,7 +23,7 @@ export const sections: Sections = {
 	INTRO: {
 		id: "intro",
 		navTitle: "Home",
-		description: "Introduction section with a brief overview of who I am",
+		description: "Introduction of Your Name, a Your Profession specializing in Your Specializations.",
 	},
 	PROJECTS: {
 		id: "projects",
@@ -56,7 +56,6 @@ export const navbar: NavbarContent = {
 		size: "text-2xl",
 		// Optional href for the header, defaults to "#top" if not provided (will scroll back to top of page)
 		href: "#top",
-		ariaLabel: "Scroll back to top of page",
 	},
 	// Set this to undefined if you don't want any links in the navbar
 	moreLinks: {
@@ -64,12 +63,7 @@ export const navbar: NavbarContent = {
 		items: [
 			{
 				label: "Blog",
-				href: "/WOOOO_Podcast.mp3",
-				newTab: true,
-			},
-			{
-				label: "Download Resume",
-				href: "/David_Jozwik_Resume.pdf",
+				href: "/blog",
 				newTab: true,
 			},
 		],
@@ -84,15 +78,15 @@ export const intro: IntroContent = {
 	// Set this to undefined if you don't want the heading to show up
 	heading: {
 		top: {
-			text: "Software That",
+			text: "Quality Software",
 		},
 		bottom: {
-			text: "Respects You",
+			text: "Crafted with Care",
 			color: "text-transparent from-primary to-secondary bg-linear-to-r bg-clip-text",
 		},
 	},
 	// Set this to undefined if you don't want the subheading to show up
-	subHeading: "Built for users <em>and</em> developers. Quality isn't just a luxury, it's a <em>catalyst.</em>",
+	subHeading: "Fast for machines <em>and</em> humans. Speed isn’t just convenience, it’s a <em>foundation.</em>",
 	// Set these to undefined if you don't want the buttons to show up
 	projectButton: {
 		text: "View Projects",
@@ -105,18 +99,20 @@ export const intro: IntroContent = {
 	// Set this to undefined if you don't want any links to show up
 	links: [
 		{
-			label: "Visit my GitHub profile",
+			label: "GitHub profile of Your Name",
 			link: "https://github.com/Unit2795",
 			icon: {
 				custom: "GitHub",
 			},
+			analyticsLabel: "GitHub",
 		},
 		{
-			label: "Visit my profile on LinkedIn",
+			label: "LinkedIn profile of Your Name",
 			link: "https://www.linkedin.com/in/djoz/",
 			icon: {
 				custom: "LinkedIn",
 			},
+			analyticsLabel: "LinkedIn",
 		},
 		{
 			label: "Copy my email",
@@ -124,28 +120,29 @@ export const intro: IntroContent = {
 			icon: {
 				lucide: "Mail",
 			},
+			analyticsLabel: "Email",
 		},
 	],
 	// Set individual fields to undefined if you don't want them to show up
 	// Set entire aboutMe to undefined if you don't want the card to show up at all
 	aboutMe: {
 		description:
-			"I'm David Jozwik, a self taught software developer that started hacking together websites for fun and made a career out of it. I've worked in a variety of industries from government to gaming as both a freelancer and full-time employee. This portfolio is a peek into my work and the philosophy behind it. <em>Welcome!</em>",
-		quote: "Exceptional software does more than just work; it's a delight to build and use. Good documentation, tooling, and design expands horizons; solving problems people never knew they had.",
+			"I’m Your Name, a Your Profession with a passion for building and sharing ideas. Over the years I’ve explored projects ranging from small experiments to large-scale collaborations. This portfolio is a snapshot of my journey and the values that shape my work. <em>Thanks for visiting!</em>",
+		quote: "Great ideas don’t just answer questions; they inspire new ones. The right mix of curiosity, persistence, and creativity can turn small sparks into lasting impact.",
 		stats: {
 			ariaLabel: "My professional stats summary",
 			items: [
 				{
-					title: "6+ years",
+					title: "12+ years",
 					subtitle: "Experience",
 				},
 				{
-					title: "Remote & Onsite",
-					subtitle: "Work Setting",
+					title: "2M+ Users",
+					subtitle: "Served",
 				},
 				{
-					title: "Arkansas, USA",
-					subtitle: "Location",
+					title: "100+ Projects",
+					subtitle: "Delivered",
 				},
 			],
 		},
@@ -153,26 +150,26 @@ export const intro: IntroContent = {
 			ariaLabel: "My key competencies and services",
 			items: [
 				{
-					color: "bg-blue-300",
-					text: "Web, Mobile, & Desktop Software",
+					color: "bg-red-300",
+					text: "Photography & Visual Arts",
 				},
 				{
-					color: "bg-orange-300",
-					text: "Servers, APIs, & Infrastructure",
+					color: "bg-yellow-300",
+					text: "Writing & Storytelling",
 				},
 				{
-					color: "bg-green-300",
-					text: "Web Design & Accessibility",
+					color: "bg-teal-300",
+					text: "Travel & Exploration",
 				},
 				{
-					color: "bg-violet-300",
-					text: "Quality Assurance & Technical Writing",
+					color: "bg-purple-300",
+					text: "Science & Learning",
 				},
 			],
 		},
 		aria: {
 			title: "About Me",
-			description: "A brief overview of who I am and what I do",
+			description: "Card with information about my background, skills, and interests.",
 		},
 	},
 };
@@ -187,6 +184,7 @@ export const projects: ProjectsContent = {
 			tags: ["React", "D3.js", "Node.js", "WebSocket"],
 			link: "#",
 			img: "project/placeholder.webp",
+			analyticsLabel: "Alpha",
 		},
 		{
 			title: "Project Beta",
@@ -194,6 +192,7 @@ export const projects: ProjectsContent = {
 			tags: ["Python", "TensorFlow", "Flask", "MongoDB"],
 			link: "#",
 			img: "project/placeholder.webp",
+			analyticsLabel: "Beta",
 		},
 		{
 			title: "Project Gamma",
@@ -201,6 +200,7 @@ export const projects: ProjectsContent = {
 			tags: ["React Native", "Firebase", "Redux", "GraphQL"],
 			link: "#",
 			img: "project/placeholder.webp",
+			analyticsLabel: "Gamma",
 		},
 	],
 };
@@ -212,8 +212,8 @@ export const skills: SkillsContent = [
 		icon: {
 			lucide: "Code",
 		},
-		level: 90,
 		subSkills: ["React", "Tailwind CSS", "Three.js", "CSS/SASS", "JavaScript", "TypeScript", "Next.js", "Vue.js"],
+		analyticsLabel: "Frontend",
 	},
 	{
 		name: "Backend Development",
@@ -221,8 +221,8 @@ export const skills: SkillsContent = [
 		icon: {
 			lucide: "Server",
 		},
-		level: 85,
 		subSkills: ["Node.js", "Python", "PostgreSQL", "MongoDB", "GraphQL", "Express", "Django", "REST APIs"],
+		analyticsLabel: "Backend",
 	},
 	{
 		name: "DevOps",
@@ -230,8 +230,8 @@ export const skills: SkillsContent = [
 		icon: {
 			lucide: "Cog",
 		},
-		level: 80,
 		subSkills: ["Docker", "CI/CD", "AWS", "Kubernetes", "GitHub Actions", "Terraform", "Linux"],
+		analyticsLabel: "DevOps",
 	},
 	{
 		name: "UI/UX Design",
@@ -239,8 +239,8 @@ export const skills: SkillsContent = [
 		icon: {
 			lucide: "Palette",
 		},
-		level: 80,
 		subSkills: ["Figma", "Adobe XD", "Sketch", "InVision", "User Research", "Wireframing", "Prototyping"],
+		analyticsLabel: "Design",
 	},
 	{
 		name: "Mobile Development",
@@ -248,8 +248,8 @@ export const skills: SkillsContent = [
 		icon: {
 			lucide: "Smartphone",
 		},
-		level: 70,
 		subSkills: ["React Native", "Swift", "Kotlin", "Flutter", "Xamarin", "PWA"],
+		analyticsLabel: "Mobile",
 	},
 	{
 		name: "Cloud Computing",
@@ -257,8 +257,8 @@ export const skills: SkillsContent = [
 		icon: {
 			lucide: "Cloud",
 		},
-		level: 75,
 		subSkills: ["AWS", "Azure", "Google Cloud", "Serverless", "Lambda", "API Gateway"],
+		analyticsLabel: "Cloud",
 	},
 ];
 
@@ -270,6 +270,7 @@ export const contactForm: ContactFormContent = {
 			icon: {
 				custom: "LinkedIn",
 			},
+			analyticsLabel: "LinkedIn",
 		},
 		{
 			label: "Copy my email",
@@ -277,6 +278,7 @@ export const contactForm: ContactFormContent = {
 			icon: {
 				lucide: "Mail",
 			},
+			analyticsLabel: "Email",
 		},
 	],
 	email: {
@@ -288,7 +290,9 @@ export const contactForm: ContactFormContent = {
 		placeholder: "Your message here...",
 	},
 	button: "Send Message",
+	buttonSending: "Sending...",
 	formAriaLabel: "Contact form",
+	errorMessage: "An error occurred while submitting the form. Please try again later.",
 	// Customize the content of the form success and error pages
 	statusPages: {
 		success: {
@@ -330,18 +334,18 @@ export const contactForm: ContactFormContent = {
 export const footer: FooterContent | undefined = {
 	items: [
 		{
-			label: "Portfolio handcrafted with ❤️ by David Jozwik  •  Get it for yourself for free on GitHub ↗️",
+			label: "Portfolio Handcrafted by David Jozwik • Open source on GitHub ↗️",
 			href: "https://github.com/Unit2795/djoz-portfolio",
-		},
-		{
-			label: `djoz.us was registered in 2013 by ${name}`,
-			href: "https://www.whois.com/whois/djoz.us",
 		},
 	],
 	disableAnalytics: false,
 };
 
-export const copyValueSuccessMessage = "Copied";
+export const copyValue = {
+	successMessage: "Copied",
+	dialogAriaLabel: "Copy text",
+	inputAriaLabel: "Press Enter or click to copy, or use keyboard copy.",
+};
 
 // Configure the snow effect here
 export const snowConfig = {
@@ -352,6 +356,8 @@ export const snowConfig = {
 	size: { from: 1, to: 3 },
 	colors: ["#ffffff"],
 };
+
+export const formSuccessPath = "/form-success.html";
 
 /* 
 	Disable Features

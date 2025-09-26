@@ -4,7 +4,10 @@
 	"version": "0.0.1",
 	"scripts": {
 		"lint": "eslint .",
-		"dev": "astro dev --host",
+		"dev": "concurrently --kill-others-on-fail --kill-others -n '🔷 API,🟢 CLIENT' -c 'blue.bold,green.bold' 'pnpm run dev:api' 'pnpm run dev:client'",
+		"dev:api": "cd ../dev-api && pnpm start",
+		"dev:client": "astro dev --host",
+		"dev:setup": "pnpm install && cd ../dev-api && pnpm install",
 		"build": "astro build && node ./scripts/postbuild.js",
 		"preview": "astro preview --host",
 		"astro": "astro"
@@ -20,6 +23,7 @@
 		"@eslint/js": "^9.33.0",
 		"@typescript-eslint/parser": "^8.39.1",
 		"cheerio": "^1.1.2",
+		"concurrently": "^9.2.1",
 		"esbuild": "^0.25.10",
 		"eslint": "^9.33.0",
 		"eslint-config-prettier": "^10.1.8",

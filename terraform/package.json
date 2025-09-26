@@ -1,14 +1,15 @@
 {
-  "name": "terraform",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "init": "terraform init -backend-config=state.config -input=false",
-    "destroy": "terraform destroy -auto-approve -input=false",
-    "apply": "terraform apply -auto-approve -input=false",
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+	"name": "terraform",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"init": "terraform init -backend-config=state.config -input=false",
+		"destroy": "terraform destroy -auto-approve -input=false",
+		"apply": "terraform apply -auto-approve -input=false",
+		"validate": "terraform validate"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC"
 }

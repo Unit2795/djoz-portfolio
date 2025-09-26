@@ -1,7 +1,7 @@
 ---
 import App from "@/components/App/App.astro";
 import "@/styles/index.css";
-import { description, keywords, name } from "@/content";
+import { description, name, title } from "@/content";
 ---
 
 <html lang="en">
@@ -21,10 +21,9 @@ import { description, keywords, name } from "@/content";
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
-		<meta name="keywords" content={keywords} />
 		<meta name="author" content={name} />
 
-		<title>{name}</title>
+		<title>{title}</title>
 	</head>
 	<body class="relative w-full bg-gray-900 text-white">
 		<App />

@@ -1,5 +1,45 @@
+locals {
+  disable_api   = var.disable_contactform && var.disable_analytics && var.disable_dwelltime
+  api_origin_id = "ApiGatewayOrigin"
+  api_domain_name = try(
+    replace(aws_apigatewayv2_api.api[0].api_endpoint, "https://", ""),
+    null
+  )
+}
+
+/*
+	======================================================================
+	SIMPLE EMAIL SERVICE
+	======================================================================
+*/
+# EMAIL based identity
+resource "aws_ses_email_identity" "admin" {
+	email = var.admin_email
+}
+
+/*
+DOMAIN based identity
+
+⚠️ Note!
+
+1. If you wish to use a domain based identity, you will need to create the domain in the AWS SES console. Verify it by adding the DNS records to your domain's DNS settings (If you are using Route53, AWS can do this automatically). This Terraform config does NOT create the DNS records for you.
+2. If you wish to use a separate email sending domain from the one the site is deployed on, you'll need to add it to the tf variables separate from the domain name the SPA is deployed to.
+3. Update the lambda IAM policy to use the domain identity ARN instead of the email identity ARN.
+*/
+/*resource "aws_ses_domain_identity" "admin" {
+  count  = local.disable_api ? 0 : 1
+  domain = var.domain_name
+}*/
+
+
+/*
+	======================================================================
+	API GATEWAY V2 HTTP API
+	======================================================================
+*/
 resource "aws_apigatewayv2_api" "api" {
-  name          = "contact-me-api-${var.bucket_name}"
+  count         = local.disable_api ? 0 : 1
+  name          = "api-${var.bucket_name}"
   protocol_type = "HTTP"
   cors_configuration {
     allow_origins     = ["https://${var.domain_name}", "https://www.${var.domain_name}"]
@@ -11,7 +51,8 @@ resource "aws_apigatewayv2_api" "api" {
 }
 
 resource "aws_apigatewayv2_stage" "stage" {
-  api_id      = aws_apigatewayv2_api.api.id
+  count       = local.disable_api ? 0 : 1
+  api_id      = aws_apigatewayv2_api.api[0].id
   name        = "$default"
   auto_deploy = true
 
@@ -21,53 +62,488 @@ resource "aws_apigatewayv2_stage" "stage" {
   }
 
   route_settings {
-    route_key              = aws_apigatewayv2_route.ingest_route.route_key
+    route_key              = aws_apigatewayv2_route.ingest[0].route_key
     throttling_burst_limit = 50
     throttling_rate_limit  = 10
   }
 }
 
-resource "aws_apigatewayv2_integration" "lambda" {
-  api_id                 = aws_apigatewayv2_api.api.id
+/*
+	======================================================================
+	Lambda Integrations and Routes
+	======================================================================
+*/
+resource "aws_apigatewayv2_integration" "contactme" {
+  count                  = var.disable_contactform ? 0 : 1
+  api_id                 = aws_apigatewayv2_api.api[0].id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
-  integration_uri        = aws_lambda_function.contact_function.invoke_arn
+  integration_uri        = aws_lambda_function.contactme[0].invoke_arn
   payload_format_version = "2.0"
 }
-
-resource "aws_apigatewayv2_route" "route" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /api/contact"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-  authorization_type = "NONE"
-}
-
-resource "aws_apigatewayv2_integration" "ingest" {
-  api_id                 = aws_apigatewayv2_api.api.id
-  integration_type       = "AWS_PROXY"
-  integration_method     = "POST"
-  integration_uri        = aws_lambda_function.ingest.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_route" "ingest_route" {
-  api_id             = aws_apigatewayv2_api.api.id
-  route_key          = "POST /api/ingest"
-  target             = "integrations/${aws_apigatewayv2_integration.ingest.id}"
+resource "aws_apigatewayv2_route" "contactme" {
+  count              = var.disable_contactform ? 0 : 1
+  api_id             = aws_apigatewayv2_api.api[0].id
+  route_key          = "POST /api/contact"
+  target             = "integrations/${aws_apigatewayv2_integration.contactme[0].id}"
   authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_integration" "stamp" {
-  api_id                 = aws_apigatewayv2_api.api.id
+  count                  = var.disable_dwelltime ? 0 : 1
+  api_id                 = aws_apigatewayv2_api.api[0].id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
-  integration_uri        = aws_lambda_function.stamp_function.invoke_arn
+  integration_uri        = aws_lambda_function.stamp[0].invoke_arn
   payload_format_version = "2.0"
 }
-
 resource "aws_apigatewayv2_route" "stamp" {
-  api_id             = aws_apigatewayv2_api.api.id
+  count              = var.disable_dwelltime ? 0 : 1
+  api_id             = aws_apigatewayv2_api.api[0].id
   route_key          = "GET /api/stamp.gif"
-  target             = "integrations/${aws_apigatewayv2_integration.stamp.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.stamp[0].id}"
   authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_integration" "ingest" {
+  count                  = var.disable_analytics ? 0 : 1
+  api_id                 = aws_apigatewayv2_api.api[0].id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.ingest[0].invoke_arn
+  payload_format_version = "2.0"
+}
+resource "aws_apigatewayv2_route" "ingest" {
+  count              = var.disable_analytics ? 0 : 1
+  api_id             = aws_apigatewayv2_api.api[0].id
+  route_key          = "POST /api/ingest"
+  target             = "integrations/${aws_apigatewayv2_integration.ingest[0].id}"
+  authorization_type = "NONE"
+}
+
+/*
+	======================================================================
+	CONTACT ME LAMBDA
+	======================================================================
+*/
+data "archive_file" "contactme" {
+  count       = var.disable_contactform ? 0 : 1
+  type        = "zip"
+  source_file = "${path.cwd}/../lambda/contactme.js"
+  output_path = "${path.module}/../lambda/contactme_function.zip"
+}
+
+resource "aws_lambda_function" "contactme" {
+  count            = var.disable_contactform ? 0 : 1
+  function_name    = "contactme-${var.bucket_name}"
+  filename         = data.archive_file.contactme[0].output_path
+  source_code_hash = data.archive_file.contactme[0].output_base64sha256
+  timeout          = 10
+  memory_size      = 2048
+  handler          = "contactme.handler"
+  runtime          = "nodejs22.x"
+  architectures    = ["arm64"]
+  role             = aws_iam_role.contactme[0].arn
+
+  reserved_concurrent_executions = 1
+
+  environment {
+    variables = {
+      ADMIN_EMAIL           = var.admin_email
+      SUCCESS_REDIRECT      = "https://${var.domain_name}/form-success.html"
+      ERROR_REDIRECT        = "https://${var.domain_name}/form-error.html"
+      TABLE_NAME            = aws_dynamodb_table.api_quota[0].name
+      IS_HONEYPOT_DISABLED  = var.disable_honeypot
+      MONTHLY_LIMIT         = var.contact_max
+      MIN_DWELL             = var.min_dwell_seconds
+      MAX_DWELL             = var.max_dwell_seconds
+      HMAC_SECRET           = var.hmac_secret
+      COOKIE_NAME           = var.dwell_cookie_name
+      GENERAL_COOKIE_ERROR  = var.cookie_general_error
+      TOO_SOON_ERROR        = var.cookie_too_soon_error
+      TOO_OLD_ERROR         = var.cookie_too_old_error
+      EMAIL_INVALID_ERROR   = var.email_invalid_error
+      MESSAGE_INVALID_ERROR = var.message_invalid_error
+    }
+  }
+}
+
+resource "aws_iam_role" "contactme" {
+  count = var.disable_contactform ? 0 : 1
+  name  = "contactme-execution-role-${var.bucket_name}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "contactme_basic" {
+  count      = var.disable_contactform ? 0 : 1
+  role       = aws_iam_role.contactme[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "contactme" {
+  count = var.disable_contactform ? 0 : 1
+  name  = "contactme-${var.bucket_name}"
+  role  = aws_iam_role.contactme[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = aws_ses_domain_identity.admin[0].arn
+      },
+      {
+        Action = [
+          "dynamodb:UpdateItem",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem"
+        ]
+        Effect   = "Allow"
+        Resource = aws_dynamodb_table.api_quota[0].arn
+      }
+    ]
+  })
+}
+
+resource "aws_lambda_permission" "contactme_api" {
+  count         = var.disable_contactform ? 0 : 1
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.contactme[0].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api[0].execution_arn}/*/*/api/contact"
+}
+
+/*
+	======================================================================
+	STAMP LAMBDA
+	======================================================================
+*/
+data "archive_file" "stamp" {
+  count       = var.disable_dwelltime ? 0 : 1
+  type        = "zip"
+  source_file = "${path.cwd}/../lambda/stamp.js"
+  output_path = "${path.module}/../lambda/stamp_function.zip"
+}
+
+resource "aws_lambda_function" "stamp" {
+  count            = var.disable_dwelltime ? 0 : 1
+  function_name    = "stamp-${var.bucket_name}"
+  filename         = data.archive_file.stamp[0].output_path
+  source_code_hash = data.archive_file.stamp[0].output_base64sha256
+  timeout          = 3
+  memory_size      = 256
+  handler          = "stamp.handler"
+  runtime          = "nodejs22.x"
+  architectures    = ["arm64"]
+  role             = aws_iam_role.stamp[0].arn
+
+  environment {
+    variables = {
+      HMAC_SECRET   = var.hmac_secret
+      COOKIE_NAME   = var.dwell_cookie_name
+      COOKIE_MAXAGE = var.max_dwell_seconds
+      COOKIE_DOMAIN = var.cookie_domain
+    }
+  }
+}
+
+resource "aws_iam_role" "stamp" {
+  count = var.disable_dwelltime ? 0 : 1
+  name  = "stamp-role-${var.bucket_name}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "stamp_basic" {
+  count      = var.disable_dwelltime ? 0 : 1
+  role       = aws_iam_role.stamp[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_lambda_permission" "stamp_api" {
+  count         = var.disable_dwelltime ? 0 : 1
+  statement_id  = "AllowAPIGatewayInvokeStamp"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.stamp[0].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api[0].execution_arn}/*/*/api/stamp.gif"
+}
+
+
+/*
+	======================================================================
+	INGEST (ANALYTICS) LAMBDA
+	======================================================================
+*/
+data "archive_file" "ingest" {
+  count       = var.disable_analytics ? 0 : 1
+  type        = "zip"
+  source_file = "${path.cwd}/../lambda/analytics-ingest.js"
+  output_path = "${path.module}/../lambda/analytics-ingest.zip"
+}
+
+resource "aws_lambda_function" "ingest" {
+  count            = var.disable_analytics ? 0 : 1
+  function_name    = "analytics-ingest-${var.bucket_name}"
+  role             = aws_iam_role.ingest[0].arn
+  handler          = "analytics-ingest.handler"
+  runtime          = "nodejs22.x"
+  filename         = data.archive_file.ingest[0].output_path
+  source_code_hash = data.archive_file.ingest[0].output_base64sha256
+  timeout          = 3
+  memory_size      = 256
+
+  environment {
+    variables = {
+      QUEUE_URL = aws_sqs_queue.analytics[0].id
+    }
+  }
+}
+
+resource "aws_iam_role" "ingest" {
+  count = var.disable_analytics ? 0 : 1
+  name  = "ingest-role-${var.bucket_name}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ingest_basic" {
+  count      = var.disable_analytics ? 0 : 1
+  role       = aws_iam_role.ingest[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "ingest" {
+  count = var.disable_analytics ? 0 : 1
+  name  = "ingest-policy-${var.bucket_name}"
+  role  = aws_iam_role.ingest[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:SendMessageBatch"
+        ]
+        Resource = [
+          aws_sqs_queue.analytics[0].arn
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_lambda_permission" "ingest_api" {
+  count         = var.disable_analytics ? 0 : 1
+  statement_id  = "AllowAPIGwInvokeIngest"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.ingest[0].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api[0].execution_arn}/*/*/api/ingest"
+}
+
+/*
+	======================================================================
+	PROCESSOR (ANALYTICS) LAMBDA
+	======================================================================
+*/
+data "archive_file" "processor" {
+  count       = var.disable_analytics ? 0 : 1
+  type        = "zip"
+  source_file = "${path.cwd}/../lambda/analytics-processor.js"
+  output_path = "${path.module}/../lambda/analytics-processor.zip"
+}
+
+resource "aws_lambda_function" "processor" {
+  count            = var.disable_analytics ? 0 : 1
+  function_name    = "analytics-processor-${var.bucket_name}"
+  role             = aws_iam_role.processor[0].arn
+  handler          = "analytics-processor.handler"
+  runtime          = "nodejs22.x"
+  filename         = data.archive_file.processor[0].output_path
+  source_code_hash = data.archive_file.processor[0].output_base64sha256
+  timeout          = 900
+  memory_size      = 2048
+
+  environment {
+    variables = {
+      QUEUE_URL     = aws_sqs_queue.analytics[0].id
+      BUCKET        = aws_s3_bucket.analytics[0].bucket
+      FUNCTION_NAME = "analytics-processor-${var.bucket_name}"
+    }
+  }
+}
+
+resource "aws_iam_role" "processor" {
+  count = var.disable_analytics ? 0 : 1
+  name  = "processor-role-${var.bucket_name}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "processor_basic" {
+  count      = var.disable_analytics ? 0 : 1
+  role       = aws_iam_role.processor[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "processor" {
+  count = var.disable_analytics ? 0 : 1
+  name  = "processor-policy-${var.bucket_name}"
+  role  = aws_iam_role.processor[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:DeleteMessageBatch",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = [
+          aws_sqs_queue.analytics[0].arn
+        ]
+      },
+      {
+        Action = [
+          "s3:PutObject"
+        ]
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.analytics[0].arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:InvokeFunction"
+        ]
+        Resource = aws_lambda_function.processor[0].arn
+      }
+    ]
+  })
+}
+
+/*
+	======================================================================
+	ANALYTICS S3 DUMP (no versioning, no encryption)
+	======================================================================
+*/
+resource "aws_s3_bucket" "analytics" {
+  count  = var.disable_analytics ? 0 : 1
+  bucket = "analytics-dump-${var.bucket_name}"
+}
+
+# Keep public access blocked!
+resource "aws_s3_bucket_public_access_block" "analytics_pab" {
+  count                   = var.disable_analytics ? 0 : 1
+  bucket                  = aws_s3_bucket.analytics[0].id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+/*
+	======================================================================
+	ANALYTICS SQS (no DLQ! Keep costs/objects minimal)
+	======================================================================
+*/
+resource "aws_sqs_queue" "analytics" {
+  count                      = var.disable_analytics ? 0 : 1
+  name                       = "${var.bucket_name}-analytics-events"
+  visibility_timeout_seconds = 600
+  message_retention_seconds  = 345600 # 4 days
+}
+
+
+/*
+	======================================================================
+	ANALYTICS CloudWatch Event to trigger the processor lambda
+	======================================================================
+*/
+resource "aws_cloudwatch_event_rule" "processor_schedule" {
+  count               = var.disable_analytics ? 0 : 1
+  name                = "analytics-processor-event-${var.bucket_name}"
+  schedule_expression = "cron(0 0 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "processor_target" {
+  count     = var.disable_analytics ? 0 : 1
+  rule      = aws_cloudwatch_event_rule.processor_schedule[0].name
+  target_id = "processor"
+  arn       = aws_lambda_function.processor[0].arn
+}
+
+resource "aws_lambda_permission" "events_invoke_processor" {
+  count         = var.disable_analytics ? 0 : 1
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.processor[0].function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.processor_schedule[0].arn
+}
+
+/*
+	======================================================================
+	DynamoDB Table for Contact Me API Quotas
+	======================================================================
+*/
+resource "aws_dynamodb_table" "api_quota" {
+  count        = var.disable_contactform ? 0 : 1
+  name         = "api-quota-${var.bucket_name}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "N"
+  }
 }

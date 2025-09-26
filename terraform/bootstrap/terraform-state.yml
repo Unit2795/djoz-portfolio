@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: Creates S3 bucket and DynamoDB table for Terraform state management
 
 Parameters:
@@ -12,7 +12,7 @@ Parameters:
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
+    DeletionPolicy: Delete
     Properties:
       BucketName: !Ref BucketName
       VersioningConfiguration:
@@ -32,18 +32,18 @@ Resources:
     Properties:
       Bucket: !Ref S3Bucket
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Sid: DenyInsecureConnections
             Effect: Deny
-            Principal: '*'
-            Action: 's3:*'
+            Principal: "*"
+            Action: "s3:*"
             Resource:
               - !GetAtt S3Bucket.Arn
-              - !Sub '${S3Bucket.Arn}/*'
+              - !Sub "${S3Bucket.Arn}/*"
             Condition:
               Bool:
-                'aws:SecureTransport': false
+                "aws:SecureTransport": false
 
   DynamoDBTable:
     Type: AWS::DynamoDB::Table

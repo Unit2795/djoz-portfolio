@@ -19,16 +19,34 @@ variable "admin_email" {
   type        = string
 }
 
-variable "dwell_cookie_name" {
-  type        = string
-  description = "Name of the dwell cookie. Leave empty to disable dwell time feature."
-  default     = "dwellstamp"
+variable "disable_contactform" {
+  type        = bool
+  description = "set to true to disable contact form infrastructure"
+  default     = false
+}
+
+variable "disable_analytics" {
+  type        = bool
+  description = "set to true to disable analytics infrastructure"
+  default     = false
+}
+
+variable "disable_dwelltime" {
+  type        = bool
+  description = "set to true to disable dwell time tracking infrastructure"
+  default     = false
 }
 
 variable "disable_honeypot" {
+  type        = bool
+  description = "set to true to disable honeypot anti-spam feature"
+  default     = false
+}
+
+variable "dwell_cookie_name" {
   type        = string
-  description = "set to 'true' to disable honeypot anti-spam feature"
-  default     = "false"
+  description = "Name of the dwelltime cookie, use empty string to use default"
+  default     = "dwellstamp"
 }
 
 /* 
@@ -36,12 +54,12 @@ variable "disable_honeypot" {
  */
 variable "hmac_secret" {
   type        = string
-  description = "Secret for signing dwell cookie (HMAC-SHA256)"
+  description = "Secret for signing dwell cookie. Use a long, random string."
   sensitive   = true
 }
 
 /* 
-	Optional: Set to your domain (e.g., .example.com) to share cookie across subdomains.
+	Optional: Set to your domain (e.g., .example.com) to share the dwell time cookie across subdomains.
 	Leave empty ("") to skip setting the Domain attribute on the cookie.
 	The default is to use the same domain as the API. So unless you alter the terraform resources, this can be left empty.
  */
@@ -67,4 +85,34 @@ variable "contact_max" {
   type        = number
   description = "Maximum number of contact form submissions allowed per month"
   default     = 10
+}
+
+variable "cookie_general_error" {
+  type        = string
+  description = "General error message for cookie issues"
+  default     = "Please enable cookies and try again. If the problem persists, contact the site administrator directly."
+}
+
+variable "cookie_too_soon_error" {
+  type        = string
+  description = "Error message when form is submitted too quickly"
+  default     = "For security reasons, your submission was too fast to process. Please resubmit after a moment."
+}
+
+variable "cookie_too_old_error" {
+  type        = string
+  description = "Error message when form submission cookie is too old"
+  default     = "The form has expired. Please refresh the page and try again."
+}
+
+variable "email_invalid_error" {
+  type        = string
+  description = "Error message for invalid email addresses"
+  default     = "The email address you entered is not valid. Please check and try again."
+}
+
+variable "message_invalid_error" {
+  type        = string
+  description = "Error message for invalid message content"
+  default     = "The message you entered is not valid. Please check and try again."
 }

@@ -109,19 +109,19 @@ const themeOrder = shuffleDeterministic(
 
 							{/* Content section */}
 							<div class="flex flex-1 flex-col p-6">
-								<h2 class="mb-3 text-xl font-bold text-gray-100">
+								<h3 class="mb-3 text-xl font-bold text-gray-100">
 									<a
 										href={project.link}
 										class="focus:outline-hidden"
 										{...getAnalyticsAttribute(
 											"interact",
-											`VisitProject-${project.title.replace(/\s+/g, "")}`,
-											sections.PROJECTS.disableAnalytics,
+											`VisitProject-${project.analyticsLabel}`,
+											sections.PROJECTS.disableAnalytics || !project.analyticsLabel,
 										)}
 									>
 										{project.title}
 									</a>
-								</h2>
+								</h3>
 								<p class="mb-4 text-sm leading-relaxed text-gray-400 group-hover:text-gray-300 motion-safe:transition-colors motion-safe:duration-300">
 									{project.description}
 								</p>

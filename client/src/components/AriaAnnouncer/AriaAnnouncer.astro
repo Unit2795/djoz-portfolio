@@ -13,9 +13,7 @@
 			assertiveRegion = this.querySelector("[data-assertive]");
 
 			connectedCallback() {
-				document.addEventListener("DOMContentLoaded", () => {
-					window.announce = this.announce.bind(this);
-				});
+				window.announce = this.announce.bind(this);
 			}
 
 			private announce(message: string, priority: "polite" | "assertive" = "polite", dontClear = false) {

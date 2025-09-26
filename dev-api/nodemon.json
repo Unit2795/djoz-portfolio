@@ -1,0 +1,9 @@
+{
+	"ignore": ["node_modules"],
+	"watch": ["."],
+	"env": {
+		"NODE_ENV": "development"
+	},
+	"ext": "js,json",
+	"verbose": true
+}

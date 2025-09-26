@@ -12,51 +12,69 @@ const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
 const SOFT_STOP_MS = 15000; // stop consuming when <15s left
 const VIS_TIMEOUT_SEC = 120; // per-batch invisibility window
 const LONG_POLL_SEC = 20;
+const { QUEUE_URL, BUCKET, FUNCTION_NAME } = process.env;
 
+// Initialize clients once
 const sqs = new SQSClient({});
 const s3 = new S3Client({});
 const lambda = new LambdaClient({});
 
-const { QUEUE_URL, BUCKET, FUNCTION_NAME } = process.env;
-
-// delete in chunks of 10
-async function deleteAll(QueueUrl, receipts) {
+// Helper to delete messages in batches of 10
+async function deleteMessages(receipts) {
 	for (let i = 0; i < receipts.length; i += 10) {
-		const chunk = receipts.slice(i, i + 10);
-		const Entries = chunk.map((r, j) => ({
-			Id: String(i + j), // unique per entry in this request AND a string
-			ReceiptHandle: r,
+		const Entries = receipts.slice(i, i + 10).map((ReceiptHandle, j) => ({
+			Id: String(i + j),
+			ReceiptHandle,
 		}));
 
-		const resp = await sqs.send(new DeleteMessageBatchCommand({ QueueUrl, Entries }));
+		const { Failed } = await sqs.send(new DeleteMessageBatchCommand({ QueueUrl: QUEUE_URL, Entries }));
 
-		// (optional but recommended) detect partial failures
-		if (resp.Failed && resp.Failed.length) {
-			console.warn("DeleteMessageBatch partial failures:", resp.Failed);
-			// you can selectively retry resp.Failed[k].ReceiptHandle if desired
+		if (Failed?.length) {
+			console.warn("DeleteMessageBatch partial failures:", Failed);
 		}
 	}
 }
 
-async function getApproxQueueDepth(QueueUrl) {
-	const resp = await sqs.send(
+// Check queue depth for re-invocation decision
+async function getQueueDepth() {
+	const { Attributes } = await sqs.send(
 		new GetQueueAttributesCommand({
-			QueueUrl,
+			QueueUrl: QUEUE_URL,
 			AttributeNames: ["ApproximateNumberOfMessages", "ApproximateNumberOfMessagesNotVisible"],
 		})
 	);
-	const visible = Number(resp.Attributes?.ApproximateNumberOfMessages || 0);
-	const inflight = Number(resp.Attributes?.ApproximateNumberOfMessagesNotVisible || 0);
-	return { visible, inflight, total: visible + inflight };
+	return (
+		Number(Attributes?.ApproximateNumberOfMessages || 0) +
+			Number(Attributes?.ApproximateNumberOfMessagesNotVisible || 0) >
+		0
+	);
+}
+
+// Validate event structure
+function isValidEvent(item) {
+	return (
+		item &&
+		typeof item === "object" &&
+		item.e &&
+		typeof item.e === "string" &&
+		item.e.length <= 24 &&
+		(!item.m || (typeof item.m === "string" && item.m.length <= 256)) &&
+		item.u &&
+		typeof item.u === "string" &&
+		item.u.length === 36 &&
+		item.s &&
+		typeof item.s === "string" &&
+		item.s.length === 36
+	);
 }
 
 exports.handler = async (event, context) => {
 	const events = [];
 	const receipts = [];
 
-	// Consume until time is nearly up or no messages
+	// Consume messages until timeout or empty queue
 	while (context.getRemainingTimeInMillis() > SOFT_STOP_MS) {
-		const resp = await sqs.send(
+		const { Messages } = await sqs.send(
 			new ReceiveMessageCommand({
 				QueueUrl: QUEUE_URL,
 				MaxNumberOfMessages: 10,
@@ -65,72 +83,35 @@ exports.handler = async (event, context) => {
 			})
 		);
 
-		const msgs = resp.Messages || [];
-		if (msgs.length === 0) break;
+		if (!Messages?.length) break;
 
-		for (const m of msgs) {
-			receipts.push(m.ReceiptHandle);
+		for (const { ReceiptHandle, Body } of Messages) {
+			receipts.push(ReceiptHandle);
 			try {
-				const body = JSON.parse(m.Body);
-				const { events: bodyEvents, schemaVersion, timestamp, userAgent, ip, proxiedIp } = body;
-				if (!Array.isArray(bodyEvents) || bodyEvents.length === 0) {
-					// skip invalid messages
-					continue;
-				}
+				const { events: bodyEvents, ...metadata } = JSON.parse(Body);
+				if (!Array.isArray(bodyEvents)) continue;
 
 				for (const item of bodyEvents) {
-					// Invalid event structure
-					if (typeof item !== "object" || item === null) {
-						console.log("Invalid event structure");
-						continue;
+					if (isValidEvent(item)) {
+						events.push({ ...item, ...metadata });
 					}
-					const { e, m, u, s } = item;
-					// Invalid event type
-					if (!e || typeof e !== "string" || e.length > 24) {
-						console.log("Invalid event type");
-						continue;
-					}
-					// Invalid metadata
-					if (m && (typeof m !== "string" || m.length > 256)) {
-						console.log("Invalid metadata");
-						continue;
-					}
-					// Invalid user identifier
-					if (!u || typeof u !== "string" || u.length !== 36) {
-						console.log("Invalid user identifier");
-						continue;
-					}
-					// Invalid session identifier
-					if (!s || typeof s !== "string" || s.length !== 36) {
-						console.log("Invalid session identifier");
-						continue;
-					}
-
-					events.push({
-						...item,
-						schemaVersion,
-						timestamp,
-						userAgent,
-						ip,
-						proxiedIp,
-					});
 				}
 			} catch {
-				/* ignore malformed */
+				// Skip malformed messages
 			}
 		}
 	}
 
-	if (events.length === 0) {
+	if (!events.length) {
 		return { statusCode: 204, body: "no messages" };
 	}
 
-	// Write event data to S3
+	// Write to S3
 	const ndjson = events.map((e) => JSON.stringify(e)).join("\n");
 	const gz = gzipSync(Buffer.from(ndjson, "utf8"));
+
 	const now = new Date();
-	const pad = (n) => String(n).padStart(2, "0");
-	const dt = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`;
+	const dt = now.toISOString().slice(0, 10); // YYYY-MM-DD format
 	const key = `events/${dt}/part-${randomUUID()}.ndjson.gz`;
 
 	await s3.send(
@@ -143,12 +124,11 @@ exports.handler = async (event, context) => {
 		})
 	);
 
-	// Delete SQS messages ONLY after successful upload
-	await deleteAll(QUEUE_URL, receipts);
+	// Delete messages after successful upload
+	await deleteMessages(receipts);
 
-	// If there’s more work OR we had to stop early, re-invoke self
-	const { total } = await getApproxQueueDepth(QUEUE_URL);
-	const shouldContinue = total > 0 || context.getRemainingTimeInMillis() <= SOFT_STOP_MS;
+	// Re-invoke if needed
+	const shouldContinue = (await getQueueDepth()) || context.getRemainingTimeInMillis() <= SOFT_STOP_MS;
 
 	if (shouldContinue && FUNCTION_NAME) {
 		await lambda.send(
@@ -159,5 +139,8 @@ exports.handler = async (event, context) => {
 		);
 	}
 
-	return { statusCode: 200, body: `wrote ${events.length} events to s3://${BUCKET}/${key}` };
+	return {
+		statusCode: 200,
+		body: `wrote ${events.length} events to s3://${BUCKET}/${key}`,
+	};
 };

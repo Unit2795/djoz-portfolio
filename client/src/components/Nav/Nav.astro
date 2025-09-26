@@ -57,33 +57,30 @@ const { disableAnalytics } = navbar;
 								]}
 								{...getAnalyticsAttribute("interact", "NavHeader", disableAnalytics)}
 							>
-								<a
-									href={navbar.header.href ?? "#top"}
-									aria-label={navbar.header.ariaLabel ?? "Scroll back to top of page"}
-								>
-									{navbar.header.text}
-								</a>
+								<a href={navbar.header.href ?? "#top"}>{navbar.header.text}</a>
 							</h1>
 						)
 					}
 					{/* Desktop Menu */}
 					<ul class="hidden md:flex">
 						{
-							sections.map(({ id, navTitle }, index) => (
-								<li class="h-16">
-									<a
-										class="navbar-link flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
-										href={`#${id}`}
-										{...getAnalyticsAttribute(
-											"interact",
-											`NavLink-${index}-${id}`,
-											disableAnalytics,
-										)}
-									>
-										{navTitle}
-									</a>
-								</li>
-							))
+							sections
+								.filter((item) => !item.disabled)
+								.map(({ id, navTitle, analyticsLabel }) => (
+									<li class="h-16">
+										<a
+											class="navbar-link flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+											href={`#${id}`}
+											{...getAnalyticsAttribute(
+												"interact",
+												`NavLink-${analyticsLabel ?? id}`,
+												disableAnalytics,
+											)}
+										>
+											{navTitle}
+										</a>
+									</li>
+								))
 						}
 						{
 							navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && (
@@ -101,22 +98,24 @@ const { disableAnalytics } = navbar;
 										/>
 									</button>
 									<ul class="absolute top-full right-0 hidden min-w-48 list-none rounded-md border border-gray-700 bg-gray-900 bg-linear-to-b from-gray-800 to-gray-900 p-2 drop-shadow-md/50 group-focus-within:block group-hover:block">
-										{navbar.moreLinks.items?.map(({ label, href, newTab }, index) => (
-											<li class="border-t border-gray-700 first:mt-0 first:border-t-0">
-												<a
-													class="block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
-													href={href}
-													target={newTab ? "_blank" : "_self"}
-													{...getAnalyticsAttribute(
-														"interact",
-														`NavMoreLink-${index}-${label.replace(/\s+/g, "")}`,
-														disableAnalytics,
-													)}
-												>
-													{label}
-												</a>
-											</li>
-										))}
+										{navbar.moreLinks.items?.map(
+											({ label, href, newTab, analyticsLabel }, index) => (
+												<li class="border-t border-gray-700 first:mt-0 first:border-t-0">
+													<a
+														class="block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+														href={href}
+														target={newTab ? "_blank" : "_self"}
+														{...getAnalyticsAttribute(
+															"interact",
+															`NavMoreLink-${analyticsLabel}`,
+															disableAnalytics || !analyticsLabel,
+														)}
+													>
+														{label}
+													</a>
+												</li>
+											),
+										)}
 									</ul>
 								</li>
 							)
@@ -142,21 +141,23 @@ const { disableAnalytics } = navbar;
 							aria-label={navbar.mobileMenuAriaLabel ?? "Mobile navigation menu"}
 						>
 							{
-								sections.map(({ id, navTitle }, index) => (
-									<li>
-										<a
-											href={`#${id}`}
-											class="navbar-mobile-link block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
-											{...getAnalyticsAttribute(
-												"interact",
-												`NavMobileLink-${index}-${id}`,
-												disableAnalytics,
-											)}
-										>
-											{navTitle}
-										</a>
-									</li>
-								))
+								sections
+									.filter((item) => !item.disabled)
+									.map(({ id, navTitle, analyticsLabel }) => (
+										<li>
+											<a
+												href={`#${id}`}
+												class="navbar-mobile-link block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+												{...getAnalyticsAttribute(
+													"interact",
+													`NavMobileLink-${analyticsLabel ?? id}`,
+													disableAnalytics,
+												)}
+											>
+												{navTitle}
+											</a>
+										</li>
+									))
 							}
 							{
 								navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && (
@@ -178,22 +179,24 @@ const { disableAnalytics } = navbar;
 												/>
 											</summary>
 											<ul class="mx-3 mt-1 space-y-1 divide-y divide-white/10 rounded-lg border border-white/10 bg-gray-700/20">
-												{navbar.moreLinks.items?.map(({ label, href, newTab }, index) => (
-													<li>
-														<a
-															href={href}
-															class="block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
-															target={newTab ? "_blank" : "_self"}
-															{...getAnalyticsAttribute(
-																"interact",
-																`NavMoreLinkMobile-${index}-${label.replace(/\s+/g, "")}`,
-																disableAnalytics,
-															)}
-														>
-															{label}
-														</a>
-													</li>
-												))}
+												{navbar.moreLinks.items?.map(
+													({ label, href, newTab, analyticsLabel }) => (
+														<li>
+															<a
+																href={href}
+																class="block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+																target={newTab ? "_blank" : "_self"}
+																{...getAnalyticsAttribute(
+																	"interact",
+																	`NavMoreLinkMobile-${analyticsLabel}`,
+																	disableAnalytics || !analyticsLabel,
+																)}
+															>
+																{label}
+															</a>
+														</li>
+													),
+												)}
 											</ul>
 										</details>
 									</li>
@@ -222,17 +225,14 @@ const { disableAnalytics } = navbar;
 			disableDynamicNavbar = this.props.disableDynamicNavbar ?? false;
 
 			connectedCallback() {
-				// Initialize navbar features when DOM is ready
-				document.addEventListener("DOMContentLoaded", () => {
-					const { root, mobileMenu, sections, navContainer } = this;
+				const { root, mobileMenu, sections, navContainer } = this;
 
-					if (!root || !mobileMenu || !navContainer) {
-						console.error("Navbar elements not found");
-						return;
-					}
+				if (!root || !mobileMenu || !navContainer) {
+					console.error("Navbar elements not found");
+					return;
+				}
 
-					useNavbar(root, mobileMenu, sections, navContainer, this.disableDynamicNavbar);
-				});
+				useNavbar(root, mobileMenu, sections, navContainer, this.disableDynamicNavbar);
 			}
 		},
 	);

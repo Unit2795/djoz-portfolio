@@ -18,6 +18,8 @@ export interface Section {
 	disabled?: boolean;
 	// Disable analytics tracking for this section
 	disableAnalytics?: boolean;
+	// A descriptive label for analytics purposes, if not provided, analytics will use the id
+	analyticsLabel?: string;
 }
 
 export type Sections = Record<string, Section>;
@@ -31,7 +33,6 @@ export interface NavbarContent {
 		text: string;
 		size?: string;
 		href?: string;
-		ariaLabel?: string;
 	};
 	moreLinks?: {
 		label?: string;
@@ -39,6 +40,7 @@ export interface NavbarContent {
 			label: string;
 			href?: string;
 			newTab?: boolean;
+			analyticsLabel?: string;
 		}[];
 	};
 	skipLinkText?: string;
@@ -101,6 +103,7 @@ export interface ProjectItem {
 	tags: string[];
 	link: string;
 	img: string;
+	analyticsLabel?: string;
 }
 
 export type ProjectsContent = {
@@ -112,8 +115,8 @@ export interface SkillItem {
 	name: string;
 	subtitle: string;
 	icon: IconType;
-	level: number;
 	subSkills?: string[];
+	analyticsLabel?: string;
 }
 
 export type SkillsContent = SkillItem[];
@@ -125,6 +128,8 @@ export interface LinkItem {
 	link?: string;
 	// If a value is provided, a copy text button will be used
 	value?: string;
+	// A descriptive label for analytics purposes, if not provided, analytics will be disabled for this item
+	analyticsLabel?: string;
 }
 
 export interface FormStatePage {
@@ -151,7 +156,9 @@ export interface ContactFormContent {
 		placeholder: string;
 	};
 	button: string;
+	buttonSending: string;
 	formAriaLabel?: string;
+	errorMessage: string;
 	statusPages?: {
 		success: FormStatePage;
 		error: FormStatePage;

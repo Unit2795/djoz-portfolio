@@ -30,9 +30,9 @@ const getDescriptionId = (section: Section) => `${section.id}-description`;
 	{...getAnalyticsAttribute("scroll", analyticsId, section.disableAnalytics)}
 >
 	<div class:list={["container mx-auto px-6", containerClass]}>
-		<h1 class={headerClass} id={getLabelId(section)}>
+		<h2 class={headerClass} id={getLabelId(section)}>
 			{section.header || section.navTitle}
-		</h1>
+		</h2>
 		{
 			section.description && (
 				<p class={descriptionClass} set:html={section.description} id={getDescriptionId(section)} />

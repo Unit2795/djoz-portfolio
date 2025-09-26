@@ -54,8 +54,10 @@ empty_bucket() {
 		# stop when there’s nothing left
 		[ "$(jq 'length' <<<"$payload")" -eq 0 ] && break
 
-		aws s3api delete-objects --bucket "$bucket" \
-			--delete "$(jq -c --argjson objs "$payload" '{Objects: $objs, Quiet: true}')" >/dev/null
+		aws s3api delete-objects \
+			--cli-input-json "$(printf '%s' "$payload" |
+				jq -c --arg bucket "$bucket" '{Bucket:$bucket, Delete:{Objects: ., Quiet:true}}')" \
+			--cli-binary-format raw-in-base64-out
 	done
 
 	echo "Bucket emptied."

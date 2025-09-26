@@ -24,7 +24,7 @@ const descriptionId = about.aria?.description ? "intro-aboutme-description" : un
 	aria-describedby={descriptionId}
 	{...getAnalyticsAttribute("interact", `AboutMeCard`, sections.INTRO.disableAnalytics)}
 >
-	<h2 id={headerId} class="sr-only">{about.aria?.title}</h2>
+	<h3 id={headerId} class="sr-only">{about.aria?.title}</h3>
 	{
 		about.aria?.description && (
 			<p id={descriptionId} class="sr-only">
