@@ -1,125 +1,59 @@
 import { disableAnalytics } from "@/content";
+import { type AnalyticsEvent, type EventName, events } from "@djoz-portfolio/shared";
 
 const analyticsEndpoint = (import.meta.env.PUBLIC_API_INGEST_ENDPOINT as string) ?? "/api/ingest";
 const FLUSH_INTERVAL_MS = 5000; // 5 seconds
 // If this batch size is changed, be sure to adjust the ingest lambda accordingly!
 const BATCH_SIZE = 10;
 
-const events = {
-	exit: "exit",
-	visit: "visit",
-	scroll: "scroll",
-	click: "click",
-	focus: "focus",
-	hover: "hover",
-	keydown: "keydown",
-} as const;
-type EventName = (typeof events)[keyof typeof events];
-// We keep the analytics event schema small, simple and flat for easy ingestion and processing
-// ⚠️If the AnalyticsEvent schema changes, be sure to adjust the ingest lambda accordingly!
-interface AnalyticsEvent {
-	// Event type
-	e: EventName;
-	// Event metadata
-	m?: string;
-	// User ID
-	u: string | null;
-	// session ID
-	s: string | null;
-}
-
 const eventQueue: AnalyticsEvent[] = [];
 let timer: NodeJS.Timeout | null = null;
 
-// Safely get user and session IDs by leveraging localStorage and sessionStorage if available
-class SessionManager {
-	private hasLocalStorage = false;
-	private hasSessionStorage = false;
-	private _sessionID: string | null = null;
+/* 
+	Generate a unique ID, preferring crypto.randomUUID if available.
+	Fallback to a combination of timestamp and random number if not.
+*/
+const genUUID = () => {
+	if (typeof crypto === "undefined" || typeof crypto.randomUUID !== "function")
+		return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+	if (crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
 
-	private _cacheUserID: string | null = null;
-	private _cacheSessionID: string | null = null;
-
-	constructor() {
-		this._checkStorage();
+	return "uuidfailed";
+};
+/* 
+	Check if localStorage is functional
+*/
+const localStorageFunctional = () => {
+	try {
+		const value = "test";
+		const key = "__analytics_storage_test__";
+		localStorage.setItem(key, value);
+		const readout = localStorage.getItem(key);
+		localStorage.removeItem(key);
+		return value === readout;
+	} catch {
+		return false;
 	}
-
-	_checkStorage() {
-		this.hasLocalStorage = this._isAvailable("localStorage");
-		this.hasSessionStorage = this._isAvailable("sessionStorage");
-	}
-
-	// Test if storage API is available and functional
-	_isAvailable(type: "localStorage" | "sessionStorage") {
-		try {
-			const storage = window[type];
-			const testKey = "__storage_test__";
-			const testValue = "test";
-			storage.setItem(testKey, testValue);
-			const value = storage.getItem(testKey);
-			storage.removeItem(testKey);
-			return value === testValue;
-		} catch {
-			return false;
+};
+/* 
+	Retrieve or generate a persistent session ID
+*/
+let _cachedSessionId: string | null = null;
+const getSessionId = () => {
+	if (_cachedSessionId) return _cachedSessionId;
+	if (localStorageFunctional()) {
+		let sessionId = sessionStorage.getItem("sessionID");
+		if (!sessionId) {
+			sessionId = genUUID();
+			sessionStorage.setItem("sessionID", sessionId);
 		}
+		_cachedSessionId = sessionId;
+		return sessionId;
+	} else {
+		_cachedSessionId = genUUID();
+		return _cachedSessionId;
 	}
-
-	// Generate a UUID using crypto API if available, otherwise fallback to timestamp and random number
-	_generateUUID() {
-		if (typeof window === "undefined") return "server";
-		if (typeof crypto === "undefined" || typeof crypto.randomUUID !== "function")
-			return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-		if (crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
-
-		return "uuidfailed";
-	}
-
-	get userID() {
-		if (this._cacheUserID) return this._cacheUserID;
-		try {
-			if (this.hasLocalStorage) {
-				const item = localStorage.getItem("userID");
-				if (item) {
-					this._cacheUserID = item;
-					return item;
-				} else {
-					const newID = this._generateUUID();
-					localStorage.setItem("userID", newID);
-					this._cacheUserID = newID;
-					return newID;
-				}
-			} else {
-				this._cacheUserID = "no-local-storage";
-				return "nolocalstorage";
-			}
-		} catch {
-			this._cacheUserID = "localstorageerror";
-			return "localstorageerror";
-		}
-	}
-
-	get sessionID() {
-		if (this._cacheSessionID) return this._cacheSessionID;
-		if (this.hasSessionStorage) {
-			const item = sessionStorage.getItem("sessionID");
-			if (item) {
-				this._cacheSessionID = item;
-				return item;
-			} else {
-				const newID = this._generateUUID();
-				sessionStorage.setItem("sessionID", newID);
-				this._cacheSessionID = newID;
-				return newID;
-			}
-		} else {
-			this._sessionID = this._generateUUID();
-			this._cacheSessionID = this._sessionID;
-			return this._sessionID;
-		}
-	}
-}
-
-const sessionManager = new SessionManager();
+};
 
 // Add an analytics event to the queue and flush if batch size reached
 export const analyticsEvent = (eventName: EventName, memo?: string) => {
@@ -177,7 +111,6 @@ const scrollWatcher = () => {
 				}
 			});
 		},
-		// Adjust rootMargin to trigger after before the element is fully in view
 		{ threshold: 0, rootMargin: "0px 0px -20px 0px" },
 	);
 
@@ -212,10 +145,9 @@ function attachInteractionHandlers() {
 
 // Create an analytics event object with the required metadata
 const createEvent = (eventName: EventName, memo?: string): AnalyticsEvent => ({
-	// ⚠️If the AnalyticsEvent schema changes, be sure to adjust the ingest lambda accordingly!
+	// ⚠️If the AnalyticsEvent schema changes, be sure to adjust the ingest & processor lambda accordingly!
 	e: eventName,
-	u: sessionManager.userID,
-	s: sessionManager.sessionID,
+	s: getSessionId(),
 	m: memo,
 });
 

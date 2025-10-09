@@ -17,6 +17,7 @@ const COOKIE_TOO_SOON_ERROR = process.env.TOO_SOON_ERROR;
 const COOKIE_TOO_OLD_ERROR = process.env.TOO_OLD_ERROR;
 const EMAIL_INVALID_ERROR = process.env.EMAIL_INVALID_ERROR;
 const MESSAGE_INVALID_ERROR = process.env.MESSAGE_INVALID_ERROR;
+const DWELLTIME_DISABLED = process.env.DISABLE_DWELLTIME === "true";
 
 // Pre-computed static responses
 const ERROR_RESPONSE = {
@@ -33,8 +34,13 @@ const sesClient = new SESClient({ region: "us-east-1" });
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 function verifyCookie(cookies) {
-	const cookieString = cookies.find((s) => s.startsWith(`${COOKIE_NAME}=`));
-	if (!cookieString) return { ok: false, reason: "missing" };
+	let cookieString;
+	try {
+		cookieString = cookies.find((s) => s.startsWith(`${COOKIE_NAME}=`));
+		if (!cookieString) return { ok: false, reason: "missing" };
+	} catch {
+		return { ok: false, reason: "missing" };
+	}
 
 	let timestampString, signature;
 	try {
@@ -77,21 +83,22 @@ function respond(isJson, statusCode, message) {
 }
 
 exports.handler = async (event) => {
+	const contentType = event.headers["content-type"] || event.headers["Content-Type"];
+	const isJson = contentType?.includes("application/json");
 	try {
-		const contentType = event.headers["content-type"] || event.headers["Content-Type"];
-		const isJson = contentType?.includes("application/json");
-
-		const { cookies } = event;
-		const cookieCheck = verifyCookie(cookies);
-		if (!cookieCheck.ok) {
-			console.error("Cookie check failed:", cookieCheck.reason);
-			let errorMessage = COOKIE_GENERAL_ERROR;
-			if (cookieCheck.reason === "too-soon") {
-				errorMessage = COOKIE_TOO_SOON_ERROR;
-			} else if (cookieCheck.reason === "too-old") {
-				errorMessage = COOKIE_TOO_OLD_ERROR;
+		if (!DWELLTIME_DISABLED) {
+			const { cookies } = event;
+			const cookieCheck = verifyCookie(cookies);
+			if (!cookieCheck.ok) {
+				console.error("Cookie check failed:", cookieCheck.reason);
+				let errorMessage = COOKIE_GENERAL_ERROR;
+				if (cookieCheck.reason === "too-soon") {
+					errorMessage = COOKIE_TOO_SOON_ERROR;
+				} else if (cookieCheck.reason === "too-old") {
+					errorMessage = COOKIE_TOO_OLD_ERROR;
+				}
+				return respond(isJson, 400, errorMessage);
 			}
-			return respond(isJson, 400, errorMessage);
 		}
 
 		const { body } = event;
@@ -193,6 +200,7 @@ exports.handler = async (event) => {
 
 		return respond(isJson, 200);
 	} catch (error) {
+		const isJson = contentType?.includes("application/json");
 		console.error("Error:", error);
 		return respond(isJson, 500);
 	}

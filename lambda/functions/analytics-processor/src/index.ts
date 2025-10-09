@@ -1,18 +1,20 @@
-const { randomUUID } = require("crypto");
-const { gzipSync } = require("zlib");
-const {
+import {randomUUID} from "crypto";
+import {gzipSync} from "zlib";
+import {
 	SQSClient,
 	ReceiveMessageCommand,
 	DeleteMessageBatchCommand,
 	GetQueueAttributesCommand,
-} = require("@aws-sdk/client-sqs");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
+} from "@aws-sdk/client-sqs";
+import {S3Client, PutObjectCommand} from "@aws-sdk/client-s3";
+import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda";
+import type {ScheduledHandler} from "aws-lambda";
+import {AnalyticsEvent} from "@djoz-portfolio/shared";
 
 const SOFT_STOP_MS = 15000; // stop consuming when <15s left
 const VIS_TIMEOUT_SEC = 120; // per-batch invisibility window
 const LONG_POLL_SEC = 20;
-const { QUEUE_URL, BUCKET, FUNCTION_NAME } = process.env;
+const {QUEUE_URL, BUCKET, FUNCTION_NAME} = process.env;
 
 // Initialize clients once
 const sqs = new SQSClient({});
@@ -20,14 +22,14 @@ const s3 = new S3Client({});
 const lambda = new LambdaClient({});
 
 // Helper to delete messages in batches of 10
-async function deleteMessages(receipts) {
+async function deleteMessages(receipts: (string | undefined)[]) {
 	for (let i = 0; i < receipts.length; i += 10) {
 		const Entries = receipts.slice(i, i + 10).map((ReceiptHandle, j) => ({
 			Id: String(i + j),
 			ReceiptHandle,
 		}));
 
-		const { Failed } = await sqs.send(new DeleteMessageBatchCommand({ QueueUrl: QUEUE_URL, Entries }));
+		const {Failed} = await sqs.send(new DeleteMessageBatchCommand({QueueUrl: QUEUE_URL, Entries}));
 
 		if (Failed?.length) {
 			console.warn("DeleteMessageBatch partial failures:", Failed);
@@ -37,7 +39,7 @@ async function deleteMessages(receipts) {
 
 // Check queue depth for re-invocation decision
 async function getQueueDepth() {
-	const { Attributes } = await sqs.send(
+	const {Attributes} = await sqs.send(
 		new GetQueueAttributesCommand({
 			QueueUrl: QUEUE_URL,
 			AttributeNames: ["ApproximateNumberOfMessages", "ApproximateNumberOfMessagesNotVisible"],
@@ -45,36 +47,42 @@ async function getQueueDepth() {
 	);
 	return (
 		Number(Attributes?.ApproximateNumberOfMessages || 0) +
-			Number(Attributes?.ApproximateNumberOfMessagesNotVisible || 0) >
+		Number(Attributes?.ApproximateNumberOfMessagesNotVisible || 0) >
 		0
 	);
 }
 
-// Validate event structure
-function isValidEvent(item) {
-	return (
-		item &&
-		typeof item === "object" &&
-		item.e &&
-		typeof item.e === "string" &&
-		item.e.length <= 24 &&
-		(!item.m || (typeof item.m === "string" && item.m.length <= 256)) &&
-		item.u &&
-		typeof item.u === "string" &&
-		item.u.length === 36 &&
-		item.s &&
-		typeof item.s === "string" &&
-		item.s.length === 36
-	);
+/*
+	basic check to ensure that event has expected structure:
+	- is an object, has 'e', 'm', 's' properties
+
+	Note!: If the schema for events changes, this function should be updated!
+*/
+function isValidEvent(item: AnalyticsEvent) {
+	// Check if input is an object and not null
+	if (typeof item !== "object" || item === null) {
+		return false;
+	}
+	// If metadata exists, it must be a string
+	if ("m" in item && typeof item.m !== "string") {
+		return false;
+	}
+	// Session ID is invalid if not a string
+	if (typeof item.s !== "string") {
+		return false;
+	}
+
+	// Ensure that needed properties are present
+	return true;
 }
 
-exports.handler = async (event, context) => {
+export const handler: ScheduledHandler = async (_event, context) => {
 	const events = [];
 	const receipts = [];
 
 	// Consume messages until timeout or empty queue
 	while (context.getRemainingTimeInMillis() > SOFT_STOP_MS) {
-		const { Messages } = await sqs.send(
+		const {Messages} = await sqs.send(
 			new ReceiveMessageCommand({
 				QueueUrl: QUEUE_URL,
 				MaxNumberOfMessages: 10,
@@ -85,15 +93,19 @@ exports.handler = async (event, context) => {
 
 		if (!Messages?.length) break;
 
-		for (const { ReceiptHandle, Body } of Messages) {
+		for (const {ReceiptHandle, Body} of Messages) {
+			if (!ReceiptHandle) continue;
 			receipts.push(ReceiptHandle);
-			try {
-				const { events: bodyEvents, ...metadata } = JSON.parse(Body);
-				if (!Array.isArray(bodyEvents)) continue;
+			if (!Body) continue;
 
+			try {
+				const {events: bodyEvents, ...metadata} = JSON.parse(Body);
+				if (!Array.isArray(bodyEvents)) continue;
 				for (const item of bodyEvents) {
 					if (isValidEvent(item)) {
-						events.push({ ...item, ...metadata });
+						events.push({...item, ...metadata});
+					} else {
+						console.warn("Invalid event structure, skipping!", item);
 					}
 				}
 			} catch {
@@ -103,7 +115,7 @@ exports.handler = async (event, context) => {
 	}
 
 	if (!events.length) {
-		return { statusCode: 204, body: "no messages" };
+		return;
 	}
 
 	// Write to S3
@@ -124,6 +136,8 @@ exports.handler = async (event, context) => {
 		})
 	);
 
+	console.log(`Processed ${events.length} events from ${receipts.length} messages`);
+
 	// Delete messages after successful upload
 	await deleteMessages(receipts);
 
@@ -131,6 +145,7 @@ exports.handler = async (event, context) => {
 	const shouldContinue = (await getQueueDepth()) || context.getRemainingTimeInMillis() <= SOFT_STOP_MS;
 
 	if (shouldContinue && FUNCTION_NAME) {
+		console.log("Re-invoking for additional processing, events remain in queue or time is short");
 		await lambda.send(
 			new InvokeCommand({
 				FunctionName: FUNCTION_NAME,
@@ -139,8 +154,7 @@ exports.handler = async (event, context) => {
 		);
 	}
 
-	return {
-		statusCode: 200,
-		body: `wrote ${events.length} events to s3://${BUCKET}/${key}`,
-	};
+	console.log(`Wrote ${events.length} events to s3://${BUCKET}/${key}`);
+
+	return;
 };

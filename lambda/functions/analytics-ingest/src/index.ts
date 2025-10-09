@@ -1,17 +1,19 @@
-const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs");
+import {SQSClient, SendMessageCommand} from "@aws-sdk/client-sqs";
+import {AnalyticsChunk} from "@djoz-portfolio/shared";
+import {APIGatewayProxyHandlerV2} from "aws-lambda";
 
 // Cache constants
 const QUEUE_URL = process.env.QUEUE_URL;
 const SCHEMA_VERSION = 1;
-const RESPONSE = { statusCode: 204, body: "" };
+const RESPONSE = {statusCode: 204, body: ""};
 
 // Initialize SQS client once
 const sqs = new SQSClient({});
 
-exports.handler = async (event) => {
-	// Early return for oversized requests
+export const handler: APIGatewayProxyHandlerV2 = async (event) => {
+	// Early return for under/oversized requests
 	const bodyLength = event.body?.length || 0;
-	if (bodyLength < 72 || bodyLength > 2000) {
+	if (!event.body || bodyLength < 6 || bodyLength > 4000) {
 		console.error("Invalid body length:", bodyLength);
 		return RESPONSE;
 	}
@@ -40,12 +42,12 @@ exports.handler = async (event) => {
 			QueueUrl: QUEUE_URL,
 			MessageBody: JSON.stringify({
 				events,
-				timestamp: Date.now(),
+				// Store timestamp in seconds to save space
+				timestamp: Math.floor(Date.now() / 1000),
 				schemaVersion: SCHEMA_VERSION,
 				userAgent: ctx?.userAgent || headers["user-agent"] || headers["User-Agent"] || null,
-				ip: ctx?.sourceIp || null,
-				proxiedIp: headers["x-forwarded-for"]?.split(",")[0].trim() || null,
-			}),
+				ip: ctx?.sourceIp || headers["x-forwarded-for"]?.split(",")[0].trim() || null,
+			} as AnalyticsChunk),
 		})
 	);
 

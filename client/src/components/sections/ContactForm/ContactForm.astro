@@ -27,7 +27,7 @@ export type Expose = {
 	<div class="mt-6">
 		{
 			contactForm.links && contactForm.links.length > 0 && (
-				<ul class:list={["mt-14 flex justify-center gap-8"]}>
+				<ul class:list={["mt-14 flex flex-wrap justify-center gap-8"]}>
 					{contactForm.links.map(({ link, value, icon, label, analyticsLabel }, i) => {
 						const delay = i * 250 + 500;
 						if (link) {

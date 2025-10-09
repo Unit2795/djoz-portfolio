@@ -69,7 +69,7 @@ const { disableAnalytics } = navbar;
 								.map(({ id, navTitle, analyticsLabel }) => (
 									<li class="h-16">
 										<a
-											class="navbar-link flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+											class="navbar-link user-select-none flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
 											href={`#${id}`}
 											{...getAnalyticsAttribute(
 												"interact",
@@ -98,24 +98,22 @@ const { disableAnalytics } = navbar;
 										/>
 									</button>
 									<ul class="absolute top-full right-0 hidden min-w-48 list-none rounded-md border border-gray-700 bg-gray-900 bg-linear-to-b from-gray-800 to-gray-900 p-2 drop-shadow-md/50 group-focus-within:block group-hover:block">
-										{navbar.moreLinks.items?.map(
-											({ label, href, newTab, analyticsLabel }, index) => (
-												<li class="border-t border-gray-700 first:mt-0 first:border-t-0">
-													<a
-														class="block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
-														href={href}
-														target={newTab ? "_blank" : "_self"}
-														{...getAnalyticsAttribute(
-															"interact",
-															`NavMoreLink-${analyticsLabel}`,
-															disableAnalytics || !analyticsLabel,
-														)}
-													>
-														{label}
-													</a>
-												</li>
-											),
-										)}
+										{navbar.moreLinks.items?.map(({ label, href, newTab, analyticsLabel }) => (
+											<li class="border-t border-gray-700 first:mt-0 first:border-t-0">
+												<a
+													class="user-select-none block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+													href={href}
+													target={newTab ? "_blank" : "_self"}
+													{...getAnalyticsAttribute(
+														"interact",
+														`NavMoreLink-${analyticsLabel}`,
+														disableAnalytics || !analyticsLabel,
+													)}
+												>
+													{label}
+												</a>
+											</li>
+										))}
 									</ul>
 								</li>
 							)
@@ -147,7 +145,7 @@ const { disableAnalytics } = navbar;
 										<li>
 											<a
 												href={`#${id}`}
-												class="navbar-mobile-link block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+												class="navbar-mobile-link user-select-none block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
 												{...getAnalyticsAttribute(
 													"interact",
 													`NavMobileLink-${analyticsLabel ?? id}`,
@@ -184,7 +182,7 @@ const { disableAnalytics } = navbar;
 														<li>
 															<a
 																href={href}
-																class="block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+																class="user-select-none block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
 																target={newTab ? "_blank" : "_self"}
 																{...getAnalyticsAttribute(
 																	"interact",

@@ -55,7 +55,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 			}
 			{
 				links && links.length > 0 && (
-					<ul class:list={["mt-6 flex justify-center gap-8", aboutMe && "lg:justify-start"]}>
+					<ul class:list={["mt-6 flex flex-wrap justify-center gap-8", aboutMe && "lg:justify-start"]}>
 						{links.map(({ link, value, icon, label, analyticsLabel }, i) => {
 							const delay = i * 250 + 500;
 							if (link) {

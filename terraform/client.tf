@@ -132,7 +132,7 @@ resource "aws_cloudfront_function" "www_redirect" {
   runtime = "cloudfront-js-2.0"
   comment = "Redirect www to non-www"
   publish = true
-  code    = file("${path.module}/../lambda/www-redirect.js")
+  code    = file("${path.module}/../lambda/functions/www-redirect/src/index.js")
 }
 
 

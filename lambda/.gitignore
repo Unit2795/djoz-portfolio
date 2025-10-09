@@ -1,0 +1,3 @@
+# Ignore built zip artifacts and dist directories
+*.zip
+dist/

@@ -126,21 +126,18 @@ resource "aws_apigatewayv2_route" "ingest" {
 	CONTACT ME LAMBDA
 	======================================================================
 */
-data "archive_file" "contactme" {
-  count       = var.disable_contactform ? 0 : 1
-  type        = "zip"
-  source_file = "${path.cwd}/../lambda/contactme.js"
-  output_path = "${path.module}/../lambda/contactme_function.zip"
+locals {
+  contactme_zip = "${path.module}/../lambda/functions/contactme/index.zip"
 }
 
 resource "aws_lambda_function" "contactme" {
   count            = var.disable_contactform ? 0 : 1
   function_name    = "contactme-${var.bucket_name}"
-  filename         = data.archive_file.contactme[0].output_path
-  source_code_hash = data.archive_file.contactme[0].output_base64sha256
+  filename         = local.contactme_zip
+  source_code_hash = filebase64sha256(local.contactme_zip)
   timeout          = 10
   memory_size      = 2048
-  handler          = "contactme.handler"
+  handler          = "index.handler"
   runtime          = "nodejs22.x"
   architectures    = ["arm64"]
   role             = aws_iam_role.contactme[0].arn
@@ -164,6 +161,7 @@ resource "aws_lambda_function" "contactme" {
       TOO_OLD_ERROR         = var.cookie_too_old_error
       EMAIL_INVALID_ERROR   = var.email_invalid_error
       MESSAGE_INVALID_ERROR = var.message_invalid_error
+      DISABLE_DWELLTIME     = var.disable_dwelltime
     }
   }
 }
@@ -233,24 +231,22 @@ resource "aws_lambda_permission" "contactme_api" {
 	STAMP LAMBDA
 	======================================================================
 */
-data "archive_file" "stamp" {
-  count       = var.disable_dwelltime ? 0 : 1
-  type        = "zip"
-  source_file = "${path.cwd}/../lambda/stamp.js"
-  output_path = "${path.module}/../lambda/stamp_function.zip"
+locals {
+  stamp_zip = "${path.module}/../lambda/functions/stamp/index.zip"
 }
 
 resource "aws_lambda_function" "stamp" {
   count            = var.disable_dwelltime ? 0 : 1
   function_name    = "stamp-${var.bucket_name}"
-  filename         = data.archive_file.stamp[0].output_path
-  source_code_hash = data.archive_file.stamp[0].output_base64sha256
-  timeout          = 3
+  filename         = local.stamp_zip
+  source_code_hash = filebase64sha256(local.stamp_zip)
+  timeout          = 5
   memory_size      = 256
-  handler          = "stamp.handler"
+  handler          = "index.handler"
   runtime          = "nodejs22.x"
   architectures    = ["arm64"]
   role             = aws_iam_role.stamp[0].arn
+
 
   environment {
     variables = {
@@ -299,22 +295,20 @@ resource "aws_lambda_permission" "stamp_api" {
 	INGEST (ANALYTICS) LAMBDA
 	======================================================================
 */
-data "archive_file" "ingest" {
-  count       = var.disable_analytics ? 0 : 1
-  type        = "zip"
-  source_file = "${path.cwd}/../lambda/analytics-ingest.js"
-  output_path = "${path.module}/../lambda/analytics-ingest.zip"
+locals {
+  ingest_zip = "${path.module}/../lambda/functions/analytics-ingest/index.zip"
 }
 
 resource "aws_lambda_function" "ingest" {
   count            = var.disable_analytics ? 0 : 1
   function_name    = "analytics-ingest-${var.bucket_name}"
   role             = aws_iam_role.ingest[0].arn
-  handler          = "analytics-ingest.handler"
+  handler          = "index.handler"
   runtime          = "nodejs22.x"
-  filename         = data.archive_file.ingest[0].output_path
-  source_code_hash = data.archive_file.ingest[0].output_base64sha256
-  timeout          = 3
+  architectures    = ["arm64"]
+  filename         = local.ingest_zip
+  source_code_hash = filebase64sha256(local.ingest_zip)
+  timeout          = 5
   memory_size      = 256
 
   environment {
@@ -382,23 +376,22 @@ resource "aws_lambda_permission" "ingest_api" {
 	PROCESSOR (ANALYTICS) LAMBDA
 	======================================================================
 */
-data "archive_file" "processor" {
-  count       = var.disable_analytics ? 0 : 1
-  type        = "zip"
-  source_file = "${path.cwd}/../lambda/analytics-processor.js"
-  output_path = "${path.module}/../lambda/analytics-processor.zip"
+locals {
+  processor_zip = "${path.module}/../lambda/functions/analytics-processor/index.zip"
 }
 
 resource "aws_lambda_function" "processor" {
   count            = var.disable_analytics ? 0 : 1
   function_name    = "analytics-processor-${var.bucket_name}"
   role             = aws_iam_role.processor[0].arn
-  handler          = "analytics-processor.handler"
+  handler          = "index.handler"
   runtime          = "nodejs22.x"
-  filename         = data.archive_file.processor[0].output_path
-  source_code_hash = data.archive_file.processor[0].output_base64sha256
+  architectures    = ["arm64"]
+  filename         = local.processor_zip
+  source_code_hash = filebase64sha256(local.processor_zip)
   timeout          = 900
   memory_size      = 2048
+
 
   environment {
     variables = {
@@ -510,9 +503,10 @@ resource "aws_sqs_queue" "analytics" {
 	======================================================================
 */
 resource "aws_cloudwatch_event_rule" "processor_schedule" {
-  count               = var.disable_analytics ? 0 : 1
-  name                = "analytics-processor-event-${var.bucket_name}"
-  schedule_expression = "cron(0 0 * * ? *)"
+  count = var.disable_analytics ? 0 : 1
+  name  = "analytics-processor-event-${var.bucket_name}"
+  # Run once a day at 00:01 UTC
+  schedule_expression = "cron(1 0 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "processor_target" {

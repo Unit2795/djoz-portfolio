@@ -19,24 +19,27 @@
 
 # Links
 
-[About](./docs/about.md) | [FAQs](./docs/faqs.md) | [Setup Guide](./docs/setup.md) | [Deployment Guide](./docs/deployment.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
+[About](./docs/about.md) | [Setup Guide](./docs/setup.md) | [Deployment Guide](./docs/deployment.md) | [Analytics](./docs/analytics.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
 # Overview
 
-- Thank you for checking out my portfolio template! It is built with using [Astro](https://astro.build/) with vanilla HTML, JS, and [Tailwind CSS](https://tailwindcss.com/).
-- The site is deployed using [Terraform](https://www.terraform.io/) and [GitHub Actions](https://docs.github.com/en/actions) and [AWS](https://aws.amazon.com/).
-- Click "[use this template](https://github.com/Unit2795/djoz-portfolio/generate)" and follow the instructions in the [Setup Guide](./docs/setup.md) and [Deployment Guide](./docs/deployment.md) if you'd like to set up a copy of this website for yourself!
+- Thank you for checking out my portfolio template! It's built in [Astro](https://astro.build/) with vanilla HTML, JS, and [Tailwind CSS](https://tailwindcss.com/).
+- The site is deployed using [Terraform](https://www.terraform.io/), [GitHub Actions](https://docs.github.com/en/actions), and [AWS](https://aws.amazon.com/).
+- This site includes its own optional contact form API with anti-spam protection and a [simple analytics API](./docs/analytics.md) with a local dashboard to visualize analytics data.
+- Click ["use this template"](https://github.com/Unit2795/djoz-portfolio/generate) and follow the instructions in the [Setup Guide](./docs/setup.md) if you'd like to set up a copy of this website for yourself! Optionally, use the [Deployment Guide](./docs/deployment.md) to deploy to AWS.
 - Want to learn more about the reasoning behind the implementation of this portfolio, other helpful context, or FAQs? See the [About page](./docs/about.md)
 - Need help or have a suggestion? Please create a GitHub issue.
-- This is an ongoing project being actively updates
+- This is an ongoing project being actively updated
+
+> ℹ️ Note: This portfolio is an experimental testbed and proof of concept for my very specific use-case. It is subject to change abruptly.
 
 ## ⚡️ **Performance**
 
-- Fully statically rendered at build time with CMS content backed into HTML (> 30KB compressed)
+- Statically rendered with deeply customizable CMS content (Entire site is under 30KB compressed)
 - CDN-powered global delivery
-- Completely functional without Javascript
-- CSS/JS is built into the index.html file to reduce network requests
-- Only 15 KB of JS ships with site
+- Functional without Javascript
+- CSS/JS is built into the html file to reduce network requests
+- Only 15 KB of JS uncompressed
 - 100/100 [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview) score
 
 ## 🎨 **Design & Accessibility**
@@ -80,6 +83,16 @@
   - Automates the deployment of the site to AWS using Terraform and Linux
 - [CloudFormation](https://aws.amazon.com/cloudformation/)
   - Bootstraps the Terraform state backend in AWS
+- [Next.js](https://nextjs.org/)
+  - Used for the local analytics dashboard
+- [DuckDB](https://duckdb.org/)
+  - Database for analytics report generation
+- [Recharts](https://recharts.org/en-US/)
+  - Simple charting library for analytics dashboard
+- [Shadcn/ui](https://ui.shadcn.com/)
+  - Component library for analytics dashboard
+- [Tanstack Table](https://tanstack.com/table)
+  - Table library for analytics dashboard
 
 # License
 
@@ -87,8 +100,10 @@ This project is licensed under the MIT License. You are free to use, modify, and
 
 # Contributing
 
-If you have any suggestions, improvements, or issues, please create a GitHub issue or a pull request. I'd love to hear your feedback!
+If you have any suggestions, improvements, or issues, please create a GitHub issue or a pull request. Feedback welcome!
 
 ---
 
-<p align="center"><img src="./docs/assets/lighthouse.jpg" alt="LightHouse Score" width="400"/></p>
+<div align="center"><img src="./docs/assets/analytics.jpg" alt="Analytics Dashboard" width="400"/><p>Analytics Dashboard</p></div>
+
+<div align="center"><img src="./docs/assets/lighthouse.jpg" alt="Lighthouse Score" width="400"/><p>Lighthouse Score</p></div>
