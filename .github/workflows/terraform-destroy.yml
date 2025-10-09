@@ -15,6 +15,7 @@ permissions:
 jobs:
   terraform_destroy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     # Additional safety check
     if: github.event.inputs.confirm_destroy == 'DESTROY'
@@ -36,6 +37,12 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Cleanup stale Terraform locks
+        working-directory: ./terraform/bootstrap
+        run: |
+          chmod +x ./forcefully-unlock.sh
+          ./forcefully-unlock.sh
 
       - name: Initialize, Plan, and Destroy Terraform
         working-directory: ./terraform
