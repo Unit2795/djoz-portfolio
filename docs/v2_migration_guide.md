@@ -1,16 +1,16 @@
-<h1>Version 2 Migration Guide</h1>
+# Version 2 Migration Guide
 
-# Links
+## Links
 
 [Return to main README.md](../README.md) | [Setup Guide](./setup.md) | [Deployment Guide](./deployment.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
-# Overview
+## Overview
 
 This guide walks you through migrating from Version 1 (V1) to Version 2 (V2) of the portfolio.
 
 The two versions are significantly different, so the process is closer to a fresh start than an incremental upgrade. However, a few elements can be reused to save time.
 
-# Migration Options
+## Migration Options
 
 You have two approaches:
 
@@ -28,9 +28,9 @@ You have two approaches:
 
 Once complete, you’ll reconcile your V1 content with the new V2 structure.
 
-# What Needs Adjustment?
+## What Needs Adjustment?
 
-## Client Assets
+### Client Assets
 
 - `/client/public` directory
   - Keep your existing favicons, hero image, and project images.
@@ -40,7 +40,7 @@ Once complete, you’ll reconcile your V1 content with the new V2 structure.
   - The schema has changed considerably. Some variables (e.g., email, name) remain, but others differ.
   - Review and update this file with your new content.
 
-## Terraform (If using for deploys)
+### Terraform (If using for deploys)
 
 - `/terraform/terraform.tfvars` file
   - Several new variables were introduced. Update this file to match your deployment needs.
@@ -50,18 +50,18 @@ Once complete, you’ll reconcile your V1 content with the new V2 structure.
 - `/terraform/api.tf`
   - If you configured SES for domain-based identity (instead of email-based), migrate your settings accordingly.
 
-## Other Changes
+### Other Changes
 
 - If you made any additional changes to the client, Terraform, or Lambdas, be sure to bring those over!
 
-# Infrastructure Notes
+## Infrastructure Notes
 
 V2 uses much of the same AWS infrastructure as V1, but **resource names and configurations have changed**. Migrating Terraform state is not recommended. Instead:
 
 - **Destroy and redeploy** your infrastructure.
 - Expect small costs when tearing down and recreating resources (typically only a few cents).
 
-## Step 1: Destroy Old Infrastructure
+### Step 1: Destroy Old Infrastructure
 
 1. **Disable auto-deploy**
    1. Go to your repo on GitHub → Actions tab → select "Build and Deploy" → click the three dots → "Disable Workflow".
@@ -73,7 +73,7 @@ V2 uses much of the same AWS infrastructure as V1, but **resource names and conf
    3. This will remove all infrastructure—including your SES sender identity.
    4. ⚠️ Tip: If the destroy fails (e.g., S3 buckets not empty), manually clear the buckets, delete blocking resources, and re-run.
 
-## Step 2: Reconfigure SES
+### Step 2: Reconfigure SES
 
 After destroy completes:
 
@@ -81,7 +81,7 @@ After destroy completes:
 - If using email-based identity, check your inbox for AWS’s verification email.
 - Domain identity verifications usually take about 15 minutes but you can continue with deployment while waiting.
 
-## Step 3: Deploy New Infrastructure
+### Step 3: Deploy New Infrastructure
 
 1. In GitHub Actions:
    1. Re-enable the "Build and Deploy" workflow.
@@ -90,7 +90,7 @@ After destroy completes:
 2. Deployment can take up to **15 minutes**, mostly due to ACM certificate validation and CloudFront distribution.
 3. When complete, visit your domain to see your V2 portfolio live. 🎉
 
-# Summary
+## Summary
 
 - Copy over only what’s reusable (hexagon.svg, images, and index.ts content).
 - Update Terraform variables if deploying infrastructure.

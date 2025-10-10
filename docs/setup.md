@@ -1,26 +1,27 @@
-<h1>Setup Guide</h1>
+# Setup Guide
 
-- [Links](#links)
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Building Your Portfolio Website](#building-your-portfolio-website)
-  - [Initial Setup](#initial-setup)
-  - [Content Customization](#content-customization)
-  - [Development Workflow](#development-workflow)
-  - [Deployment Options](#deployment-options)
-  - [Version Control](#version-control)
-  - [Maintenance](#maintenance)
-    - [Major Version Changes](#major-version-changes)
+- [Setup Guide](#setup-guide)
+  - [Links](#links)
+  - [Overview](#overview)
+  - [Prerequisites](#prerequisites)
+  - [Building Your Portfolio Website](#building-your-portfolio-website)
+    - [Initial Setup](#initial-setup)
+    - [Content Customization](#content-customization)
+    - [Development Workflow](#development-workflow)
+    - [Deployment Options](#deployment-options)
+    - [Version Control](#version-control)
+    - [Maintenance](#maintenance)
+      - [Major Version Changes](#major-version-changes)
 
-# Links
+## Links
 
 [Return to main README.md](../README.md) | [Deployment Guide](./deployment.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
-# Overview
+## Overview
 
 This guide will help you build a copy of the static files for your portfolio website using Astro. Deployment using Terraform is optional and covered in the [Deployment Guide](../docs/deployment.md).
 
-# Prerequisites
+## Prerequisites
 
 You'll need the following in order to build the site:
 
@@ -29,9 +30,9 @@ You'll need the following in order to build the site:
 - [GitHub](https://github.com/) account
 - A code editor like [VS Code](https://code.visualstudio.com/) or [WebStorm](https://www.jetbrains.com/webstorm/)
 
-# Building Your Portfolio Website
+## Building Your Portfolio Website
 
-## Initial Setup
+### Initial Setup
 
 1. **Install Dependencies**
 
@@ -43,7 +44,7 @@ You'll need the following in order to build the site:
    pnpm install
    ```
 
-## Content Customization
+### Content Customization
 
 2. **Update Site Content**
    The site's copywriting content is managed through a singular file ([content/index.ts](./client/src/content/index.ts)) as a sort of simple Git-based CMS.
@@ -75,7 +76,7 @@ You'll need the following in order to build the site:
    - Hero image: 1920x1080px recommended
    - Favicon: Generate a complete set from [favicon.io](https://favicon.io/favicon-converter/)
 
-## Development Workflow
+### Development Workflow
 
 4. **Start Development Server**
 
@@ -101,7 +102,7 @@ You'll need the following in order to build the site:
 
    > The production build will be created in the `/dist` directory, ready for deployment.
 
-## Deployment Options
+### Deployment Options
 
 6. **Choose Your Deployment**
 
@@ -125,7 +126,7 @@ You'll need the following in order to build the site:
        - [Formspree](https://formspree.io/)
        - [Web3Forms](https://web3forms.com/)
 
-## Version Control
+### Version Control
 
 7. **Commit Your Changes**
    ```bash
@@ -134,7 +135,7 @@ You'll need the following in order to build the site:
    git push origin main
    ```
 
-## Maintenance
+### Maintenance
 
 To merge updates from the template repository:
 
@@ -149,7 +150,7 @@ git fetch template
 git merge template/main
 ```
 
-### Major Version Changes
+#### Major Version Changes
 
 The code for this portfolio is actively being updated and improved. It's likely to continue to experience significant changes.
 

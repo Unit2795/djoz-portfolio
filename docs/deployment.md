@@ -1,25 +1,26 @@
-<h1>Deployment Guide</h1>
+# Deployment Guide
 
-- [Links](#links)
-- [Overview](#overview)
-- [Infrastructure](#infrastructure)
-  - [Prerequisites](#prerequisites)
-  - [Deployment Steps](#deployment-steps)
-    - [1. Domain Registration](#1-domain-registration)
-    - [2. DNS Configuration](#2-dns-configuration)
-    - [3. GitHub Actions Setup](#3-github-actions-setup)
-    - [4. Repository Configuration](#4-repository-configuration)
-    - [5. Infrastructure Configuration](#5-infrastructure-configuration)
-    - [6. Deployment](#6-deployment)
-  - [Alternative DNS Setup](#alternative-dns-setup)
-  - [Manually Rebuilding the Site \& Forcing Cache Invalidation](#manually-rebuilding-the-site--forcing-cache-invalidation)
-- [Destroying the Infrastructure](#destroying-the-infrastructure)
+- [Deployment Guide](#deployment-guide)
+  - [Links](#links)
+  - [Overview](#overview)
+  - [Infrastructure](#infrastructure)
+    - [Prerequisites](#prerequisites)
+    - [Deployment Steps](#deployment-steps)
+      - [1. Domain Registration](#1-domain-registration)
+      - [2. DNS Configuration](#2-dns-configuration)
+      - [3. GitHub Actions Setup](#3-github-actions-setup)
+      - [4. Repository Configuration](#4-repository-configuration)
+      - [5. Infrastructure Configuration](#5-infrastructure-configuration)
+      - [6. Deployment](#6-deployment)
+    - [Alternative DNS Setup](#alternative-dns-setup)
+    - [Manually Rebuilding the Site \& Forcing Cache Invalidation](#manually-rebuilding-the-site--forcing-cache-invalidation)
+  - [Destroying the Infrastructure](#destroying-the-infrastructure)
 
-# Links
+## Links
 
 [Return to main README.md](../README.md) | [Setup Guide](./setup.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
-# Overview
+## Overview
 
 This guide walks you through deploying your portfolio using AWS infrastructure. The deployment is automated using GitHub Actions and Terraform, providing you with a production-grade setup including a CDN and a fully serverless backend.
 
@@ -29,7 +30,7 @@ This guide walks you through deploying your portfolio using AWS infrastructure. 
 
 > ⚠️ Warning: The AWS services used in this deployment will incur costs (likely less than $2 per month). Make sure to monitor your usage to avoid unexpected charges.
 
-# Infrastructure
+## Infrastructure
 
 The deployment automatically provisions:
 
@@ -45,7 +46,7 @@ The deployment automatically provisions:
 - **ACM** - SSL/TLS certificate management
 - **Route 53** - DNS management (optional)
 
-## Prerequisites
+### Prerequisites
 
 - [AWS Account](https://aws.amazon.com/) with administrative access
 - [GitHub](https://github.com/) account
@@ -55,13 +56,13 @@ The deployment automatically provisions:
 - [Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) installed locally (if verifying configs or deploying locally)
 - [AWS CLI](https://aws.amazon.com/cli/) installed and configured locally (if deploying locally)
 
-## Deployment Steps
+### Deployment Steps
 
-### 1. Domain Registration
+#### 1. Domain Registration
 
 If you don't have a domain name yet, you can register one through [Route 53](https://aws.amazon.com/route53/) or any domain registrar of your choice.
 
-### 2. DNS Configuration
+#### 2. DNS Configuration
 
 If you don't have one already and wish to use Route 53 for your DNS provider, create a hosted zone for your domain using the AWS CLI or in the AWS Console.
 
@@ -77,7 +78,7 @@ aws route53 get-hosted-zone --id /hostedzone/ZONEID
 
 Want to use another DNS provider? See [Alternative DNS Setup](#alternative-dns-setup).
 
-### 3. GitHub Actions Setup
+#### 3. GitHub Actions Setup
 
 1. Create an IAM Identity Provider using the AWS CLI or in the AWS console for GitHub Actions to use.
    1. **Provider URL**: `https://token.actions.githubusercontent.com`
@@ -105,7 +106,7 @@ More Info:
 - [Creating a GitHub OIDC identity provider in AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
 - [Using IAM roles to connect GitHub Actions to actions in AWS](https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/)
 
-### 4. Repository Configuration
+#### 4. Repository Configuration
 
 In your GitHub repository's settings, under the "Secrets and variables" section, add the following secrets:
 
@@ -115,7 +116,7 @@ AWS_IAM_ROLE_NAME   # Role name from step 3
 AWS_DEFAULT_REGION  # e.g., us-east-1
 ```
 
-### 5. Infrastructure Configuration
+#### 5. Infrastructure Configuration
 
 Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.tfvars) and [terraform/state.config](../terraform/state.config) files.
 
@@ -145,7 +146,7 @@ Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.t
 3. (Optional) Change SES Email sending identity:
    - By default, the template uses an `Email-Based` sending identity for SES. If you have a verified domain, you can switch to the `Domain-Based` sending identity by updating the [terraform.tfvars](../terraform/terraform.tfvars) file.
 
-### 6. Deployment
+#### 6. Deployment
 
 1. Push your changes to GitHub to trigger deployment:
 
@@ -160,7 +161,7 @@ Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.t
    - **⚠️Note! If you are using an Email-Based sending identity for SES**: You'll receive an email from Amazon SES to verify your `admin_email` address provided in the [terraform.tfvars](../terraform/terraform.tfvars) file _if_ you haven't already added this email to SES before. You must click the verification link before you can send emails from/to this address. This admin email is where you will receive contact form submissions.
    - Wait for CloudFront distribution (~15 mins)
 
-## Alternative DNS Setup
+### Alternative DNS Setup
 
 If not using Route 53:
 
@@ -170,11 +171,11 @@ If not using Route 53:
    - Add CNAME records to your DNS provider
    - Add CloudFront distribution CNAME
 
-## Manually Rebuilding the Site & Forcing Cache Invalidation
+### Manually Rebuilding the Site & Forcing Cache Invalidation
 
 If you need to manually rebuild the site and force cache invalidation on CloudFront; you can manually trigger the `Build and Deploy` GitHub Action and indicate you'd like to force the client redeploy in the dialog that appears. This will trigger a cache invalidation on CloudFront after the deployment, note that there is a small cost associated with cache invalidation requests.
 
-# Destroying the Infrastructure
+## Destroying the Infrastructure
 
 If you want to take down the website, you can run the `Manual Terraform Destroy` workflow in the GitHub Actions tab of your repository. This will remove all of the AWS resources that were created by Terraform. You may also manually run `terraform destroy` from your local machine if you have the AWS and Terraform CLIs installed and configured.
 

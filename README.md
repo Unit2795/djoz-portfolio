@@ -1,4 +1,4 @@
-<h1>David's Portfolio Template</h1>
+# David's Portfolio Template
 
 > A lightning-fast, SEO-optimized portfolio website with automated AWS deployment
 
@@ -8,20 +8,21 @@
 
 <p align="center"><a target="_blank" href="https://djoz.us/"><img src="./docs/assets/button.png" alt="Click to visit the live website" width="200"/></a></p>
 
-- [Links](#links)
-- [Overview](#overview)
-  - [⚡️ **Performance**](#️-performance)
-  - [🎨 **Design \& Accessibility**](#-design--accessibility)
-  - [🚀 **API \& Deployment**](#-api--deployment)
-- [Key Technologies](#key-technologies)
-- [License](#license)
-- [Contributing](#contributing)
+- [David's Portfolio Template](#davids-portfolio-template)
+  - [Links](#links)
+  - [Overview](#overview)
+    - [⚡️ **Performance**](#️-performance)
+    - [🎨 **Design \& Accessibility**](#-design--accessibility)
+    - [🚀 **API \& Deployment**](#-api--deployment)
+  - [Key Technologies](#key-technologies)
+  - [License](#license)
+  - [Contributing](#contributing)
 
-# Links
+## Links
 
 [About](./docs/about.md) | [Setup Guide](./docs/setup.md) | [Deployment Guide](./docs/deployment.md) | [Analytics](./docs/analytics.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
-# Overview
+## Overview
 
 - Thank you for checking out my portfolio template! It's built in [Astro](https://astro.build/) with vanilla HTML, JS, and [Tailwind CSS](https://tailwindcss.com/).
 - The site is deployed using [Terraform](https://www.terraform.io/), [GitHub Actions](https://docs.github.com/en/actions), and [AWS](https://aws.amazon.com/).
@@ -33,7 +34,7 @@
 
 > ℹ️ Note: This portfolio is an experimental testbed and proof of concept for my very specific use-case. It is subject to change abruptly.
 
-## ⚡️ **Performance**
+### ⚡️ **Performance**
 
 - Statically rendered with deeply customizable CMS content (Entire site is under 30KB compressed)
 - CDN-powered global delivery
@@ -42,7 +43,7 @@
 - Only 15 KB of JS uncompressed
 - 100/100 [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview) score
 
-## 🎨 **Design & Accessibility**
+### 🎨 **Design & Accessibility**
 
 - Modern glassmorphic design
 - Responsive down to 320 pixel width
@@ -50,14 +51,14 @@
 - Fully accessible. Reads well with screen readers, can zoom to 200%, high contrast, large clickable regions, semantic HTML and aria attributes. Working towards WCAG 2.2 AA conformance
 - Eye-catching animations, disabled if user prefers reduced motion
 
-## 🚀 **API & Deployment**
+### 🚀 **API & Deployment**
 
 - Automated, low-cost, and secure AWS deployment (less than $2 per month) using Terraform for easy setup
 - GitHub Actions for CI/CD when code changes
 - CloudFormation script for bootstrapping Terraform state storage in AWS S3 & DynamoDB
 - Contact form and analytics APIs with abuse protection
 
-# Key Technologies
+## Key Technologies
 
 - [Astro](https://astro.build/)
   - Library for building the static generated site
@@ -94,16 +95,16 @@
 - [Tanstack Table](https://tanstack.com/table)
   - Table library for analytics dashboard
 
-# License
+## License
 
 This project is licensed under the MIT License. You are free to use, modify, and distribute this code as you see fit. See the [LICENSE](./LICENSE) file for more information.
 
-# Contributing
+## Contributing
 
 If you have any suggestions, improvements, or issues, please create a GitHub issue or a pull request. Feedback welcome!
 
 ---
 
-<div align="center"><img src="./docs/assets/analytics.jpg" alt="Analytics Dashboard" width="400"/><p>Analytics Dashboard</p></div>
+<div align="center"><img src="./docs/assets/analytics.jpg" alt="Analytics Dashboard" width="400"/><p><i>Analytics Dashboard</i></p></div>
 
-<div align="center"><img src="./docs/assets/lighthouse.jpg" alt="Lighthouse Score" width="400"/><p>Lighthouse Score</p></div>
+<div align="center"><img src="./docs/assets/lighthouse.jpg" alt="Lighthouse Score" width="400"/><p><i>Lighthouse Score</i></p></div>

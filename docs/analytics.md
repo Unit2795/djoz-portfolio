@@ -1,39 +1,40 @@
-<h1>Analytics</h1>
+# Analytics
 
-- [Links](#links)
-- [Overview](#overview)
-- [Structure](#structure)
-  - [Client Side](#client-side)
-  - [Serverless Backend (Lambda Functions)](#serverless-backend-lambda-functions)
-  - [Local Analytics Dashboard](#local-analytics-dashboard)
-- [Using the Dashboard](#using-the-dashboard)
+- [Analytics](#analytics)
+  - [Links](#links)
+  - [Overview](#overview)
+  - [Structure](#structure)
+    - [Client Side](#client-side)
+    - [Serverless Backend (Lambda Functions)](#serverless-backend-lambda-functions)
+    - [Local Analytics Dashboard](#local-analytics-dashboard)
+  - [Using the Dashboard](#using-the-dashboard)
 
-# Links
+## Links
 
 [Return to main README.md](../README.md) | [Setup Guide](./setup.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
-# Overview
+## Overview
 
 This site provides a simple analytics setup to track page visits and user interactions. This includes the client side code to send analytics events, the serverless backend to ingest and process events, and a simple local dashboard to visualize and browse analytics data.
 
-# Structure
+## Structure
 
-## Client Side
+### Client Side
 
 The client side code is located in [`client/src/utils/analytics.ts`](../client/src/utils/analytics.ts). It provides some simple utility functions that can be used to send analytics events to the backend.
 
-## Serverless Backend (Lambda Functions)
+### Serverless Backend (Lambda Functions)
 
 The serverless backend is implemented using AWS Lambda functions. There are two key functions:
 
 1. [**Analytics Ingest Function**](../lambda/functions/analytics-ingest/src/index.ts): This function receives analytics events from the client side and stores them in SQS for later processing.
 2. [**Analytics Processor Function**](../lambda/functions/analytics-processor/src/index.ts): This function processes events from the SQS queue and stores them in S3 as NDJSON files for cost effective warehousing.
 
-## Local Analytics Dashboard
+### Local Analytics Dashboard
 
 The local analytics dashboard is a Next.js application that can be run locally to visualize and browse analytics data. It reads the NDJSON files stored in S3 into DuckDB, an efficient OLAP database.
 
-# Using the Dashboard
+## Using the Dashboard
 
 To use the local analytics dashboard, follow these steps:
 
