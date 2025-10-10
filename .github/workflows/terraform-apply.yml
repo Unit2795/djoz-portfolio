@@ -1,10 +1,18 @@
 name: Build and Deploy
 
+concurrency:
+  group: terraform-apply-${{ github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
-    branches: [ "main" ]  # Trigger on push to main branch
-  workflow_dispatch:      # Allow manual triggering (for disabling in the template repo)
-
+    branches: [ "main" ] # Trigger on push to main branch
+  workflow_dispatch: # Allow manual triggering (for disabling in the template repo)
+    inputs:
+      force_invalidation:
+        description: 'Type "1" to force client rebuild/deploy and CloudFront invalidation even if no client changes detected'
+        required: false
+        type: string
 
 permissions:
   id-token: write # This is required for requesting the AWS OIDC JWT
@@ -13,16 +21,38 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          fetch-depth: 2  # Need at least 2 commits to compare changes
+          fetch-depth: 2 # Need at least 2 commits to compare changes
+
+      # We must ensure PNPM is installed before Node.js https://github.com/actions/setup-node/issues/530#issuecomment-1169317505
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "latest"
+
+      - name: Install Dependencies
+        working-directory: .
+        run: |
+          pnpm ci:install
+
+      - name: Build Lambda Functions
+        working-directory: .
+        run: |
+          pnpm lambda:build
 
       # Learn more about AWS OIDC here: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_IAM_ROLE_NAME }}
           role-session-name: djoz-portfolio-session
@@ -40,22 +70,43 @@ jobs:
       - name: Initialize and Plan Terraform
         working-directory: ./terraform
         run: |
+          set -euo pipefail
           terraform init -backend-config=state.config
-          terraform plan -detailed-exitcode
-          
-          if [ $? -eq 2 ]; then
+
+          set +e
+          terraform plan -detailed-exitcode -input=false -lock-timeout=5m
+          code=$?
+          set -e
+
+          if [ "$code" -eq 2 ]; then
+            echo "Terraform plan detected changes"
             echo "TERRAFORM_CHANGED=true" >> $GITHUB_ENV
+            code=0
+          fi
+
+          # fail the job if plan errored
+          if [ "$code" -eq 1 ]; then
+            echo "terraform plan failed" >&2
+            exit 1
           fi
 
       - name: Apply Terraform
         working-directory: ./terraform
         run: |
-          terraform apply -auto-approve -input=false
-          
+          terraform apply -auto-approve -input=false -lock-timeout=5m
+
           # Export Terraform outputs as GitHub environment variables
           echo "S3_BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
           echo "CLOUDFRONT_DIST_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_ENV
           echo "API_GATEWAY_ENDPOINT=$(terraform output -raw api_endpoint)" >> $GITHUB_ENV
+          echo "API_INGEST_ENDPOINT=$(terraform output -raw ingest_endpoint)" >> $GITHUB_ENV
+
+      - name: Cleanup stale Terraform locks
+        if: always()
+        working-directory: ./terraform/bootstrap
+        run: |
+          chmod +x ./forcefully-unlock.sh
+          ./forcefully-unlock.sh
 
       - name: Check for client directory changes
         id: check-changes
@@ -66,31 +117,18 @@ jobs:
             echo "client_changed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Setup Node.js
-        # Only run if the client directory has changed, FORCE_INVALIDATION is set (for manual trigger), or TERRAFORM_CHANGED is true (terraform applied changes and we need to grab the new API endpoint)
-        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'latest'
-
-      - name: Install pnpm
-        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
-        uses: pnpm/action-setup@v2
-        with:
-          version: 'latest'
-          run_install: false
-
       - name: Build Client
-        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
-        working-directory: ./client
+        # Only run if the client directory has changed, FORCE_INVALIDATION is set (for manual trigger), or TERRAFORM_CHANGED is true (terraform applied changes and we need to grab the new API endpoint)
+        if: steps.check-changes.outputs.client_changed == 'true' || github.event.inputs.force_invalidation == '1' || env.TERRAFORM_CHANGED == 'true'
+        working-directory: .
         env:
           VITE_API_GATEWAY_ENDPOINT: ${{ env.API_GATEWAY_ENDPOINT }}
+          PUBLIC_API_INGEST_ENDPOINT: ${{ env.API_INGEST_ENDPOINT }}
         run: |
-          pnpm install
-          pnpm run build
+          pnpm client:build
 
       - name: Upload to S3 and invalidate CloudFront
-        if: steps.check-changes.outputs.client_changed == 'true' || vars.FORCE_INVALIDATION == '1' || env.TERRAFORM_CHANGED == 'true'
+        if: steps.check-changes.outputs.client_changed == 'true' || github.event.inputs.force_invalidation == '1' || env.TERRAFORM_CHANGED == 'true'
         working-directory: ./client
         run: |
           # Upload to S3 bucket

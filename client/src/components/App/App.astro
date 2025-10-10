@@ -1,0 +1,28 @@
+---
+import AvailabilityBadge from "@/components/AvailabilityBadge/AvailabilityBadge.astro";
+import Hero from "@/components/Hero/Hero.astro";
+import Nav from "@/components/Nav/Nav.astro";
+import Skills from "@/components/sections/Skills/Skills.astro";
+import Projects from "@/components/sections/Projects/Projects.astro";
+import AriaAnnouncer from "@/components/AriaAnnouncer/AriaAnnouncer.astro";
+import Intro from "@/components/sections/Intro/Intro.astro";
+import ContactForm from "@/components/sections/ContactForm/ContactForm.astro";
+import Footer from "@/components/Footer/Footer.astro";
+import { disableAnalytics, disableDwellCookie, disableNavbar, sections } from "@/content";
+import Analytics from "@/components/Analytics/Analytics.astro";
+import DwellBeacon from "@/components/DwellBeacon/DwellBeacon.astro";
+---
+
+<AriaAnnouncer />
+{!disableAnalytics && <Analytics />}
+{!disableDwellCookie && <DwellBeacon />}
+{!disableNavbar && <Nav />}
+<main class:list={["relative z-10"]} id="maincontent">
+	{!sections.INTRO.disabled && <Intro />}
+	{!sections.PROJECTS.disabled && <Projects />}
+	{!sections.SKILLS.disabled && <Skills />}
+	{!sections.CONTACT.disabled && <ContactForm />}
+</main>
+<Footer />
+<AvailabilityBadge />
+<Hero />

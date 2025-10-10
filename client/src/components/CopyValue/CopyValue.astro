@@ -1,0 +1,145 @@
+---
+import Tooltip from "@/components/Tooltip/Tooltip.astro";
+import { copyValue } from "@/content";
+import { props } from "@/utils/customEl/server";
+import { CircleCheckBig, Clipboard } from "@lucide/astro";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"button"> & {
+	value: string;
+};
+
+const { value, ...rest } = Astro.props;
+const { getId } = Astro.locals;
+const tooltipId = getId();
+
+export type Expose = Pick<Props & { successMessage: string }, "value" | "successMessage">;
+
+/* 
+	Context: Why a role of dialog?
+	While a tooltip is often used to provide additional information about an element, a dialog is a more appropriate role for this component because it contains interactive content (the input field) that users can interact with. This is especially important for accessibility. A role of tooltip will also prevent tab focus from entering the tooltip content. This prevents keyboard and screen reader users from being able to copy the value, particularly for no JS users as they are required to copy the value manually by focusing the input field and using keyboard copy commands.
+*/
+---
+
+<copy-value {...props<Expose>({ value, successMessage: copyValue.successMessage })}>
+	<Tooltip
+		role="dialog"
+		data-copy-tooltip
+		data-success="false"
+		aria-modal="false"
+		class:list={[
+			"cursor-pointer border-0 noscript:cursor-default",
+			// Show/hide the correct icon based on success state
+			"[&[data-success=false]_.default-icon]:inline [&[data-success=false]_.success-icon]:hidden [&[data-success=true]_.default-icon]:hidden [&[data-success=true]_.success-icon]:inline",
+			// Show hide the correct message based on success state
+			"[&[data-success=false]_.copy-success-message]:opacity-0 [&[data-success=true]_.copy-success-message]:opacity-100",
+		]}
+		aria-label={copyValue.dialogAriaLabel}
+		id={tooltipId}
+	>
+		<button
+			class:list={[rest.class, "cursor-pointer noscript:cursor-default"]}
+			data-copy-trigger
+			slot="trigger"
+			aria-haspopup="dialog"
+			aria-controls={tooltipId}
+			{...rest}
+		>
+			<slot name="trigger" />
+		</button>
+		<Fragment slot="content">
+			<div class="relative max-w-48 p-1">
+				<label for={`field-${tooltipId}`} class="sr-only">{copyValue.inputAriaLabel}</label>
+				<input
+					id={`field-${tooltipId}`}
+					type="text"
+					name="copy-value"
+					class="w-full max-w-xl cursor-pointer rounded-lg border border-gray-600 bg-gray-700 p-2.5 pr-8 text-sm text-gray-200 noscript:cursor-default"
+					value={value}
+					readonly
+					data-copy-input
+				/>
+				<div
+					class="absolute end-2 top-1/2 inline-flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg p-2 text-gray-400 not-noscript:hover:bg-gray-800 noscript:cursor-default"
+					aria-hidden="true"
+				>
+					<span class="default-icon">
+						<Clipboard class="h-5 w-5" />
+					</span>
+					<span class="success-icon hidden">
+						<CircleCheckBig class="h-5 w-5 text-green-500" />
+					</span>
+					<div
+						role="tooltip"
+						class="copy-success-message absolute bottom-full z-10 inline-block rounded-lg border border-green-500 bg-gray-600 px-3 py-2 text-sm font-medium text-white duration-300"
+					>
+						<span>{copyValue.successMessage}</span>
+						<!-- Arrow pointer connecting the popover to the message -->
+						<div
+							class="absolute -bottom-2.5 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-r border-b border-green-500 bg-gray-600"
+						>
+						</div>
+					</div>
+				</div>
+			</div>
+		</Fragment>
+	</Tooltip>
+</copy-value>
+
+<script>
+	import type { Expose } from "@/components/CopyValue/CopyValue.astro";
+	import { CustomEl, customEl } from "@/utils/customEl/client";
+
+	customEl(
+		"copy-value",
+		class extends CustomEl<Expose> {
+			trigger = this.querySelector<HTMLButtonElement>("[data-copy-trigger]");
+			tooltip = this.querySelector<HTMLDivElement>("[data-copy-tooltip]");
+			input = this.querySelector<HTMLInputElement>("[data-copy-input]");
+			timeoutId: NodeJS.Timeout | null = null;
+			value = this.props.value;
+			successMessage = this.props.successMessage;
+
+			connectedCallback() {
+				/* Attach the click event listener to the trigger button and tooltip body */
+				this.trigger?.addEventListener("click", this.handleCopy.bind(this));
+				this.tooltip?.addEventListener("click", this.handleCopy.bind(this));
+				// Ensure touch devices fire the copy event immediately instead of just activating the tooltip
+				// This is due to the way touch events work in combination with hover styles
+				this.trigger?.addEventListener("touchend", this.handleCopy.bind(this));
+				// When user focuses the input field and presses Enter, copy the value
+				this.input?.addEventListener("keydown", (event) => {
+					if (event.key === "Enter") {
+						event.preventDefault();
+						this.handleCopy();
+					}
+				});
+
+				// Remove the success message when the user interacts elsewhere
+				this.trigger?.addEventListener("blur", this.disconnectTimeout.bind(this));
+				this.trigger?.addEventListener("mouseleave", this.disconnectTimeout.bind(this));
+			}
+
+			// Remove the success message when the user interacts elewhere and clear the timeout
+			// Prevents multiple timeouts from stacking up and causing unexpected behavior
+			private disconnectTimeout() {
+				if (this.timeoutId) {
+					clearTimeout(this.timeoutId);
+					this.tooltip!.setAttribute("data-success", "false");
+					this.timeoutId = null;
+				}
+			}
+
+			private handleCopy() {
+				this.tooltip!.setAttribute("data-success", "true");
+				window.announce(this.successMessage);
+				// Hide the success message after a delay
+				this.timeoutId = setTimeout(() => {
+					this.tooltip!.setAttribute("data-success", "false");
+				}, 2500);
+
+				navigator.clipboard.writeText(this.value);
+			}
+		},
+	);
+</script>

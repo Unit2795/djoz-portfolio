@@ -1,0 +1,16 @@
+{
+	"name": "djoz-portfolio",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"private": true,
+	"scripts": {
+		"ci:install": "pnpm install --prefer-offline --frozen-lockfile --filter '!./analytics' --filter '!./dev-api'",
+		"lambda:build": "pnpm --filter @djoz-portfolio/lambda-build build",
+		"client:build": "pnpm --filter @djoz-portfolio/client build"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.14.0"
+}

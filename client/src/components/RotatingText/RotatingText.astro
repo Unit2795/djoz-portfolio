@@ -1,0 +1,23 @@
+---
+// https://github.com/Unit2795/component-collection/blob/main/src/components/CylinderText/CylinderText.tsx
+
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+interface Props {
+	class?: string;
+	type?: HeadingTag;
+	id?: string;
+}
+
+const { class: className, type, id } = Astro.props;
+const ElementType = type || "h2";
+---
+
+<ElementType class:list={["relative", className]} style="perspective: 800px" id={id}>
+	<span class="motion-safe:animate-top-rotate-in block origin-[50%_-50px]">
+		<slot name="top" />
+	</span>
+	<span class="motion-safe:animate-bottom-rotate-in block origin-[50%_150px]">
+		<slot name="bottom" />
+	</span>
+</ElementType>

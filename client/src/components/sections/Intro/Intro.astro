@@ -1,0 +1,176 @@
+---
+import AboutMe from "@/components/AboutMe/AboutMe.astro";
+import CopyValue from "@/components/CopyValue/CopyValue.astro";
+import GlassButton from "@/components/GlassButton/GlassButton.astro";
+import Icon from "@/components/Icon/Icon.astro";
+import RotatingText from "@/components/RotatingText/RotatingText.astro";
+import Section from "@/components/Section/Section.astro";
+import { intro, sections } from "@/content";
+import { getAnalyticsAttribute } from "@/utils/analytics";
+import { ChevronDown } from "@lucide/astro";
+
+const { aboutMe, contactButton, projectButton, links, heading, subHeading } = intro;
+
+const headerId = heading ? "intro-tagline-header" : undefined;
+const descriptionId = subHeading ? "intro-tagline-description" : undefined;
+---
+
+<Section
+	section={sections.INTRO}
+	sectionClass="min-h-lvh flex items-center"
+	hideHeader
+	solidBackground={sections.INTRO.solidBackground}
+	analyticsId="Intro"
+>
+	<div class:list={["my-6 grid items-center gap-10", aboutMe && "lg:grid-cols-2"]}>
+		<section
+			class:list={["py-16 text-center lg:py-0", aboutMe && "lg:text-left"]}
+			aria-labelledby={headerId}
+			aria-describedby={descriptionId}
+		>
+			{
+				heading && (
+					<RotatingText class="text-4xl font-bold sm:text-5xl" id={headerId}>
+						<span slot="top" class="tracking-tight" set:html={heading.top.text} />
+						<span
+							slot="bottom"
+							class:list={[heading.bottom.color, "tracking-tight"]}
+							set:html={heading.bottom.text}
+						/>
+					</RotatingText>
+				)
+			}
+			{
+				subHeading && (
+					<p
+						id={descriptionId}
+						class="motion-safe:animate-fade-up text-md mt-6 leading-relaxed text-gray-300/80"
+						style={{
+							animationDelay: "250ms",
+							animationFillMode: "both",
+						}}
+						set:html={subHeading}
+					/>
+				)
+			}
+			{
+				links && links.length > 0 && (
+					<ul class:list={["mt-6 flex flex-wrap justify-center gap-8", aboutMe && "lg:justify-start"]}>
+						{links.map(({ link, value, icon, label, analyticsLabel }, i) => {
+							const delay = i * 250 + 500;
+							if (link) {
+								return (
+									<li>
+										<a
+											aria-label={label}
+											class="motion-safe:animate-fade-up block h-6 w-6"
+											href={link}
+											rel="noreferrer"
+											style={{
+												animationDelay: `${delay}ms`,
+												animationFillMode: "both",
+											}}
+											target="_blank"
+											{...getAnalyticsAttribute(
+												"interact",
+												`IntroLink-${analyticsLabel}`,
+												sections.INTRO.disableAnalytics || !analyticsLabel,
+											)}
+										>
+											<Icon
+												class="h-6 w-6 text-white duration-300 hover:text-blue-400 motion-safe:transition-colors"
+												aria-hidden
+												{...icon}
+											/>
+										</a>
+									</li>
+								);
+							} else if (value) {
+								return (
+									<li>
+										<CopyValue
+											aria-label={label}
+											value={value}
+											class="motion-safe:animate-fade-up"
+											style={{
+												animationDelay: `${delay}ms`,
+												animationFillMode: "both",
+											}}
+											{...getAnalyticsAttribute(
+												"interact",
+												`IntroCopyVal-${analyticsLabel}`,
+												sections.INTRO.disableAnalytics || !analyticsLabel,
+											)}
+										>
+											<span slot="trigger">
+												<Icon
+													class="h-6 w-6 text-white duration-300 hover:text-blue-400 motion-safe:transition-colors"
+													aria-hidden
+													{...icon}
+												/>
+											</span>
+										</CopyValue>
+									</li>
+								);
+							}
+						})}
+					</ul>
+				)
+			}
+			{
+				(projectButton || contactButton) && (
+					<div class:list={["mt-8 flex justify-center gap-4", aboutMe && "lg:justify-start"]}>
+						{projectButton && (
+							<GlassButton
+								class="motion-safe:animate-fade-up group flex rounded-xl border border-white/20 bg-blue-600 py-3 pr-3 pl-5 text-sm font-semibold shadow-xl transition-all duration-300 hover:bg-blue-700 hover:shadow-blue-500/25 motion-safe:hover:scale-105"
+								type="button"
+								aria-label={projectButton.ariaLabel ?? "Scroll to projects section"}
+								as="a"
+								href={`#${sections.PROJECTS.id}`}
+								style={{
+									animationDelay: "500ms",
+									animationFillMode: "both",
+								}}
+								{...getAnalyticsAttribute(
+									"interact",
+									`ScrollToProjects`,
+									sections.INTRO.disableAnalytics,
+								)}
+							>
+								<span class="pr-2" aria-hidden>
+									{projectButton.text}
+								</span>
+								<ChevronDown
+									class="motion-safe:group-hover:animate-bounce-mid"
+									size={20}
+									aria-hidden="true"
+								/>
+							</GlassButton>
+						)}
+						{contactButton && (
+							<GlassButton
+								as="a"
+								class="motion-safe:animate-fade-up rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10 motion-safe:hover:scale-105"
+								type="button"
+								aria-label={contactButton.ariaLabel ?? "Scroll to contact section"}
+								href={`#${sections.CONTACT.id}`}
+								style={{
+									animationDelay: "750ms",
+									animationFillMode: "both",
+								}}
+								{...getAnalyticsAttribute(
+									"interact",
+									`ScrollToContact`,
+									sections.INTRO.disableAnalytics,
+								)}
+							>
+								{contactButton.text}
+							</GlassButton>
+						)}
+					</div>
+				)
+			}
+		</section>
+		{aboutMe && <AboutMe about={aboutMe} />}
+	</div>
+</Section>

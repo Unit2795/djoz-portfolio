@@ -1,0 +1,112 @@
+---
+import Quote from "@/components/Icon/Quote.astro";
+import { sections } from "@/content";
+import type { AboutMeContent } from "@/content/types";
+import { getAnalyticsAttribute } from "@/utils/analytics";
+
+interface Props {
+	about: AboutMeContent;
+}
+
+const { about } = Astro.props;
+
+const headerId = about.aria?.title ? "intro-aboutme-header" : undefined;
+const descriptionId = about.aria?.description ? "intro-aboutme-description" : undefined;
+---
+
+<section
+	class="glow-accent glass-border motion-safe:hover-shimmer motion-safe:animate-fade-in-blur relative z-10 overflow-hidden rounded-3xl p-6 shadow-md/20 backdrop-blur-md ease-in-out hover:shadow-xl/30 motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:-translate-y-1 lg:p-8"
+	style={{
+		animationDelay: "750ms",
+		animationFillMode: "both",
+	}}
+	aria-labelledby={headerId}
+	aria-describedby={descriptionId}
+	{...getAnalyticsAttribute("interact", `AboutMeCard`, sections.INTRO.disableAnalytics)}
+>
+	<h3 id={headerId} class="sr-only">{about.aria?.title}</h3>
+	{
+		about.aria?.description && (
+			<p id={descriptionId} class="sr-only">
+				{about.aria.description}
+			</p>
+		)
+	}
+	{
+		about.description && (
+			<p
+				class="motion-safe:animate-text-reveal text-sm leading-relaxed font-light text-gray-200 sm:text-base"
+				style={{ animationDelay: "1s" }}
+				set:html={about.description}
+			/>
+		)
+	}
+	{
+		about.quote && (
+			<blockquote class="to-secondary/10 from-primary/10 relative mt-6 rounded-2xl border border-white/5 bg-linear-to-r p-3 backdrop-blur-sm hover:border-white/15 hover:shadow-lg motion-safe:transition-all motion-safe:duration-300 sm:mt-8 sm:p-4">
+				<Quote class="text-primary/40 absolute -top-2 -left-2 h-6 w-6 rotate-12 sm:h-8 sm:w-8" />
+				<p
+					class="pl-2 text-xs leading-relaxed text-gray-300/80 italic sm:pl-4 sm:text-sm"
+					set:html={about.quote}
+				/>
+			</blockquote>
+		)
+	}
+	{
+		about.highlights && (
+			<ul
+				class="mt-6 grid grid-cols-1 gap-2 sm:mt-8 sm:grid-cols-2 sm:gap-3"
+				aria-label={about.highlights?.ariaLabel}
+			>
+				{about.highlights.items.map(({ color, text }, index) => (
+					<li
+						class="highlight-glow group motion-safe:animate-fade-up relative flex items-center gap-2 rounded-xl border border-white/5 bg-gray-400/5 px-3 py-2 hover:border-white/10 hover:bg-gray-400/10 hover:shadow-md motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:scale-105 sm:gap-3 sm:px-4 sm:py-3"
+						style={{ animationDelay: `${1200 + index * 100}ms`, animationFillMode: "both" }}
+					>
+						<div class="relative flex h-3 w-3 flex-shrink-0 items-center justify-center">
+							<span
+								class:list={["absolute h-3 w-3 rounded-full blur-sm motion-safe:animate-pulse", color]}
+							/>
+							<span
+								class:list={[
+									"relative h-2 w-2 rounded-full group-hover:scale-125 motion-safe:transition-all motion-safe:duration-300",
+									color,
+								]}
+							/>
+						</div>
+						<span class="text-xs leading-tight font-light text-gray-300 sm:text-sm">{text}</span>
+					</li>
+				))}
+			</ul>
+		)
+	}
+	{
+		about.stats && (
+			<dl class="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4" aria-label={about.stats?.ariaLabel}>
+				{about.stats.items.map((stat, index) => (
+					<div
+						class="highlight-glow motion-safe:animate-fade-up group rounded-2xl border border-white/5 bg-gray-400/5 p-3 text-center hover:border-white/10 hover:bg-gray-400/10 hover:shadow-lg motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:scale-105 sm:p-4"
+						style={{ animationDelay: `${1600 + index * 100}ms`, animationFillMode: "both" }}
+					>
+						<dt class="stat-number group-hover:gradient-text text-lg font-bold text-gray-300 sm:text-xl">
+							{stat.title}
+						</dt>
+						<dd class="mt-0.5 text-[10px] font-light tracking-wider text-gray-400 uppercase sm:mt-1 sm:text-xs">
+							{stat.subtitle}
+						</dd>
+					</div>
+				))}
+			</dl>
+		)
+	}
+</section>
+
+<style>
+	/* Small accent glow effects */
+	.glow-accent {
+		background-image: 
+			/* Bottom Left */
+			radial-gradient(at 20% 80%, rgba(96, 165, 250, 0.2) 0%, transparent 40%),
+			/* Top Right */ radial-gradient(at 80% 20%, rgba(255, 153, 51, 0.2) 0%, transparent 40%);
+	}
+</style>

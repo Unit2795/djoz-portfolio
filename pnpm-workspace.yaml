@@ -1,0 +1,7 @@
+packages:
+  - "client"
+  - "lambda/**"
+  - "analytics"
+  - "shared"
+  - "dev-api"
+  - "terraform"

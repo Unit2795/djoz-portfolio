@@ -1,0 +1,7 @@
+{
+	"disableFlag": "disable_analytics",
+	"target": "node22",
+	"skipBuild": false,
+	"skipZip": false,
+	"disable": false
+}

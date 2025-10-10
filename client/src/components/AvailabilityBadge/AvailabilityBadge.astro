@@ -1,0 +1,26 @@
+---
+import { sections, showAvailability } from "@/content";
+---
+
+{
+	showAvailability && (
+		<a
+			href={`#${sections.CONTACT.id}`}
+			class="group motion-safe:animate-fade-up hover-shimmer fixed right-4 bottom-4 z-30 inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-gray-900/60 px-5 py-2.5 shadow-2xl backdrop-blur-xs transition-all duration-300 hover:scale-105 hover:border-green-400/50 hover:shadow-green-500/20"
+			style={{ animationDelay: "2s", animationFillMode: "both" }}
+		>
+			{/* Animated background glow */}
+			<div class="absolute inset-0 rounded-full bg-linear-to-r from-green-500/10 to-blue-500/10 blur-sm motion-safe:animate-pulse" />
+
+			{/* Status indicator with ripple effect */}
+			<div class="relative flex h-2.5 w-2.5 items-center justify-center">
+				<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+				<span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+			</div>
+
+			<span class="relative text-sm font-medium tracking-wide text-green-400 transition-colors group-hover:text-green-300">
+				{showAvailability}
+			</span>
+		</a>
+	)
+}

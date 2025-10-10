@@ -1,0 +1,115 @@
+---
+import Pills from "@/components/Pills/Pills.astro";
+import { skills } from "@/content";
+import { shuffleDeterministic } from "@/utils/shuffle";
+import Hexagon from "@/components/Icon/Hexagon.astro";
+import Section from "@/components/Section/Section.astro";
+import { sections } from "@/content";
+import { getAnalyticsAttribute } from "@/utils/analytics";
+
+const themes = [
+	{
+		subtitle: "text-purple-300",
+		gradient: "from-purple-500 to-purple-900",
+		border: "border-purple-500/20",
+	},
+	{
+		subtitle: "text-blue-300",
+		gradient: "from-blue-500 to-blue-900",
+		border: "border-blue-500/20",
+	},
+	{
+		subtitle: "text-amber-300",
+		gradient: "from-amber-500 to-amber-900",
+		border: "border-amber-500/20",
+	},
+	{
+		subtitle: "text-red-300",
+		gradient: "from-red-500 to-red-900",
+		border: "border-red-500/20",
+	},
+	{
+		subtitle: "text-pink-300",
+		gradient: "from-pink-500 to-pink-900",
+		border: "border-pink-500/20",
+	},
+	{
+		subtitle: "text-green-300",
+		gradient: "from-green-500 to-green-900",
+		border: "border-green-500/20",
+	},
+	{
+		subtitle: "text-teal-300",
+		gradient: "from-teal-500 to-teal-900",
+		border: "border-teal-500/20",
+	},
+];
+
+/*
+	Build a deterministic array of shuffled color indices. 
+
+	Rationale: visually, repeating the same color many times on skill cards is poor UI/UX. 
+*/
+const colorCount = themes.length;
+const colorSeed = skills.map((s) => s.name).join("|");
+const colorOrder = shuffleDeterministic(
+	Array.from({ length: colorCount }, (_, i) => i),
+	colorSeed,
+);
+---
+
+<Section section={sections.SKILLS} solidBackground={sections.SKILLS.solidBackground} analyticsId="Skills">
+	<div class="mt-12">
+		<ul class="mx-auto grid grid-cols-1 gap-8 space-y-4 md:grid-cols-2 xl:grid-cols-3">
+			{
+				skills.map((skill, skillIndex) => {
+					const colorIndex = colorOrder[skillIndex % colorCount];
+					const theme = themes[colorIndex];
+
+					return (
+						<li
+							class:list={[
+								"motion-safe:hover-shimmer group relative overflow-hidden rounded-2xl border bg-gray-900/40 p-6 shadow-md/50 backdrop-blur-xs hover:shadow-2xl motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.02]",
+								theme.border,
+							]}
+							{...getAnalyticsAttribute(
+								"interact",
+								`SkillCard-${skill.analyticsLabel}`,
+								sections.SKILLS.disableAnalytics || !skill.analyticsLabel,
+							)}
+						>
+							{/* Hover background color glow effect */}
+							<div
+								class:list={[
+									"absolute inset-0 bg-radial opacity-0 group-hover:opacity-30 motion-safe:transition-opacity motion-safe:duration-500",
+									theme.gradient,
+								]}
+							/>
+							<div class="z-10 flex flex-col">
+								<div class="z-10 flex pb-4">
+									<Hexagon
+										class="h-12 w-12 md:h-16 md:w-16"
+										icon={skill.icon}
+										hexClass={theme.gradient}
+									/>
+									<div class="ml-2 flex flex-col justify-center">
+										<h3 class="text-md font-semibold text-gray-100 md:text-lg lg:text-xl">
+											{skill.name}
+										</h3>
+										<p class:list={["text-sm", theme.subtitle]}>{skill.subtitle}</p>
+									</div>
+								</div>
+								<Pills pills={skill.subSkills || []} />
+								{/* Hover colored underline effect */}
+								<div
+									class="absolute right-0 bottom-0 left-0 h-1 bg-gradient-to-r opacity-0 group-hover:opacity-100 motion-safe:transition-all motion-safe:duration-300"
+									class:list={[theme.gradient]}
+								/>
+							</div>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</div>
+</Section>

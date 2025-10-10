@@ -1,18 +1,15 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Creates S3 bucket and DynamoDB table for Terraform state management
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates an S3 bucket for Terraform state management
 
 Parameters:
   BucketName:
     Type: String
     Description: Name of the S3 bucket for Terraform state
-  TableName:
-    Type: String
-    Description: Name of the DynamoDB table for Terraform state locking
 
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
+    DeletionPolicy: Delete
     Properties:
       BucketName: !Ref BucketName
       VersioningConfiguration:
@@ -32,40 +29,21 @@ Resources:
     Properties:
       Bucket: !Ref S3Bucket
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Sid: DenyInsecureConnections
             Effect: Deny
-            Principal: '*'
-            Action: 's3:*'
+            Principal: "*"
+            Action: "s3:*"
             Resource:
               - !GetAtt S3Bucket.Arn
-              - !Sub '${S3Bucket.Arn}/*'
+              - !Sub "${S3Bucket.Arn}/*"
             Condition:
               Bool:
-                'aws:SecureTransport': false
-
-  DynamoDBTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Ref TableName
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: LockID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: LockID
-          KeyType: HASH
-      TimeToLiveSpecification:
-        AttributeName: TimeToLive
-        Enabled: true
+                "aws:SecureTransport": false
 
 Outputs:
   BucketName:
     Value: !Ref S3Bucket
   BucketArn:
     Value: !GetAtt S3Bucket.Arn
-  TableName:
-    Value: !Ref DynamoDBTable
-  TableArn:
-    Value: !GetAtt DynamoDBTable.Arn

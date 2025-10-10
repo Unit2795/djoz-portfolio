@@ -1,0 +1,19 @@
+---
+import SnowParticles from "@/components/SnowParticles/SnowParticles.astro";
+import { disableSnow, snowConfig } from "@/content";
+---
+
+<div class="hero-container fixed inset-0 h-lvh overflow-hidden">
+	<!-- Hero background image -->
+	<div
+		aria-hidden
+		class="motion-safe:animate-fade absolute inset-0 -z-10 h-lvh bg-cover bg-center"
+		style="background-image: url('/hero.webp')"
+	>
+	</div>
+
+	<!-- Dark overlay with gradient -->
+	<div class="absolute inset-0 bg-linear-to-b from-gray-900/70 via-gray-900/80 to-gray-900"></div>
+
+	{!disableSnow && <SnowParticles config={snowConfig} />}
+</div>

@@ -1,0 +1,22 @@
+---
+import "@/components/GlassButton/glassButton.css";
+import type { HTMLAttributes } from "astro/types";
+
+type ButtonProps = HTMLAttributes<"button"> & {
+	as?: "button";
+};
+
+type AnchorProps = HTMLAttributes<"a"> & {
+	as: "a";
+	href: string;
+};
+
+type Props = ButtonProps | AnchorProps;
+
+const { class: className, as = "button", ...rest } = Astro.props;
+const Tag = as;
+---
+
+<Tag class:list={[className, "glass-btn transition-colors duration-200"]} {...rest}>
+	<slot />
+</Tag>

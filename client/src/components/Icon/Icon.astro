@@ -1,0 +1,50 @@
+---
+import CustomIcon, {
+	type CustomIcons,
+	type Props as CustomIconProps,
+} from "@/components/Icon/CustomIcon/CustomIcon.astro";
+import LucideIcon, { type LucideIcons, type Props as LucideIconProps } from "@/components/Icon/LucideIcon.astro";
+import SimpleIcon, { type SimpleIcons, type Props as SimpleIconProps } from "@/components/Icon/SimpleIcon.astro";
+
+type LucideTypeIcon = {
+	lucide: LucideIcons;
+	simple?: never;
+	custom?: never;
+};
+type SimpleTypeIcon = {
+	simple: SimpleIcons;
+	lucide?: never;
+	custom?: never;
+};
+type CustomTypeIcon = {
+	custom: CustomIcons;
+	lucide?: never;
+	simple?: never;
+};
+export type IconType = LucideTypeIcon | SimpleTypeIcon | CustomTypeIcon;
+
+type LucideProps = LucideTypeIcon & Omit<LucideIconProps, "name">;
+type SimpleProps = SimpleTypeIcon & Omit<SimpleIconProps, "name">;
+type CustomProps = CustomTypeIcon & Omit<CustomIconProps, "name">;
+
+type Props = LucideProps | SimpleProps | CustomProps;
+
+const props = Astro.props;
+---
+
+{
+	() => {
+		if (props.custom) {
+			const { custom, ...rest } = props;
+			return <CustomIcon name={custom} {...rest} />;
+		} else if (props.lucide) {
+			const { lucide, ...rest } = props;
+			return <LucideIcon name={lucide} {...rest} />;
+		} else if (props.simple) {
+			const { simple, ...rest } = props;
+			return <SimpleIcon name={simple} {...rest} />;
+		} else {
+			throw new Error("Icon component requires either 'custom', 'lucide', or 'simple' prop.");
+		}
+	}
+}

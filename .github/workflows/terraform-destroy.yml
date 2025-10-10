@@ -8,24 +8,28 @@ on:
         required: true
         type: string
 
+permissions:
+  id-token: write # This is required for requesting the AWS OIDC JWT
+  contents: read # This is required for actions/checkout and AWS OIDC JWT
+
 jobs:
   terraform_destroy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     # Additional safety check
     if: github.event.inputs.confirm_destroy == 'DESTROY'
 
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       # Learn more about AWS OIDC here: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_IAM_ROLE_NAME }}
           role-session-name: djoz-portfolio-session
@@ -34,9 +38,23 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Cleanup stale Terraform locks
+        working-directory: ./terraform/bootstrap
+        run: |
+          chmod +x ./forcefully-unlock.sh
+          ./forcefully-unlock.sh
+
       - name: Initialize, Plan, and Destroy Terraform
         working-directory: ./terraform
         run: |
           terraform init -backend-config=state.config
-          terraform plan
-          terraform destroy -auto-approve -input=false
+          terraform plan -lock=false
+          terraform destroy -auto-approve -input=false -lock=false
+
+      # Assuming the Terraform destroy was successful, clean up the CloudFormation stack used for the TF state backend
+      - name: Destroy CloudFormation TF State Backend
+        if: ${{ success() }}
+        working-directory: ./terraform/bootstrap
+        run: |
+          chmod +x ./delete-stack.sh
+          ./delete-stack.sh

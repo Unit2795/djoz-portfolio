@@ -1,0 +1,334 @@
+---
+import { contactForm, disableHoneypot } from "@/content";
+import { CircleX, Send } from "@lucide/astro";
+import Section from "@/components/Section/Section.astro";
+import { sections } from "@/content";
+import Icon from "@/components/Icon/Icon.astro";
+import CopyValue from "@/components/CopyValue/CopyValue.astro";
+import { getAnalyticsAttribute } from "@/utils/analytics";
+import { props } from "@/utils/customEl/server";
+
+const fieldClasses = "has-invalid";
+const labelClasses = "block text-md text-gray-300 mb-1 motion-safe:transition motion-safe:duration-300";
+const inputClasses =
+	"w-full p-3 border rounded-lg border-gray-500 bg-transparent text-white user-invalid:border-red-500 user-invalid:text-red-600 motion-safe:transition motion-safe:duration-300";
+
+const apiEndpoint = (import.meta.env.VITE_API_GATEWAY_ENDPOINT as string) ?? "/api/contact";
+
+const disableAnalytics = sections.CONTACT.disableAnalytics;
+
+export type Expose = {
+	endpoint: string;
+	errorText: string;
+};
+---
+
+<Section section={sections.CONTACT} solidBackground={sections.CONTACT.solidBackground} analyticsId="Contact">
+	<div class="mt-6">
+		{
+			contactForm.links && contactForm.links.length > 0 && (
+				<ul class:list={["mt-14 flex flex-wrap justify-center gap-8"]}>
+					{contactForm.links.map(({ link, value, icon, label, analyticsLabel }, i) => {
+						const delay = i * 250 + 500;
+						if (link) {
+							return (
+								<li>
+									<a
+										aria-label={label}
+										class="motion-safe:animate-fade-up block h-6 w-6"
+										href={link}
+										rel="noreferrer"
+										style={{
+											animationDelay: `${delay}ms`,
+											animationFillMode: "both",
+										}}
+										target="_blank"
+										{...getAnalyticsAttribute(
+											"interact",
+											`ContactLink-${analyticsLabel}`,
+											disableAnalytics || !analyticsLabel,
+										)}
+									>
+										<Icon
+											class="h-6 w-6 text-white duration-300 hover:text-blue-400 motion-safe:transition-colors"
+											aria-hidden
+											{...icon}
+										/>
+									</a>
+								</li>
+							);
+						} else if (value) {
+							return (
+								<li>
+									<CopyValue
+										aria-label={label}
+										value={value}
+										class="motion-safe:animate-fade-up"
+										style={{
+											animationDelay: `${delay}ms`,
+											animationFillMode: "both",
+										}}
+										{...getAnalyticsAttribute(
+											"interact",
+											`ContactCopyVal-${analyticsLabel}`,
+											disableAnalytics || !analyticsLabel,
+										)}
+									>
+										<span slot="trigger">
+											<Icon
+												class="h-6 w-6 text-white duration-300 hover:text-blue-400 motion-safe:transition-colors"
+												aria-hidden
+												{...icon}
+											/>
+										</span>
+									</CopyValue>
+								</li>
+							);
+						}
+					})}
+				</ul>
+			)
+		}
+		<div class="mx-auto max-w-2xl p-6">
+			<contact-form {...props<Expose>({ endpoint: apiEndpoint, errorText: contactForm.errorMessage })}>
+				<form
+					data-formroot
+					class="mb-8 space-y-6"
+					aria-label={contactForm.formAriaLabel ?? "Contact form"}
+					method="post"
+					action={apiEndpoint}
+				>
+					{
+						!disableHoneypot && (
+							<div inert class="sneaky-wrapper">
+								{/* Honeypot fields - If you change these fields, ensure that you also update the contact lambda */}
+								<div>
+									<label for="phone">Phone</label>
+									<input
+										id="phone"
+										name="phone"
+										type="tel"
+										autocomplete="off"
+										placeholder="123-456-7890"
+									/>
+								</div>
+								<div>
+									<label for="name">Name</label>
+									<input
+										id="name"
+										name="name"
+										type="text"
+										autocomplete="off"
+										placeholder="John Doe"
+									/>
+								</div>
+								<div>
+									<label for="accept">Accept</label>
+									<input id="accept" name="accept" type="checkbox" autocomplete="off" />
+								</div>
+							</div>
+						)
+					}
+					<div class={fieldClasses}>
+						<label class={labelClasses} for="email">{contactForm.email.label}</label>
+						<input
+							class={inputClasses}
+							id="email"
+							name="email"
+							placeholder={contactForm.email.placeholder}
+							autocomplete="email"
+							required
+							type="email"
+							{...getAnalyticsAttribute("interact", `ContactEmailField`, disableAnalytics)}
+						/>
+					</div>
+					<div class={fieldClasses}>
+						<label class={labelClasses} for="message">{contactForm.message.label}</label>
+						<textarea
+							class={inputClasses}
+							id="message"
+							name="message"
+							placeholder={contactForm.message.placeholder}
+							maxlength={1000}
+							minlength={12}
+							required
+							rows={4}
+							{...getAnalyticsAttribute("interact", `ContactMessageField`, disableAnalytics)}></textarea>
+						<p class="text-right text-xs text-gray-400" aria-hidden="true">
+							<span data-msg-length></span>1000 characters max
+						</p>
+					</div>
+					<button
+						data-submit
+						class="w-full rounded-lg bg-blue-600 px-6 py-3 text-white transition duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-hidden disabled:cursor-not-allowed disabled:bg-stone-600 disabled:text-stone-300"
+						type="submit"
+						{...getAnalyticsAttribute("interact", `ContactSubmitButton`, disableAnalytics)}
+					>
+						<span class="flex items-center justify-center gap-2" data-default>
+							<Send height={16} width={16} aria-hidden />
+							{contactForm.button}
+						</span>
+						<span hidden data-sending class="flex items-center justify-center gap-2">
+							<div class="h-4 w-4 animate-spin rounded-full border-4 border-gray-300 border-t-blue-500">
+							</div>
+							{contactForm.buttonSending}
+						</span>
+					</button>
+				</form>
+				<div class="flex items-center justify-center rounded-lg border border-red-600 p-4" data-error hidden>
+					<CircleX class="mr-2 text-red-500" width={48} />
+
+					<p class="text-red-400">{contactForm.errorMessage}</p>
+				</div>
+			</contact-form>
+		</div>
+	</div>
+</Section>
+<style>
+	/* Honeypot field style */
+	.sneaky-wrapper {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		border: 0;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+</style>
+<script>
+	import { customEl, CustomEl } from "@/utils/customEl/client";
+	import type { Expose } from "@/components/sections/ContactForm/ContactForm.astro";
+	import { throttle } from "@/utils/throttle";
+	import { formSuccessPath } from "@/content";
+
+	/* 
+		Progressive enhancement for the contact form which adds:
+		- Inline errors instead of redirecting to generic error page
+		- Disables submit button until form is valid
+		- Character count for message field
+	*/
+
+	customEl(
+		"contact-form",
+		class ContactForm extends CustomEl<Expose> {
+			root = this.querySelector<HTMLFormElement>("[data-formroot]");
+			submitButton = this.querySelector<HTMLButtonElement>("[data-submit]");
+			sendingIndicator = this.querySelector<HTMLSpanElement>("[data-sending]");
+			defaultIndicator = this.querySelector<HTMLSpanElement>("[data-default]");
+			errorRoot = this.querySelector<HTMLDivElement>("[data-error]");
+			errorMessage = this.querySelector<HTMLParagraphElement>("[data-error] p");
+			msgLength = this.querySelector<HTMLSpanElement>("[data-msg-length]");
+			msgField = this.querySelector<HTMLTextAreaElement>("textarea[name='message']");
+			endpoint = this.props.endpoint;
+			errorText = this.props.errorText;
+			touched = false;
+			unlocked = false;
+
+			connectedCallback() {
+				const {
+					root,
+					submitButton,
+					errorMessage,
+					errorRoot,
+					msgField,
+					msgLength,
+					defaultIndicator,
+					sendingIndicator,
+				} = this;
+
+				if (
+					!root ||
+					!submitButton ||
+					!errorMessage ||
+					!errorRoot ||
+					!msgField ||
+					!msgLength ||
+					!defaultIndicator ||
+					!sendingIndicator
+				) {
+					console.error("form elements not found");
+					return;
+				}
+
+				// Remove action/method to prevent default HTML based submission
+				root.removeAttribute("action");
+				root.removeAttribute("method");
+				submitButton.disabled = true;
+				msgLength.textContent = `${msgField.value.length} / `;
+
+				root.addEventListener(
+					"input",
+					throttle(() => {
+						// Only allow the submit button to be enabled 5 seconds after the user starts typing
+						// This is to prevent bots from filling out the form and submitting it immediately
+						if (!this.touched) {
+							this.touched = true;
+							setTimeout(() => {
+								this.unlocked = true;
+								const isValid = root.checkValidity();
+								submitButton.disabled = !isValid;
+							}, 5000);
+						} else if (this.unlocked) {
+							const isValid = root.checkValidity();
+							submitButton.disabled = !isValid;
+						}
+					}, 250),
+				);
+
+				msgField.addEventListener(
+					"input",
+					throttle(() => {
+						msgLength.textContent = `${msgField.value.length} / `;
+					}, 100),
+				);
+
+				root.addEventListener("submit", async (e) => {
+					e.preventDefault();
+					this.defaultIndicator?.setAttribute("hidden", "true");
+					this.sendingIndicator?.removeAttribute("hidden");
+
+					const formData = new FormData(root);
+
+					if (formData.get("phone") || formData.get("name") || formData.get("accept")) return;
+
+					submitButton.disabled = true;
+					submitButton.setAttribute("aria-busy", "true");
+
+					const showError = async (message: string) => {
+						errorRoot?.removeAttribute("hidden");
+						errorMessage.textContent = message;
+						submitButton.disabled = false;
+						submitButton.removeAttribute("aria-busy");
+						this.defaultIndicator?.removeAttribute("hidden");
+						this.sendingIndicator?.setAttribute("hidden", "true");
+					};
+
+					try {
+						const response = await fetch(this.endpoint, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								email: formData.get("email"),
+								message: formData.get("message"),
+							}),
+						});
+
+						if (response.ok) {
+							window.location.href = formSuccessPath;
+						} else {
+							showError((await response.json())?.message ?? this.errorText);
+						}
+					} catch {
+						showError(this.errorText);
+					}
+				});
+			}
+		},
+	);
+</script>

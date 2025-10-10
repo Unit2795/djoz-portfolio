@@ -1,0 +1,209 @@
+---
+import "@/styles/index.css";
+import Icon from "@/components/Icon/Icon.astro";
+import type { FormStatePage } from "@/content/types";
+
+interface Props {
+	config?: FormStatePage;
+	theme?: "error" | "success";
+}
+
+const { config, theme } = Astro.props;
+
+let redirectHref = config?.redirectHref;
+const isDevelopment = import.meta.env.DEV;
+const isError = theme === "error";
+
+const title = config?.title ?? (isError ? "Oops!" : "Thank You!");
+const message =
+	config?.message ??
+	(isError
+		? "Something went wrong when trying to submit the form. Please try again later."
+		: "Your message has been successfully submitted.");
+
+if (isDevelopment) {
+	redirectHref = "/";
+} else {
+	redirectHref = redirectHref ?? "/";
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{config?.browserTitle}</title>
+		<meta name="description" content={config?.browserDescription} />
+
+		<!-- Standard favicons -->
+		<link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
+		<!-- Android Chrome -->
+		<link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-chrome-192x192.png" />
+		<link rel="icon" type="image/png" sizes="512x512" href="/favicon/android-chrome-512x512.png" />
+		<!-- Apple Touch Icon -->
+		<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
+		<!-- Web Manifest -->
+		<link rel="manifest" href="/site.webmanifest" />
+
+		<!-- Auto-redirect after N seconds. -->
+		{
+			!config?.disableAutoRedirect && (
+				<meta http-equiv="refresh" content={`${config?.autoRedirectSeconds ?? 3}; url=${redirectHref}`} />
+			)
+		}
+	</head>
+	<body class="bg-gray-900">
+		<!-- Animated gradient background -->
+		<div class="fixed inset-0">
+			<div
+				class="from-primary/10 to-secondary/10 motion-safe:animate-gradient-shift absolute inset-0 bg-gradient-to-br via-transparent motion-reduce:hidden"
+			>
+			</div>
+			<div
+				class="from-secondary/5 to-primary/5 motion-safe:animate-gradient-shift-reverse absolute inset-0 bg-gradient-to-tl via-transparent motion-reduce:hidden"
+			>
+			</div>
+
+			<!-- Subtle grid pattern background -->
+			<div
+				class="absolute inset-0 opacity-[0.3]"
+				style="background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 50px 50px;"
+			>
+			</div>
+		</div>
+
+		<!-- Circular glow accents in background -->
+		<div class="pointer-events-none fixed inset-0 overflow-hidden">
+			<div class="bg-primary absolute right-1 bottom-1 h-20 w-20 opacity-20 blur-3xl"></div>
+			<div class="absolute top-1/2 left-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 bg-white/20 blur-3xl">
+			</div>
+			<div class="bg-secondary absolute top-1 left-1 h-32 w-32 opacity-20 blur-3xl"></div>
+		</div>
+
+		<main class="relative z-10 w-full">
+			<section class="flex min-h-lvh w-full flex-col items-center justify-center p-4">
+				{
+					config?.icon && (
+						<div class="relative mb-8">
+							<div class="absolute inset-0 flex items-center justify-center">
+								<div class="relative h-32 w-32">
+									{/* Rotating square outline*/}
+									<div class="motion-safe:animate-spin-slow absolute inset-0">
+										<div
+											class:list={[
+												"h-full w-full rounded-[30%] border motion-safe:animate-pulse",
+												isError ? "border-red-600/20" : "border-white/5",
+											]}
+										/>
+									</div>
+									{/* Pulsing error glow */}
+									<div
+										class:list={[
+											"absolute inset-0 rounded-full bg-gradient-to-r blur-2xl motion-safe:animate-pulse",
+											isError
+												? "from-red-600/20 to-orange-600/20"
+												: "from-primary/50 to-secondary/50",
+										]}
+									/>
+								</div>
+							</div>
+
+							{/* Success icon with animation */}
+							<div
+								class:list={[
+									"relative flex h-24 w-24 items-center justify-center rounded-full border bg-gradient-to-br",
+									isError
+										? "border-red-500/30 from-red-950/40 to-orange-950/30"
+										: "from-primary/20 to-secondary/20 border-white/10",
+								]}
+							>
+								<div class="from-primary/30 to-secondary/30 motion-safe:animate-ping-slow absolute inset-0 rounded-full bg-gradient-to-br" />
+								<Icon
+									class:list={[
+										"motion-safe:animate-scale-swing-in relative z-10 h-12 w-12",
+										isError ? "text-red-400" : "text-secondary",
+									]}
+									{...config.icon}
+								/>
+							</div>
+						</div>
+					)
+				}
+
+				<!-- Content area -->
+				<div class="max-w-2xl text-center">
+					<h1
+						class:list={[
+							"motion-safe:animate-fade-up animation-delay-200 pb-6 text-5xl font-bold md:text-6xl",
+							config?.titleColor ?? "text-white",
+						]}
+					>
+						{title}
+					</h1>
+
+					<p
+						class="motion-safe:animate-fade-up animation-delay-400 mb-10 px-4 text-base leading-relaxed text-gray-400 md:text-lg"
+						set:html={message}
+					/>
+
+					<!-- Interactive button with hover effects -->
+					<div class="motion-safe:animate-fade-up animation-delay-600">
+						<a
+							href={redirectHref}
+							class:list={[
+								"group motion-safe:hover-shimmer relative inline-flex items-center gap-2 rounded-2xl border bg-gradient-to-r px-8 py-4 transition-all duration-300 motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-2xl",
+								isError
+									? "border border-red-500/20 from-red-950/40 to-orange-950/40 hover:border-red-400/30 hover:shadow-red-900/20"
+									: "from-primary/10 to-secondary/10 hover:shadow-primary/20 border-white/10 hover:border-white/20",
+							]}
+						>
+							<Icon lucide="House" class="relative h-5 w-5 text-gray-400" />
+							<span class="relative font-medium text-white">
+								{config?.redirectText ?? "Return to Home"}
+							</span>
+							<Icon
+								lucide="ArrowRight"
+								class="relative h-4 w-4 text-white transition-all duration-300 motion-safe:group-hover:translate-x-1"
+							/>
+						</a>
+					</div>
+
+					<!-- Loading indicator if auto-redirect is enabled -->
+					{
+						!config?.disableAutoRedirect && (
+							<div class="motion-safe:animate-fade-up animation-delay-800 mt-10">
+								<div
+									class:list={[
+										"inline-flex items-center gap-3 rounded-full border px-4 py-2",
+										isError
+											? "border-red-900/20 bg-red-950/20"
+											: "from-primary/10 to-secondary/10 border-white/10 bg-gradient-to-r",
+									]}
+								>
+									<div class="relative flex h-2 w-2">
+										<span
+											class:list={[
+												"absolute inline-flex h-full w-full animate-ping rounded-full",
+												isError ? "bg-red-400" : "bg-green-400",
+											]}
+										/>
+										<span
+											class:list={[
+												"relative inline-flex h-2 w-2 rounded-full",
+												isError ? "bg-red-500" : "bg-green-500",
+											]}
+										/>
+									</div>
+									<span class="text-sm text-gray-400">Redirecting you shortly...</span>
+								</div>
+							</div>
+						)
+					}
+				</div>
+			</section>
+		</main>
+	</body>
+</html>

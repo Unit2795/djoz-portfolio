@@ -1,0 +1,49 @@
+---
+import { hashString } from "@/utils/hash";
+
+interface Props {
+	pills: string[];
+	class?: string;
+	pillClass?: string;
+}
+
+const { pills, class: customClass, pillClass } = Astro.props;
+
+const pillColors = [
+	"text-indigo-300 to-purple-500/10 border-indigo-500/20",
+	"text-purple-300 to-pink-500/10 border-purple-500/20",
+	"text-blue-300 to-cyan-500/10 border-blue-500/20",
+	"text-amber-300 to-orange-500/10 border-amber-500/20",
+	"text-pink-300 to-rose-500/20 border-pink-500/20",
+	"text-green-300 to-lime-500/10 border-green-500/20",
+	"text-teal-300 to-cyan-500/10 border-teal-500/20",
+];
+
+// Deterministic pseudo-random item from array based on string seed
+const getRandomItem = <T,>(array: T[], seed: string): T => {
+	if (array.length === 0) {
+		throw new Error("getRandomItem called with empty array");
+	}
+	const index = hashString(seed) % array.length;
+	return array[index];
+};
+---
+
+<ul class:list={["flex flex-wrap gap-2", customClass]}>
+	{
+		pills.map((pill) => {
+			const pillColor = getRandomItem(pillColors, pill);
+			return (
+				<li
+					class:list={[
+						"motion-safe:hover-shimmer relative cursor-default overflow-hidden rounded-lg border bg-gray-800/50 bg-linear-to-r px-3 py-1 text-sm ease-in-out hover:shadow-md hover:shadow-cyan-500/50 hover:brightness-150 motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:translate-y-[-1px]",
+						pillColor,
+						pillClass,
+					]}
+				>
+					{pill}
+				</li>
+			);
+		})
+	}
+</ul>
