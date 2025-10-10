@@ -32,13 +32,13 @@ export async function POST(request: Request) {
 			`
 				SELECT 
 					COUNT(*) AS event,
-					COUNT(*) FILTER (WHERE e = 'visit') AS visit,
-					COUNT(*) FILTER (WHERE e = 'exit') AS exit,
-					COUNT(*) FILTER (WHERE e = 'scroll') AS scroll,
-					COUNT(*) FILTER (WHERE e = 'click') AS click,
-					COUNT(*) FILTER (WHERE e = 'focus') AS focus,
-					COUNT(*) FILTER (WHERE e = 'hover') AS hover,
-					COUNT(*) FILTER (WHERE e = 'keydown') AS keydown
+					COUNT(*) FILTER (WHERE eventType = 'visit') AS visit,
+					COUNT(*) FILTER (WHERE eventType = 'exit') AS exit,
+					COUNT(*) FILTER (WHERE eventType = 'scroll') AS scroll,
+					COUNT(*) FILTER (WHERE eventType = 'click') AS click,
+					COUNT(*) FILTER (WHERE eventType = 'focus') AS focus,
+					COUNT(*) FILTER (WHERE eventType = 'hover') AS hover,
+					COUNT(*) FILTER (WHERE eventType = 'keydown') AS keydown
 				FROM logs_v1
 				WHERE timestamp BETWEEN ? AND ? ${where}
 			`,
@@ -70,13 +70,13 @@ export async function POST(request: Request) {
 							p.start_ms
 							+ CAST(FLOOR( (s.timestamp - p.start_ms)::DOUBLE / p.step_ms ) * p.step_ms AS BIGINT) AS bucket_start,
 							COUNT(*) AS event,
-							COUNT(*) FILTER (WHERE s.e = 'visit') AS visit,
-							COUNT(*) FILTER (WHERE s.e = 'exit') AS exit,
-							COUNT(*) FILTER (WHERE s.e = 'scroll') AS scroll,
-							COUNT(*) FILTER (WHERE s.e = 'click') AS click,
-							COUNT(*) FILTER (WHERE s.e = 'focus') AS focus,
-							COUNT(*) FILTER (WHERE s.e = 'hover') AS hover,
-							COUNT(*) FILTER (WHERE s.e = 'keydown') AS keydown
+							COUNT(*) FILTER (WHERE s.eventType = 'visit') AS visit,
+							COUNT(*) FILTER (WHERE s.eventType = 'exit') AS exit,
+							COUNT(*) FILTER (WHERE s.eventType = 'scroll') AS scroll,
+							COUNT(*) FILTER (WHERE s.eventType = 'click') AS click,
+							COUNT(*) FILTER (WHERE s.eventType = 'focus') AS focus,
+							COUNT(*) FILTER (WHERE s.eventType = 'hover') AS hover,
+							COUNT(*) FILTER (WHERE s.eventType = 'keydown') AS keydown
 						FROM src s, params p
 						GROUP BY 1
 					),

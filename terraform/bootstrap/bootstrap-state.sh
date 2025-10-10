@@ -8,12 +8,12 @@ CONFIG_PATH="../state.config"
 # CloudFormation template location
 CLOUDFORMATION_TEMPLATE="terraform-state.yml"
 
+# Read bucket name from config file
 STATE_S3_BUCKET=$(grep '^bucket[[:space:]]*=' "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]')
-STATE_DYNAMODB_TABLE=$(grep '^dynamodb_table[[:space:]]*=' "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]')
 
 # Check if required environment variables are set
-if [ -z "$STATE_S3_BUCKET" ] || [ -z "$STATE_DYNAMODB_TABLE" ]; then
-	echo "Error: bucket and dynamodb_table variables must be set in state.config"
+if [ -z "$STATE_S3_BUCKET" ]; then
+	echo "Error: bucket variable must be set in state.config"
 	exit 1
 fi
 
@@ -42,7 +42,6 @@ deploy_stack() {
 		--template-body file://"$CLOUDFORMATION_TEMPLATE" \
 		--parameters \
 		ParameterKey=BucketName,ParameterValue="$STATE_S3_BUCKET" \
-		ParameterKey=TableName,ParameterValue="$STATE_DYNAMODB_TABLE" \
 		--capabilities CAPABILITY_NAMED_IAM 2>&1); then
 
 		if [[ "$output" == *"No updates are to be performed"* ]]; then

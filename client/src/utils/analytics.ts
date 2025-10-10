@@ -1,13 +1,28 @@
 import { disableAnalytics } from "@/content";
-import { type AnalyticsEvent, type EventName, events } from "@djoz-portfolio/shared";
+import { type AnalyticsEvent, type EventName, events, FLUSH_INTERVAL_MS } from "@djoz-portfolio/shared";
 
 const analyticsEndpoint = (import.meta.env.PUBLIC_API_INGEST_ENDPOINT as string) ?? "/api/ingest";
-const FLUSH_INTERVAL_MS = 5000; // 5 seconds
 // If this batch size is changed, be sure to adjust the ingest lambda accordingly!
 const BATCH_SIZE = 10;
 
 const eventQueue: AnalyticsEvent[] = [];
 let timer: NodeJS.Timeout | null = null;
+let batchStartTime: number | null = null;
+
+// Get current time with high resolution if available
+const getNow = () => {
+	if (typeof performance !== "undefined" && performance.now) {
+		return performance.now();
+	}
+	return Date.now();
+};
+
+const getOffsetMs = () => {
+	if (!batchStartTime) batchStartTime = getNow();
+	const offset = getNow() - batchStartTime;
+
+	return offset;
+};
 
 /* 
 	Generate a unique ID, preferring crypto.randomUUID if available.
@@ -56,8 +71,8 @@ const getSessionId = () => {
 };
 
 // Add an analytics event to the queue and flush if batch size reached
-export const analyticsEvent = (eventName: EventName, memo?: string) => {
-	eventQueue.push(createEvent(eventName, memo));
+export const analyticsEvent = (eventName: EventName, id?: string) => {
+	eventQueue.push(createEvent(eventName, id, getOffsetMs()));
 
 	if (eventQueue.length >= BATCH_SIZE) {
 		flushEvents();
@@ -76,13 +91,13 @@ export const getAnalyticsAttribute = (
 };
 
 // Send a single event immediately (for critical events like page visit)
-const sendImmediateEvent = (eventName: EventName, memo?: string) => {
-	return sendEvents([createEvent(eventName, memo)]);
+const sendImmediateEvent = (eventName: EventName, id?: string) => {
+	return sendEvents([createEvent(eventName, id, getOffsetMs())]);
 };
 
 // Handle page close - flush queue and send exit event
 const handlePageClose = () => {
-	const finalEvents = [...eventQueue, createEvent(events.exit)];
+	const finalEvents = [...eventQueue, createEvent(events.exit, undefined, getOffsetMs())];
 	return sendEvents(finalEvents, true);
 };
 
@@ -144,11 +159,12 @@ function attachInteractionHandlers() {
 }
 
 // Create an analytics event object with the required metadata
-const createEvent = (eventName: EventName, memo?: string): AnalyticsEvent => ({
+const createEvent = (eventType: EventName, id?: string, offsetMs?: number): AnalyticsEvent => ({
 	// ⚠️If the AnalyticsEvent schema changes, be sure to adjust the ingest & processor lambda accordingly!
-	e: eventName,
-	s: getSessionId(),
-	m: memo,
+	eventType,
+	sessionId: getSessionId(),
+	id,
+	offsetMs: Math.round(offsetMs ?? 0), // milliseconds since batch start
 });
 
 // Send events to the server using fetch or sendBeacon
@@ -185,6 +201,7 @@ const sendEvents = async (events: AnalyticsEvent[], useBeacon = false) => {
 // Flush all queued events to the server
 const flushEvents = () => {
 	const eventsToSend = eventQueue.splice(0, eventQueue.length);
+	batchStartTime = null; // Reset batch timer for next batch
 	return sendEvents(eventsToSend);
 };
 

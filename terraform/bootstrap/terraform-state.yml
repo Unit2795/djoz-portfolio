@@ -1,13 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Creates S3 bucket and DynamoDB table for Terraform state management
+Description: Creates an S3 bucket for Terraform state management
 
 Parameters:
   BucketName:
     Type: String
     Description: Name of the S3 bucket for Terraform state
-  TableName:
-    Type: String
-    Description: Name of the DynamoDB table for Terraform state locking
 
 Resources:
   S3Bucket:
@@ -45,27 +42,8 @@ Resources:
               Bool:
                 "aws:SecureTransport": false
 
-  DynamoDBTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Ref TableName
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: LockID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: LockID
-          KeyType: HASH
-      TimeToLiveSpecification:
-        AttributeName: TimeToLive
-        Enabled: true
-
 Outputs:
   BucketName:
     Value: !Ref S3Bucket
   BucketArn:
     Value: !GetAtt S3Bucket.Arn
-  TableName:
-    Value: !Ref DynamoDBTable
-  TableArn:
-    Value: !GetAtt DynamoDBTable.Arn

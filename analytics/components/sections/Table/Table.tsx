@@ -20,10 +20,10 @@ import { AnalyticsEventEnriched, events } from "@djoz-portfolio/shared";
 const columnHelper = createColumnHelper<AnalyticsEventEnriched>();
 const userFriendlyColumnNames: Record<string, string> = {
 	timestamp: "Timestamp",
-	e: "Event",
-	m: "ID",
+	eventType: "Event",
+	id: "ID",
 	ip: "IP Address",
-	s: "Session",
+	sessionId: "Session",
 	userAgent: "User Agent",
 };
 
@@ -90,23 +90,23 @@ const Table = ({
 					className: "p-2",
 				},
 			}),
-			columnHelper.accessor("e", {
+			columnHelper.accessor("eventType", {
 				header: ({ column }) => <DataTableColumnHeader column={column} title="Event" />,
 				cell: ({ getValue }) => (
 					<div
 						className="cursor-pointer hover:bg-gray-700 w-full h-full p-2"
-						onClick={() => addFilter("e", getValue())}
+						onClick={() => addFilter("eventType", getValue())}
 					>
 						{getValue()}
 					</div>
 				),
 			}),
-			columnHelper.accessor("m", {
+			columnHelper.accessor("id", {
 				header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
 				cell: ({ getValue }) => (
 					<div
 						className={cn("w-full h-full p-2", getValue() && "cursor-pointer hover:bg-gray-700")}
-						onClick={() => addFilter("m", getValue())}
+						onClick={() => addFilter("id", getValue())}
 					>
 						{getValue()}
 					</div>
@@ -123,12 +123,12 @@ const Table = ({
 					</div>
 				),
 			}),
-			columnHelper.accessor("s", {
+			columnHelper.accessor("sessionId", {
 				header: ({ column }) => <DataTableColumnHeader column={column} title="Session" />,
 				cell: ({ getValue }) => (
 					<div
 						className="cursor-pointer hover:bg-gray-700 w-full h-full p-2"
-						onClick={() => addFilter("s", getValue())}
+						onClick={() => addFilter("sessionId", getValue())}
 					>
 						{getValue()}
 					</div>
@@ -250,10 +250,12 @@ const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch
 							<DropdownMenuContent className="bg-gray-950" align="start">
 								<DropdownMenuLabel>Filter by</DropdownMenuLabel>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={() => addFilter("e", events.exit)}>Event</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => addFilter("m")}>ID</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => addFilter("eventType", events.exit)}>
+									Event
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => addFilter("id")}>ID</DropdownMenuItem>
 								<DropdownMenuItem onClick={() => addFilter("ip")}>IP Address</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => addFilter("s")}>Session</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => addFilter("sessionId")}>Session</DropdownMenuItem>
 								<DropdownMenuItem onClick={() => addFilter("userAgent")}>User Agent</DropdownMenuItem>
 								<DropdownMenuItem onClick={() => addFilter("browser")}>Browser</DropdownMenuItem>
 							</DropdownMenuContent>
@@ -306,7 +308,7 @@ const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch
 							<Label className="text-[11px] font-medium text-muted-foreground">
 								{userFriendlyColumnNames[filter.id]}
 							</Label>
-							{filter.id === "e" ? (
+							{filter.id === "eventType" ? (
 								<select
 									value={filter.value}
 									onChange={(e) => handleFilterChange(index, e.target.value, filter.exclude)}

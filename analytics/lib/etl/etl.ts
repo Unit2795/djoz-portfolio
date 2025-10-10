@@ -2,14 +2,13 @@ import "dotenv/config";
 import { S3Client, paginateListObjectsV2, GetObjectCommand } from "@aws-sdk/client-s3";
 import { createGunzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
-import { mkdir, rm, stat } from "node:fs/promises";
-import { createWriteStream, createReadStream } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
+import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { DuckDBConnection } from "@duckdb/node-api";
-import { awsRegion, dayTrackerFile, NDJSON_GLOB } from "@/lib/envvars";
+import { awsRegion, dayTrackerFile } from "@/lib/envvars";
 import { getDb } from "@/lib/db";
 import { Readable } from "node:stream";
-import { createInterface } from "node:readline";
 import DateRangeManager from "./dateCheck";
 
 interface ImportNdjsonOptions {
@@ -36,9 +35,9 @@ interface ImportNdjsonOptions {
 const TABLE_NAME = "logs_v1";
 const TABLE_SCHEMA = `
 	CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
-		e TEXT NOT NULL,
-		m TEXT,
-		s TEXT,
+		eventType TEXT NOT NULL,
+		id TEXT,
+		sessionId TEXT,
 		userAgent TEXT,
 		ip TEXT,
 		timestamp BIGINT NOT NULL,
@@ -149,8 +148,10 @@ const processDay = async (args: {
 		Now that we have a complete NDJSON file for the day. 
 		
 		We can process it to perform any necessary transformations/enrichments before loading into DuckDB.
+
+		NOTE! This has been commented out for now as we don't have any transformations to perform yet. We used to, but not anymore. But we may in the future so leaving this here for reference.
 	*/
-	const transformedFile = path.join(tmpDir, `${day}-transformed.ndjson`);
+	/* const transformedFile = path.join(tmpDir, `${day}-transformed.ndjson`);
 	const transformedStream = createWriteStream(transformedFile, { flags: "a" });
 	const lineReader = createInterface({
 		input: createReadStream(jsonFile),
@@ -161,12 +162,8 @@ const processDay = async (args: {
 		if (!line.trim()) continue; // skip empty lines
 		try {
 			const obj = JSON.parse(line);
-			/* 
-				We convert the timestamp (Unix time in seconds) to milliseconds here, as it's easier to do it once on import rather than in every query.
-			*/
-			if (obj.timestamp) {
-				obj.timestamp = obj.timestamp * 1000;
-			}
+			
+			// Enrich/transform the object as needed
 
 			// Write the enriched object to the new NDJSON file
 			transformedStream.write(JSON.stringify(obj) + "\n");
@@ -176,7 +173,7 @@ const processDay = async (args: {
 	}
 
 	// Flush all parsed data to disk and close the stream
-	await new Promise((resolve) => transformedStream.end(resolve));
+	await new Promise((resolve) => transformedStream.end(resolve));*/
 
 	console.log(`[info] ${day}: processing into duckdb...`);
 
@@ -191,10 +188,10 @@ const processDay = async (args: {
 		await dbConnection.run(`
 			INSERT INTO ${TABLE_NAME}
 			SELECT *
-			FROM read_ndjson('${transformedFile}', columns = {
-				e: 'TEXT',
-				m: 'TEXT',
-				s: 'TEXT',
+			FROM read_ndjson('${jsonFile}', columns = {
+				eventType: 'TEXT',
+				id: 'TEXT',
+				sessionId: 'TEXT',
 				userAgent: 'TEXT',
 				ip: 'TEXT',
 				timestamp: 'BIGINT',
@@ -219,13 +216,4 @@ const getS3Files = async (s3: S3Client, bucket: string, path: string) => {
 		}
 	}
 	return keys;
-};
-
-const fileNonEmpty = async (path: string) => {
-	try {
-		const stats = await stat(path);
-		return stats.size > 0;
-	} catch {
-		return false;
-	}
 };

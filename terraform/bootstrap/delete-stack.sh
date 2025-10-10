@@ -8,11 +8,10 @@ CONFIG_PATH="../state.config"
 
 # Read values from state.config
 STATE_S3_BUCKET=$(grep '^bucket[[:space:]]*=' "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]')
-STATE_DYNAMODB_TABLE=$(grep '^dynamodb_table[[:space:]]*=' "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]')
 
 # Check required vars
-if [ -z "$STATE_S3_BUCKET" ] || [ -z "$STATE_DYNAMODB_TABLE" ]; then
-	echo "Error: bucket and dynamodb_table variables must be set in state.config"
+if [ -z "$STATE_S3_BUCKET" ]; then
+	echo "Error: bucket variable must be set in state.config"
 	exit 1
 fi
 
@@ -31,7 +30,6 @@ disable_termination_protection() {
 		--no-enable-termination-protection >/dev/null 2>&1 || true
 }
 
-# Does the bucket exist?
 bucket_exists() {
 	aws s3api head-bucket --bucket "$STATE_S3_BUCKET" >/dev/null 2>&1
 }

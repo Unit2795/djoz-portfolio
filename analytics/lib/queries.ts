@@ -1,7 +1,7 @@
 import { TableFilter } from "@/components/sections/Table/Table";
 
 // Columns that will use wildcard matching instead of exact matching
-const wildcardColumns = ["ip", "userAgent", "m"];
+const wildcardColumns = ["ip", "userAgent", "id"];
 
 /* 
 	Builds a SQL WHERE clause from an incoming array of filters
@@ -12,7 +12,7 @@ const wildcardColumns = ["ip", "userAgent", "m"];
 
 	Wildcard matching is used for certain columns defined in wildcardColumns
 
-	Returns a string like "AND e = 'scroll' AND (e != 'visit' AND e != 'exit') AND ip LIKE '%127.0.0.1%' AND (ip NOT LIKE '%192.18.0.1%' AND ip NOT LIKE '%192.18.0.2%') AND (m LIKE '%Intro%' OR m LIKE '%NavLink%')"
+	Returns a string like "AND eventType = 'scroll' AND (eventType != 'visit' AND eventType != 'exit') AND ip LIKE '%127.0.0.1%' AND (ip NOT LIKE '%192.18.0.1%' AND ip NOT LIKE '%192.18.0.2%') AND (id LIKE '%Intro%' OR id LIKE '%NavLink%')"
 
 	- If you have multiple inclusions for the same column, you don’t want all of them to be true at once (that’s impossible: e.g., event = 'scroll' AND event = 'visit'). Instead, you want any one of them to match. That means you combine them with OR, like: (event = 'scroll' OR event = 'visit')
 	- If you have multiple exclusions for the same column, you want to block all of them. That means you combine them with AND like: (event != 'scroll' AND event != 'visit')

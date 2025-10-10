@@ -1,9 +1,10 @@
 terraform {
   backend "s3" {
-    bucket         = ""
-    key            = ""
-    dynamodb_table = ""
-    region         = ""
+    bucket       = ""
+    key          = ""
+    region       = ""
+    use_lockfile = true
+    encrypt      = true
   }
 
   required_providers {

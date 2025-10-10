@@ -1,11 +1,11 @@
-import {SQSClient, SendMessageCommand} from "@aws-sdk/client-sqs";
-import {AnalyticsChunk} from "@djoz-portfolio/shared";
-import {APIGatewayProxyHandlerV2} from "aws-lambda";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { AnalyticsChunk } from "@djoz-portfolio/shared";
+import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 
 // Cache constants
 const QUEUE_URL = process.env.QUEUE_URL;
 const SCHEMA_VERSION = 1;
-const RESPONSE = {statusCode: 204, body: ""};
+const RESPONSE = { statusCode: 204, body: "" };
 
 // Initialize SQS client once
 const sqs = new SQSClient({});
@@ -42,8 +42,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 			QueueUrl: QUEUE_URL,
 			MessageBody: JSON.stringify({
 				events,
-				// Store timestamp in seconds to save space
-				timestamp: Math.floor(Date.now() / 1000),
+				timestamp: Date.now(),
 				schemaVersion: SCHEMA_VERSION,
 				userAgent: ctx?.userAgent || headers["user-agent"] || headers["User-Agent"] || null,
 				ip: ctx?.sourceIp || headers["x-forwarded-for"]?.split(",")[0].trim() || null,

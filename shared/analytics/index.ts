@@ -15,18 +15,30 @@ export const events = {
 export type EventName = keyof typeof events;
 const eventArray = Object.values(events) as EventName[];
 
-/*
-	Analytics event schema optimized for efficient ingestion and processing.
-	Its compact format minimizes payload size for SQS transport.
-*/
 // Base analytics event representing a single tracked user action or system event
 export interface AnalyticsEvent {
 	// Event type
-	e: EventName;
+	eventType: EventName;
+	/* 
+		Milliseconds since the first event in the batch. Used to reconstruct event order and timing.
+
+		The server assigns one timestamp to the entire event batch when it’s received.
+		Each event only includes an offset, how long after the batch started that event happened.
+		A larger offset means the event occurred more recently, closer to when the batch was sent.
+
+		To reconstruct when each event actually happened relative to the batch timestamp, we work backwards.
+		The event with the largest offset should line up exactly with the batch timestamp.
+		Events with smaller offsets get shifted back in time accordingly.
+
+		This avoids issues with clock skew, timezones, and intentional manipulation of analytics data.
+
+		This is not perfect, but it's a reasonable compromise between accuracy and complexity.
+	*/
+	offsetMs?: number;
 	// Optional metadata such as an analytics ID
-	m?: string;
+	id?: string;
 	// Session ID
-	s?: string;
+	sessionId?: string;
 }
 
 // Metadata automatically added by the ingest Lambda API
@@ -74,3 +86,5 @@ export type APIGraphData = {
 	axis: TimeSteps;
 	data: ChartData;
 };
+
+export const FLUSH_INTERVAL_MS = 5000; // 5 seconds
