@@ -143,7 +143,7 @@ Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.t
    - Note: You can change the bucket and table names if you want, but they must be unique for your AWS account.
    - You could also utilize Terraform Cloud, another remote backend, or even local state if you prefer (if using GitHub Actions, you could potentially use "Artifacts" or something else).
 3. (Optional) Change SES Email sending identity:
-   - By default, the template uses an `Email-Based` sending identity for SES. If you have a verified domain, you can switch to the `Domain-Based` sending identity by updating the [api.tf](./terraform/api.tf) file.
+   - By default, the template uses an `Email-Based` sending identity for SES. If you have a verified domain, you can switch to the `Domain-Based` sending identity by updating the [terraform.tfvars](../terraform/terraform.tfvars) file.
 
 ### 6. Deployment
 

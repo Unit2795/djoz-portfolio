@@ -14,7 +14,8 @@ locals {
 */
 # EMAIL based identity
 resource "aws_ses_email_identity" "admin" {
-	email = var.admin_email
+  count = var.ses_identity_type == "email" && !local.disable_api ? 1 : 0
+  email = var.admin_email
 }
 
 /*
@@ -26,10 +27,18 @@ DOMAIN based identity
 2. If you wish to use a separate email sending domain from the one the site is deployed on, you'll need to add it to the tf variables separate from the domain name the SPA is deployed to.
 3. Update the lambda IAM policy to use the domain identity ARN instead of the email identity ARN.
 */
-/*resource "aws_ses_domain_identity" "admin" {
-  count  = local.disable_api ? 0 : 1
+resource "aws_ses_domain_identity" "admin" {
+  count  = var.ses_identity_type == "domain" && !local.disable_api ? 1 : 0
   domain = var.domain_name
-}*/
+}
+
+locals {
+  ses_identity_arn = try(
+    aws_ses_domain_identity.admin[0].arn,
+    aws_ses_email_identity.admin[0].arn,
+    null
+  )
+}
 
 
 /*
@@ -197,20 +206,17 @@ resource "aws_iam_role_policy" "contactme" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "ses:SendEmail",
-          "ses:SendRawEmail"
-        ]
-        Resource = aws_ses_domain_identity.admin[0].arn
+        Effect   = "Allow"
+        Action   = ["ses:SendEmail", "ses:SendRawEmail"]
+        Resource = local.ses_identity_arn
       },
       {
+        Effect = "Allow"
         Action = [
           "dynamodb:UpdateItem",
           "dynamodb:GetItem",
           "dynamodb:PutItem"
         ]
-        Effect   = "Allow"
         Resource = aws_dynamodb_table.api_quota[0].arn
       }
     ]

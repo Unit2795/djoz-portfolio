@@ -19,6 +19,16 @@ variable "admin_email" {
   type        = string
 }
 
+variable "ses_identity_type" {
+  description = "The type of SES identity to use. One of 'domain' or 'email'."
+  type        = string
+  default     = "email"
+  validation {
+    condition     = contains(["domain", "email"], var.ses_identity_type)
+    error_message = "ses_identity_type must be either 'domain' or 'email'."
+  }
+}
+
 variable "disable_contactform" {
   type        = bool
   description = "set to true to disable contact form infrastructure"
