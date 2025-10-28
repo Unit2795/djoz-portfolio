@@ -5,6 +5,7 @@ import { shuffleDeterministic } from "@/utils/shuffle";
 import Section from "@/components/Section/Section.astro";
 import { projects, sections } from "@/content";
 import { getAnalyticsAttribute } from "@/utils/analytics";
+import AnimatedGrid from "@/components/AnimatedGrid/AnimatedGrid.astro";
 
 const themes = [
 	{
@@ -60,118 +61,122 @@ const themeOrder = shuffleDeterministic(
 
 <Section section={sections.PROJECTS} solidBackground={sections.PROJECTS.solidBackground} analyticsId="Projects">
 	<div class="mt-12">
-		<ul class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
-			{
-				projects.items.map((project, index) => {
-					const themeIndex = themeOrder[index % themes.length];
-					const theme = themes[themeIndex];
+		<AnimatedGrid animationInterval={250} class={["animate-fade-down-blur"]}>
+			<ul class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+				{
+					projects.items.map((project, index) => {
+						const themeIndex = themeOrder[index % themes.length];
+						const theme = themes[themeIndex];
 
-					return (
-						<li
-							class:list={[
-								"motion-safe:hover-shimmer group stretched-link relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-gradient-to-br backdrop-blur-sm motion-safe:transition-all motion-safe:duration-300",
-								"hover:shadow-2xl motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.02]",
-								"focus-within:ring-secondary focus-within:ring-2",
-								theme.card,
-								theme.border,
-							]}
-						>
-							{/* Background color glow effect on hover */}
-							<div
+						return (
+							<li
 								class:list={[
-									"absolute inset-0 bg-radial opacity-0 group-hover:opacity-50 motion-safe:transition-opacity motion-safe:duration-500",
-									theme.glow,
+									"motion-safe:hover-shimmer group stretched-link relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-gradient-to-br backdrop-blur-sm motion-safe:transition-all motion-safe:duration-300",
+									"hover:shadow-2xl motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.02]",
+									"focus-within:ring-secondary focus-within:ring-2",
+									"animated-grid-item",
+									theme.card,
+									theme.border,
 								]}
-							/>
-
-							{/* Image with gradient overlay effect */}
-							<div class="relative h-38 overflow-hidden">
-								<img
-									alt=""
-									class="h-full w-full object-cover object-center motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-110"
-									src={project.img}
-								/>
-
-								{/* Gradient overlay on image */}
-								<div class="absolute inset-0 bg-linear-to-t from-gray-900 via-transparent to-transparent opacity-60" />
-
-								{/* Floating arrow indicator */}
+							>
+								{/* Background color glow effect on hover */}
 								<div
 									class:list={[
-										"absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br text-white shadow-lg motion-safe:transition-all motion-safe:duration-300",
-										"-translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
-										theme.accent,
+										"absolute inset-0 bg-radial opacity-0 group-hover:opacity-50 motion-safe:transition-opacity motion-safe:duration-500",
+										theme.glow,
 									]}
-								>
-									<ArrowUpRight size={20} aria-hidden />
-								</div>
-							</div>
+								/>
 
-							{/* Content section */}
-							<div class="flex flex-1 flex-col p-6">
-								<h3 class="mb-3 text-xl font-bold text-gray-100">
-									<a
-										href={project.link}
-										class="focus:outline-hidden"
-										{...getAnalyticsAttribute(
-											"interact",
-											`VisitProject-${project.analyticsLabel}`,
-											sections.PROJECTS.disableAnalytics || !project.analyticsLabel,
-										)}
-										target="_blank"
-									>
-										{project.title}
-									</a>
-								</h3>
-								<p class="mb-4 text-sm leading-relaxed text-gray-400 group-hover:text-gray-300 motion-safe:transition-colors motion-safe:duration-300">
-									{project.description}
-								</p>
-								<Pills pills={project.tags} class="z-[2] mb-6" />
+								{/* Image with gradient overlay effect */}
+								<div class="relative h-38 overflow-hidden">
+									<img
+										loading="lazy"
+										alt=""
+										class="h-full w-full object-cover object-center motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-110"
+										src={project.img}
+									/>
 
-								{/* CTA with animation */}
-								<div class="mt-auto flex items-center justify-between">
-									{projects.viewProjectText && (
-										<p
-											class:list={[
-												"inline-flex items-center text-sm font-medium motion-safe:transition-all motion-safe:duration-300",
-												theme.text,
-											]}
-											aria-hidden="true"
-										>
-											{projects.viewProjectText}
-											<ExternalLink class="ml-2" size={16} />
-										</p>
-									)}
+									{/* Gradient overlay on image */}
+									<div class="absolute inset-0 bg-linear-to-t from-gray-900 via-transparent to-transparent opacity-60" />
 
-									{/* Animated line indicator */}
+									{/* Floating arrow indicator */}
 									<div
 										class:list={[
-											"relative h-0.5 flex-1 overflow-hidden rounded-full bg-gray-700/50",
-											// If the button is show, give it a little space
-											projects.viewProjectText && "ml-4",
+											"absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br text-white shadow-lg motion-safe:transition-all motion-safe:duration-300",
+											"-translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
+											theme.accent,
 										]}
 									>
-										<div
-											class:list={[
-												"absolute inset-y-0 left-0 w-full -translate-x-full bg-linear-to-r group-hover:translate-x-0 motion-safe:transition-transform motion-safe:duration-500",
-												theme.accent,
-											]}
-										/>
+										<ArrowUpRight size={20} aria-hidden />
 									</div>
 								</div>
-							</div>
 
-							{/* Bottom right glow accent decoration on hover */}
-							<div
-								class:list={[
-									"absolute -right-1 -bottom-1 h-20 w-20 bg-linear-to-br opacity-0 blur-2xl group-hover:opacity-50 motion-safe:transition-opacity motion-safe:duration-500",
-									theme.accent,
-								]}
-							/>
-						</li>
-					);
-				})
-			}
-		</ul>
+								{/* Content section */}
+								<div class="flex flex-1 flex-col p-6">
+									<h3 class="mb-3 text-xl font-bold text-gray-100">
+										<a
+											href={project.link}
+											class="focus:outline-hidden"
+											{...getAnalyticsAttribute(
+												"interact",
+												`VisitProject-${project.analyticsLabel}`,
+												sections.PROJECTS.disableAnalytics || !project.analyticsLabel,
+											)}
+											target="_blank"
+										>
+											{project.title}
+										</a>
+									</h3>
+									<p class="mb-4 text-sm leading-relaxed text-gray-400 group-hover:text-gray-300 motion-safe:transition-colors motion-safe:duration-300">
+										{project.description}
+									</p>
+									<Pills pills={project.tags} class="z-[2] mb-6" />
+
+									{/* CTA with animation */}
+									<div class="mt-auto flex items-center justify-between">
+										{projects.viewProjectText && (
+											<p
+												class:list={[
+													"inline-flex items-center text-sm font-medium motion-safe:transition-all motion-safe:duration-300",
+													theme.text,
+												]}
+												aria-hidden="true"
+											>
+												{projects.viewProjectText}
+												<ExternalLink class="ml-2" size={16} />
+											</p>
+										)}
+
+										{/* Animated line indicator */}
+										<div
+											class:list={[
+												"relative h-0.5 flex-1 overflow-hidden rounded-full bg-gray-700/50",
+												// If the button is show, give it a little space
+												projects.viewProjectText && "ml-4",
+											]}
+										>
+											<div
+												class:list={[
+													"absolute inset-y-0 left-0 w-full -translate-x-full bg-linear-to-r group-hover:translate-x-0 motion-safe:transition-transform motion-safe:duration-500",
+													theme.accent,
+												]}
+											/>
+										</div>
+									</div>
+								</div>
+
+								{/* Bottom right glow accent decoration on hover */}
+								<div
+									class:list={[
+										"absolute -right-1 -bottom-1 h-20 w-20 bg-linear-to-br opacity-0 blur-2xl group-hover:opacity-50 motion-safe:transition-opacity motion-safe:duration-500",
+										theme.accent,
+									]}
+								/>
+							</li>
+						);
+					})
+				}
+			</ul>
+		</AnimatedGrid>
 	</div>
 </Section>

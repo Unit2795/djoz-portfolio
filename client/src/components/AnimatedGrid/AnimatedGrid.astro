@@ -1,0 +1,97 @@
+---
+/**
+ * This component applies staggered animations to its grid of child elements marked with the `animated-grid-item` class as they enter the viewport (uses Intersection Observer API).
+ */
+
+import { props } from "@/utils/customEl/server";
+
+interface Props {
+	// The delay in milliseconds between the animations of each item.
+	animationInterval?: number;
+	// Name of the CSS classes to apply to each item for animation styling.
+	class?: string[];
+}
+
+export type Expose = Props;
+---
+
+<animated-grid {...props<Expose>(Astro.props)}>
+	<slot />
+</animated-grid>
+<script>
+	import type { Expose } from "@/components/AnimatedGrid/AnimatedGrid.astro";
+	import { CustomEl, customEl } from "@/utils/customEl/client";
+
+	customEl(
+		"animated-grid",
+		class extends CustomEl<Expose> {
+			items = Array.from(this.querySelectorAll(".animated-grid-item"));
+			animationInterval = this.props.animationInterval;
+			class = this.props.class;
+			// Track when the next animation slot is available
+			nextAvailableAnimationTime = performance.now();
+
+			connectedCallback() {
+				const observer = new IntersectionObserver(
+					(entries) => {
+						const batch: HTMLElement[] = [];
+						// Collect all intersecting entries that are valid HTML elements so we know we can calculate positions for them and apply animations.
+						entries.forEach((entry) => {
+							if (entry.isIntersecting && entry.target instanceof HTMLElement) {
+								observer.unobserve(entry.target);
+								batch.push(entry.target);
+							}
+						});
+
+						// sort intersecting entries by visual position
+						batch.sort((a, b) => {
+							// First sort elements by rows
+							if (a.offsetTop !== b.offsetTop) return a.offsetTop - b.offsetTop;
+							// Then sort by columns
+							return a.offsetLeft - b.offsetLeft;
+						});
+
+						// Process each item, scheduling it for the next available animation slot
+						batch.forEach((element) => {
+							if (this.animationInterval) {
+								const now = performance.now();
+								// Calculate delay: if next slot is in the past, animate immediately (delay=0)
+								// Otherwise, delay animation until that slot becomes available
+								const delay = Math.max(0, this.nextAvailableAnimationTime - now);
+
+								element.style.animationDelay = `${delay}ms`;
+
+								/* 
+									Synchronize timeline to prevent falling behind. If the next scheduled slot is in the past
+									(e.g., after a scroll pause), catch up to the present. Otherwise, continue from the last
+									scheduled slot to maintain the stagger effect. 
+								*/
+								const baselineTime = Math.max(this.nextAvailableAnimationTime, now);
+
+								// Advance to the next animation slot: start from either the previously scheduled slot or current time (whichever is later), then add one interval.
+								this.nextAvailableAnimationTime = baselineTime + this.animationInterval;
+							}
+							if (this.class) {
+								element.classList.add(...this.class);
+							}
+						});
+					},
+					{ threshold: 0.1 },
+				);
+				// Observe each item in the grid
+				this.items.forEach((item) => observer.observe(item));
+			}
+		},
+	);
+</script>
+<style is:global>
+	.animated-grid-item {
+		opacity: 0;
+	}
+
+	@media (scripting: none) {
+		.animated-grid-item {
+			opacity: 1;
+		}
+	}
+</style>

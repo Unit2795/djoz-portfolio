@@ -8,6 +8,7 @@
 	--animate-fade: fadeIn 1s ease-in-out forwards;
 	--animate-fade-up: fadeUp 1s ease-in-out both;
 	--animate-fade-in-blur: fadeInBlur 1s ease-in-out forwards;
+	--animate-fade-down-blur: fadeDownBlur 1s ease-in-out forwards;
 	--animate-bounce-mid: bounceMiddle linear 0.75s infinite;
 	--animate-top-rotate-in: rotateIn 1s ease-in-out forwards;
 	--animate-bottom-rotate-in: rotateOut 1s ease-in-out forwards;
@@ -27,6 +28,18 @@
 		100% {
 			opacity: 1;
 			filter: blur(0);
+		}
+	}
+	@keyframes fadeDownBlur {
+		0% {
+			opacity: 0;
+			filter: blur(14px);
+			transform: translateY(3rem);
+		}
+		100% {
+			opacity: 1;
+			filter: blur(0);
+			transform: translateY(0);
 		}
 	}
 	@keyframes fadeIn {

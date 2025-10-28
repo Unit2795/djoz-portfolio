@@ -6,6 +6,7 @@ import Hexagon from "@/components/Icon/Hexagon.astro";
 import Section from "@/components/Section/Section.astro";
 import { sections } from "@/content";
 import { getAnalyticsAttribute } from "@/utils/analytics";
+import AnimatedGrid from "@/components/AnimatedGrid/AnimatedGrid.astro";
 
 const themes = [
 	{
@@ -60,56 +61,59 @@ const colorOrder = shuffleDeterministic(
 
 <Section section={sections.SKILLS} solidBackground={sections.SKILLS.solidBackground} analyticsId="Skills">
 	<div class="mt-12">
-		<ul class="mx-auto grid grid-cols-1 gap-8 space-y-4 md:grid-cols-2 xl:grid-cols-3">
-			{
-				skills.map((skill, skillIndex) => {
-					const colorIndex = colorOrder[skillIndex % colorCount];
-					const theme = themes[colorIndex];
+		<AnimatedGrid animationInterval={250} class={["animate-fade-down-blur"]}>
+			<ul class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+				{
+					skills.map((skill, skillIndex) => {
+						const colorIndex = colorOrder[skillIndex % colorCount];
+						const theme = themes[colorIndex];
 
-					return (
-						<li
-							class:list={[
-								"motion-safe:hover-shimmer group relative overflow-hidden rounded-2xl border bg-gray-900/40 p-6 shadow-md/50 backdrop-blur-xs hover:shadow-2xl motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.02]",
-								theme.border,
-							]}
-							{...getAnalyticsAttribute(
-								"interact",
-								`SkillCard-${skill.analyticsLabel}`,
-								sections.SKILLS.disableAnalytics || !skill.analyticsLabel,
-							)}
-						>
-							{/* Hover background color glow effect */}
-							<div
+						return (
+							<li
 								class:list={[
-									"absolute inset-0 bg-radial opacity-0 group-hover:opacity-30 motion-safe:transition-opacity motion-safe:duration-500",
-									theme.gradient,
+									"motion-safe:hover-shimmer group relative overflow-hidden rounded-2xl border bg-gray-900/40 p-6 shadow-md/50 backdrop-blur-xs hover:shadow-2xl motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.02]",
+									"animated-grid-item",
+									theme.border,
 								]}
-							/>
-							<div class="z-10 flex flex-col">
-								<div class="z-10 flex pb-4">
-									<Hexagon
-										class="h-12 w-12 md:h-16 md:w-16"
-										icon={skill.icon}
-										hexClass={theme.gradient}
-									/>
-									<div class="ml-2 flex flex-col justify-center">
-										<h3 class="text-md font-semibold text-gray-100 md:text-lg lg:text-xl">
-											{skill.name}
-										</h3>
-										<p class:list={["text-sm", theme.subtitle]}>{skill.subtitle}</p>
-									</div>
-								</div>
-								<Pills pills={skill.subSkills || []} />
-								{/* Hover colored underline effect */}
+								{...getAnalyticsAttribute(
+									"interact",
+									`SkillCard-${skill.analyticsLabel}`,
+									sections.SKILLS.disableAnalytics || !skill.analyticsLabel,
+								)}
+							>
+								{/* Hover background color glow effect */}
 								<div
-									class="absolute right-0 bottom-0 left-0 h-1 bg-gradient-to-r opacity-0 group-hover:opacity-100 motion-safe:transition-all motion-safe:duration-300"
-									class:list={[theme.gradient]}
+									class:list={[
+										"absolute inset-0 bg-radial opacity-0 group-hover:opacity-30 motion-safe:transition-opacity motion-safe:duration-500",
+										theme.gradient,
+									]}
 								/>
-							</div>
-						</li>
-					);
-				})
-			}
-		</ul>
+								<div class="z-10 flex flex-col">
+									<div class="z-10 flex pb-4">
+										<Hexagon
+											class="h-12 w-12 md:h-16 md:w-16"
+											icon={skill.icon}
+											hexClass={theme.gradient}
+										/>
+										<div class="ml-2 flex flex-col justify-center">
+											<h3 class="text-md font-semibold text-gray-100 md:text-lg lg:text-xl">
+												{skill.name}
+											</h3>
+											<p class:list={["text-sm", theme.subtitle]}>{skill.subtitle}</p>
+										</div>
+									</div>
+									<Pills pills={skill.subSkills || []} />
+									{/* Hover colored underline effect */}
+									<div
+										class="absolute right-0 bottom-0 left-0 h-1 bg-gradient-to-r opacity-0 group-hover:opacity-100 motion-safe:transition-all motion-safe:duration-300"
+										class:list={[theme.gradient]}
+									/>
+								</div>
+							</li>
+						);
+					})
+				}
+			</ul>
+		</AnimatedGrid>
 	</div>
 </Section>

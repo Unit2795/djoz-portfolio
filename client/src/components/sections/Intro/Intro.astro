@@ -63,7 +63,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 									<li>
 										<a
 											aria-label={label}
-											class="motion-safe:animate-fade-up block h-6 w-6"
+											class="motion-safe:animate-fade-up block h-6 w-6 motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:scale-125"
 											href={link}
 											rel="noreferrer"
 											style={{
@@ -91,7 +91,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 										<CopyValue
 											aria-label={label}
 											value={value}
-											class="motion-safe:animate-fade-up"
+											class="motion-safe:animate-fade-up motion-safe:transition-transform motion-safe:duration-300 motion-safe:hover:scale-125"
 											style={{
 												animationDelay: `${delay}ms`,
 												animationFillMode: "both",
