@@ -61,8 +61,8 @@ const colorOrder = shuffleDeterministic(
 
 <Section section={sections.SKILLS} solidBackground={sections.SKILLS.solidBackground} analyticsId="Skills">
 	<div class="mt-12">
-		<AnimatedGrid animationInterval={200} class={["animate-fade-down-blur"]}>
-			<ul class="mx-auto grid grid-cols-1 gap-8 space-y-4 md:grid-cols-2 xl:grid-cols-3">
+		<AnimatedGrid animationInterval={250} class={["animate-fade-down-blur"]}>
+			<ul class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
 				{
 					skills.map((skill, skillIndex) => {
 						const colorIndex = colorOrder[skillIndex % colorCount];

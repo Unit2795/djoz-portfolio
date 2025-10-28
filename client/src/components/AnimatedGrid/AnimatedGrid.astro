@@ -21,7 +21,6 @@ export type Expose = Props;
 <script>
 	import type { Expose } from "@/components/AnimatedGrid/AnimatedGrid.astro";
 	import { CustomEl, customEl } from "@/utils/customEl/client";
-	import { throttle } from "@/utils/throttle";
 
 	customEl(
 		"animated-grid",
@@ -29,15 +28,22 @@ export type Expose = Props;
 			items = Array.from(this.querySelectorAll(".animated-grid-item"));
 			animationInterval = this.props.animationInterval;
 			class = this.props.class;
+			// Track when the next animation slot is available
+			nextAvailableAnimationTime = performance.now();
 
 			connectedCallback() {
-				const batch: HTMLElement[] = [];
-				/* 
-					We process items in batches so that we can aggregate multiple items that enter the viewport simultaneously (within a small time period).
-					We sort them by their position in the grid (top to bottom, left to right) before applying the animation delay and classes. This ensures the stagger animation follows the visual order of the grid. It's not guaranteed that items will arrive in the intersection observer in the same order they appear in the DOM or visually. This even accounts for elements that use the css "order" property to change their visual position while keeping the DOM order the same.
-				*/
-				const processBatch = () => {
-					if (batch.length) {
+				const observer = new IntersectionObserver(
+					(entries) => {
+						const batch: HTMLElement[] = [];
+						// Collect all intersecting entries that are valid HTML elements so we know we can calculate positions for them and apply animations.
+						entries.forEach((entry) => {
+							if (entry.isIntersecting && entry.target instanceof HTMLElement) {
+								observer.unobserve(entry.target);
+								batch.push(entry.target);
+							}
+						});
+
+						// sort intersecting entries by visual position
 						batch.sort((a, b) => {
 							// First sort elements by rows
 							if (a.offsetTop !== b.offsetTop) return a.offsetTop - b.offsetTop;
@@ -45,33 +51,30 @@ export type Expose = Props;
 							return a.offsetLeft - b.offsetLeft;
 						});
 
-						// Apply the animations and classes
-						batch.forEach((card, index) => {
+						// Process each item, scheduling it for the next available animation slot
+						batch.forEach((element) => {
 							if (this.animationInterval) {
-								card.style.animationDelay = `${index * this.animationInterval}ms`;
+								const now = performance.now();
+								// Calculate delay: if next slot is in the past, animate immediately (delay=0)
+								// Otherwise, delay animation until that slot becomes available
+								const delay = Math.max(0, this.nextAvailableAnimationTime - now);
+
+								element.style.animationDelay = `${delay}ms`;
+
+								/* 
+									Synchronize timeline to prevent falling behind. If the next scheduled slot is in the past
+									(e.g., after a scroll pause), catch up to the present. Otherwise, continue from the last
+									scheduled slot to maintain the stagger effect. 
+								*/
+								const baselineTime = Math.max(this.nextAvailableAnimationTime, now);
+
+								// Advance to the next animation slot: start from either the previously scheduled slot or current time (whichever is later), then add one interval.
+								this.nextAvailableAnimationTime = baselineTime + this.animationInterval;
 							}
 							if (this.class) {
-								card.classList.add(...this.class);
+								element.classList.add(...this.class);
 							}
 						});
-
-						// Clear the batch after processing
-						batch.length = 0;
-					}
-				};
-
-				// Create a throttled version of the batch processing function to limit how often it runs and ensure we aggregate multiple items entering the viewport together.
-				const throttledProcessBatch = throttle(processBatch, 200);
-				const observer = new IntersectionObserver(
-					(entries) => {
-						entries.forEach((entry) => {
-							// If the item is intersecting, add it to the batch and unobserve it
-							if (entry.isIntersecting && entry.target instanceof HTMLElement) {
-								observer.unobserve(entry.target);
-								batch.push(entry.target);
-							}
-						});
-						throttledProcessBatch();
 					},
 					{ threshold: 0.1 },
 				);
