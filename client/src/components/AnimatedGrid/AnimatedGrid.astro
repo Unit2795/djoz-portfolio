@@ -32,54 +32,59 @@ export type Expose = Props;
 			nextAvailableAnimationTime = performance.now();
 
 			connectedCallback() {
-				const observer = new IntersectionObserver(
-					(entries) => {
-						const batch: HTMLElement[] = [];
-						// Collect all intersecting entries that are valid HTML elements so we know we can calculate positions for them and apply animations.
-						entries.forEach((entry) => {
-							if (entry.isIntersecting && entry.target instanceof HTMLElement) {
-								observer.unobserve(entry.target);
-								batch.push(entry.target);
-							}
-						});
+				// If user prefers reduced motion, skip animations
+				const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-						// sort intersecting entries by visual position
-						batch.sort((a, b) => {
-							// First sort elements by rows
-							if (a.offsetTop !== b.offsetTop) return a.offsetTop - b.offsetTop;
-							// Then sort by columns
-							return a.offsetLeft - b.offsetLeft;
-						});
+				if (!prefersReducedMotion) {
+					const observer = new IntersectionObserver(
+						(entries) => {
+							const batch: HTMLElement[] = [];
+							// Collect all intersecting entries that are valid HTML elements so we know we can calculate positions for them and apply animations.
+							entries.forEach((entry) => {
+								if (entry.isIntersecting && entry.target instanceof HTMLElement) {
+									observer.unobserve(entry.target);
+									batch.push(entry.target);
+								}
+							});
 
-						// Process each item, scheduling it for the next available animation slot
-						batch.forEach((element) => {
-							if (this.animationInterval) {
-								const now = performance.now();
-								// Calculate delay: if next slot is in the past, animate immediately (delay=0)
-								// Otherwise, delay animation until that slot becomes available
-								const delay = Math.max(0, this.nextAvailableAnimationTime - now);
+							// sort intersecting entries by visual position
+							batch.sort((a, b) => {
+								// First sort elements by rows
+								if (a.offsetTop !== b.offsetTop) return a.offsetTop - b.offsetTop;
+								// Then sort by columns
+								return a.offsetLeft - b.offsetLeft;
+							});
 
-								element.style.animationDelay = `${delay}ms`;
+							// Process each item, scheduling it for the next available animation slot
+							batch.forEach((element) => {
+								if (this.animationInterval) {
+									const now = performance.now();
+									// Calculate delay: if next slot is in the past, animate immediately (delay=0)
+									// Otherwise, delay animation until that slot becomes available
+									const delay = Math.max(0, this.nextAvailableAnimationTime - now);
 
-								/* 
+									element.style.animationDelay = `${delay}ms`;
+
+									/* 
 									Synchronize timeline to prevent falling behind. If the next scheduled slot is in the past
 									(e.g., after a scroll pause), catch up to the present. Otherwise, continue from the last
 									scheduled slot to maintain the stagger effect. 
 								*/
-								const baselineTime = Math.max(this.nextAvailableAnimationTime, now);
+									const baselineTime = Math.max(this.nextAvailableAnimationTime, now);
 
-								// Advance to the next animation slot: start from either the previously scheduled slot or current time (whichever is later), then add one interval.
-								this.nextAvailableAnimationTime = baselineTime + this.animationInterval;
-							}
-							if (this.class) {
-								element.classList.add(...this.class);
-							}
-						});
-					},
-					{ threshold: 0.1 },
-				);
-				// Observe each item in the grid
-				this.items.forEach((item) => observer.observe(item));
+									// Advance to the next animation slot: start from either the previously scheduled slot or current time (whichever is later), then add one interval.
+									this.nextAvailableAnimationTime = baselineTime + this.animationInterval;
+								}
+								if (this.class) {
+									element.classList.add(...this.class);
+								}
+							});
+						},
+						{ threshold: 0.1 },
+					);
+					// Observe each item in the grid
+					this.items.forEach((item) => observer.observe(item));
+				}
 			}
 		},
 	);
@@ -89,7 +94,7 @@ export type Expose = Props;
 		opacity: 0;
 	}
 
-	@media (scripting: none) {
+	@media (scripting: none), (prefers-reduced-motion: reduce) {
 		.animated-grid-item {
 			opacity: 1;
 		}
