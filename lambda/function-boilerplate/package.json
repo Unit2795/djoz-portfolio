@@ -9,12 +9,8 @@
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"packageManager": "pnpm@10.14.0",
 	"devDependencies": {
-		"@types/aws-lambda": "^8.10.155",
-		"@types/node": "^24.7.0"
-	},
-	"dependencies": {
-		"source-map-support": "^0.5.21"
+		"@types/aws-lambda": "^8.10.163",
+		"@types/node": "^24.19.0"
 	}
 }

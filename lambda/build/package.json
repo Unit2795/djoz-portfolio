@@ -10,12 +10,11 @@
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"packageManager": "pnpm@10.14.0",
 	"dependencies": {
-		"archiver": "^7.0.1",
-		"esbuild": "^0.25.10"
+		"archiver": "^8.0.0",
+		"esbuild": "^0.28.2"
 	},
 	"devDependencies": {
-		"@types/node": "^24.7.0"
+		"@types/node": "^26.6.3"
 	}
 }

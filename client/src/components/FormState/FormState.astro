@@ -35,6 +35,7 @@ if (isDevelopment) {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>{config?.browserTitle}</title>
 		<meta name="description" content={config?.browserDescription} />
+		<meta name="robots" content="noindex" />
 
 		<!-- Standard favicons -->
 		<link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
@@ -49,89 +50,86 @@ if (isDevelopment) {
 		<link rel="manifest" href="/site.webmanifest" />
 
 		<!-- Auto-redirect after N seconds. -->
-		{
-			!config?.disableAutoRedirect && (
-				<meta http-equiv="refresh" content={`${config?.autoRedirectSeconds ?? 3}; url=${redirectHref}`} />
-			)
-		}
+		{!config?.disableAutoRedirect && (
+			<meta http-equiv="refresh" content={`${config?.autoRedirectSeconds ?? 3}; url=${redirectHref}`} />
+		)}
 	</head>
 	<body class="bg-gray-900">
 		<!-- Animated gradient background -->
 		<div class="fixed inset-0">
 			<div
 				class="from-primary/10 to-secondary/10 motion-safe:animate-gradient-shift absolute inset-0 bg-gradient-to-br via-transparent motion-reduce:hidden"
-			>
-			</div>
+			></div>
 			<div
 				class="from-secondary/5 to-primary/5 motion-safe:animate-gradient-shift-reverse absolute inset-0 bg-gradient-to-tl via-transparent motion-reduce:hidden"
-			>
-			</div>
+			></div>
 
 			<!-- Subtle grid pattern background -->
 			<div
 				class="absolute inset-0 opacity-[0.3]"
-				style="background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 50px 50px;"
-			>
-			</div>
+				style="
+					background-image:
+						linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+						linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+					background-size: 50px 50px;
+				"
+			></div>
 		</div>
 
 		<!-- Circular glow accents in background -->
 		<div class="pointer-events-none fixed inset-0 overflow-hidden">
 			<div class="bg-primary absolute right-1 bottom-1 h-20 w-20 opacity-20 blur-3xl"></div>
-			<div class="absolute top-1/2 left-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 bg-white/20 blur-3xl">
-			</div>
+			<div
+				class="absolute top-1/2 left-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 bg-white/20 blur-3xl"
+			></div>
 			<div class="bg-secondary absolute top-1 left-1 h-32 w-32 opacity-20 blur-3xl"></div>
 		</div>
 
 		<main class="relative z-10 w-full">
 			<section class="flex min-h-lvh w-full flex-col items-center justify-center p-4">
-				{
-					config?.icon && (
-						<div class="relative mb-8">
-							<div class="absolute inset-0 flex items-center justify-center">
-								<div class="relative h-32 w-32">
-									{/* Rotating square outline*/}
-									<div class="motion-safe:animate-spin-slow absolute inset-0">
-										<div
-											class:list={[
-												"h-full w-full rounded-[30%] border motion-safe:animate-pulse",
-												isError ? "border-red-600/20" : "border-white/5",
-											]}
-										/>
-									</div>
-									{/* Pulsing error glow */}
-									<div
-										class:list={[
-											"absolute inset-0 rounded-full bg-gradient-to-r blur-2xl motion-safe:animate-pulse",
-											isError
-												? "from-red-600/20 to-orange-600/20"
-												: "from-primary/50 to-secondary/50",
-										]}
-									/>
-								</div>
-							</div>
-
-							{/* Success icon with animation */}
-							<div
-								class:list={[
-									"relative flex h-24 w-24 items-center justify-center rounded-full border bg-gradient-to-br",
-									isError
-										? "border-red-500/30 from-red-950/40 to-orange-950/30"
-										: "from-primary/20 to-secondary/20 border-white/10",
-								]}
-							>
-								<div class="from-primary/30 to-secondary/30 motion-safe:animate-ping-slow absolute inset-0 rounded-full bg-gradient-to-br" />
-								<Icon
+				{config?.icon && <div class="relative mb-8">
+					<div class="absolute inset-0 flex items-center justify-center">
+						<div class="relative h-32 w-32">
+							{/* Rotating square outline*/}
+							<div class="motion-safe:animate-spin-slow absolute inset-0">
+								<div
 									class:list={[
-										"motion-safe:animate-scale-swing-in relative z-10 h-12 w-12",
-										isError ? "text-red-400" : "text-secondary",
+										"h-full w-full rounded-[30%] border motion-safe:animate-pulse",
+										isError ? "border-red-600/20" : "border-white/5",
 									]}
-									{...config.icon}
 								/>
 							</div>
+							{/* Pulsing error glow */}
+							<div
+								class:list={[
+									"absolute inset-0 rounded-full bg-gradient-to-r blur-2xl motion-safe:animate-pulse",
+									isError ? "from-red-600/20 to-orange-600/20" : "from-primary/50 to-secondary/50",
+								]}
+							/>
 						</div>
-					)
-				}
+					</div>
+
+					{/* Success icon with animation */}
+					<div
+						class:list={[
+							"relative flex h-24 w-24 items-center justify-center rounded-full border bg-gradient-to-br",
+							isError
+								? "border-red-500/30 from-red-950/40 to-orange-950/30"
+								: "from-primary/20 to-secondary/20 border-white/10",
+						]}
+					>
+						<div
+							class="from-primary/30 to-secondary/30 motion-safe:animate-ping-slow absolute inset-0 rounded-full bg-gradient-to-br"
+						/>
+						<Icon
+							class:list={[
+								"motion-safe:animate-scale-swing-in relative z-10 h-12 w-12",
+								isError ? "text-red-400" : "text-secondary",
+							]}
+							{...config.icon}
+						/>
+					</div>
+				</div>}
 
 				<!-- Content area -->
 				<div class="max-w-2xl text-center">
@@ -172,36 +170,32 @@ if (isDevelopment) {
 					</div>
 
 					<!-- Loading indicator if auto-redirect is enabled -->
-					{
-						!config?.disableAutoRedirect && (
-							<div class="motion-safe:animate-fade-up animation-delay-800 mt-10">
-								<div
+					{!config?.disableAutoRedirect && <div class="motion-safe:animate-fade-up animation-delay-800 mt-10">
+						<div
+							class:list={[
+								"inline-flex items-center gap-3 rounded-full border px-4 py-2",
+								isError
+									? "border-red-900/20 bg-red-950/20"
+									: "from-primary/10 to-secondary/10 border-white/10 bg-gradient-to-r",
+							]}
+						>
+							<div class="relative flex h-2 w-2">
+								<span
 									class:list={[
-										"inline-flex items-center gap-3 rounded-full border px-4 py-2",
-										isError
-											? "border-red-900/20 bg-red-950/20"
-											: "from-primary/10 to-secondary/10 border-white/10 bg-gradient-to-r",
+										"absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full",
+										isError ? "bg-red-400" : "bg-green-400",
 									]}
-								>
-									<div class="relative flex h-2 w-2">
-										<span
-											class:list={[
-												"absolute inline-flex h-full w-full animate-ping rounded-full",
-												isError ? "bg-red-400" : "bg-green-400",
-											]}
-										/>
-										<span
-											class:list={[
-												"relative inline-flex h-2 w-2 rounded-full",
-												isError ? "bg-red-500" : "bg-green-500",
-											]}
-										/>
-									</div>
-									<span class="text-sm text-gray-400">Redirecting you shortly...</span>
-								</div>
+								/>
+								<span
+									class:list={[
+										"relative inline-flex h-2 w-2 rounded-full",
+										isError ? "bg-red-500" : "bg-green-500",
+									]}
+								/>
 							</div>
-						)
-					}
+							<span class="text-sm text-gray-400">Redirecting you shortly...</span>
+						</div>
+					</div>}
 				</div>
 			</section>
 		</main>

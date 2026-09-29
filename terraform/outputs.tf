@@ -18,22 +18,17 @@ output "route53_domain" {
   value       = aws_route53_record.root_domain.fqdn
 }
 
-output "api_endpoint" {
-  description = "Public API endpoint for contact form"
-  value       = "https://${var.domain_name}/api/contact"
-}
-
 output "ingest_endpoint" {
   description = "Public API endpoint for analytics ingest"
   value       = "https://${var.domain_name}/api/ingest"
 }
 
 output "analytics_bucket_name" {
-  value       = try(aws_s3_bucket.analytics[0].bucket, null)
+  value       = one(aws_s3_bucket.analytics[*].bucket)
   description = "S3 bucket for gzipped NDJSON files"
 }
 
 output "analytics_queue_url" {
-  value       = try(aws_sqs_queue.analytics[0].id, null)
+  value       = one(aws_sqs_queue.analytics[*].id)
   description = "SQS queue URL for analytics processing"
 }

@@ -8,9 +8,8 @@ export const useMobileMenu = (navbar: HTMLElementTagNameMap["nav"], mobileMenu: 
 		mobileMenu.open = open;
 	};
 
-	const openMobileMenu = () => applyMenuState(true);
+	// Opening/toggling is handled natively by the <details> element
 	const closeMobileMenu = () => applyMenuState(false);
-	const toggleMobileMenu = () => applyMenuState(!isMenuOpen());
 
 	const initEventHandlers = () => {
 		// Close mobile menu when clicking outside

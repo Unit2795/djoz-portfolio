@@ -25,8 +25,8 @@ This guide will help you build a copy of the static files for your portfolio web
 
 You'll need the following in order to build the site:
 
-- [Node.js](https://nodejs.org/en/) >= v22
-- [pnpm](https://pnpm.io/installation) >= v10.0
+- [Node.js](https://nodejs.org/en/) >= v22.13
+- [pnpm](https://pnpm.io/installation) >= v12
 - [GitHub](https://github.com/) account
 - A code editor like [VS Code](https://code.visualstudio.com/) or [WebStorm](https://www.jetbrains.com/webstorm/)
 
@@ -47,7 +47,7 @@ You'll need the following in order to build the site:
 ### Content Customization
 
 2. **Update Site Content**
-   The site's copywriting content is managed through a singular file ([content/index.ts](./client/src/content/index.ts)) as a sort of simple Git-based CMS.
+   The site's copywriting content is managed through a singular file ([content/index.ts](../client/src/content/index.ts)) as a sort of simple Git-based CMS.
 
    Update the contents of this file to customize your portfolio's text, links, and other content. You can also customize or enable/disable certain features here such as the snow particle effect.
 
@@ -55,6 +55,8 @@ You'll need the following in order to build the site:
    # Edit the main content file
    vim client/src/content/index.ts  # or use your preferred editor
    ```
+
+   Also set `site` in [astro.config.mjs](../client/astro.config.mjs) to your production URL. It's used for the canonical and Open Graph URLs, and to generate `robots.txt` and `sitemap.xml`.
 
 3. **Replace Images**
 
@@ -64,6 +66,9 @@ You'll need the following in order to build the site:
 
    # Hero image
    public/hero.webp # Replace with your hero image
+
+   # Social share preview image (set shareImage in content/index.ts to undefined to leave it out)
+   public/og-image.png
 
    # Favicon
    public/favicon/ # You can generate appropriately sized favicons for all devices from a single image by using https://favicon.io and then place them here
@@ -88,7 +93,7 @@ You'll need the following in order to build the site:
    http://localhost:4321/
    ```
 
-   > Note: The `pnpm dev` command also starts a mock API server for local testing of the contact form and analytics APIs. To run without the mock API server, use `pnpm dev:client`.
+   > Note: The `pnpm dev` command also starts a mock API server for local testing of the contact form and analytics APIs. Its contact form route is a small stand-in for [contact-api](https://github.com/Unit2795/contact-api). To run without the mock API server, use `pnpm dev:client`.
 
 5. **Build for Production**
 
@@ -109,7 +114,8 @@ You'll need the following in order to build the site:
    **Option A: Automated Terraform/AWS Deployment**
 
    - Follow the [Deployment Guide](../docs/deployment.md) to deploy using AWS and Terraform.
-   - Includes CDN, SSL certificates, DNS records, and contact form submission and analytics APIs.
+   - Includes CDN, SSL certificates, DNS records, and the analytics API.
+   - The contact form needs [contact-api](https://github.com/Unit2795/contact-api) deployed separately, before this deployment. Or set `disable_contactform = true` in `terraform/terraform.tfvars` and `sections.CONTACT.disabled = true` in `client/src/content/index.ts` to deploy without it.
 
    **Option B: Static Host**
 
@@ -150,10 +156,11 @@ git fetch template
 git merge template/main
 ```
 
+If you created your repo with **Use this template**, it shares no history with the template and Git refuses the first merge. Run the first one with `git merge template/main --allow-unrelated-histories`, and expect conflicts in every file you've customized.
+
 #### Major Version Changes
 
-The code for this portfolio is actively being updated and improved. It's likely to continue to experience significant changes.
+The code for this portfolio is actively being updated and improved. It's likely to continue to experience significant changes. Each major version has a migration guide:
 
-It may be easier to either clear your repository's files out and copy the files from the template repository to your own repository, or create a new repository from the template. Then manually copy and reconcile your custom content and configurations. It's not ideal but it avoids complex merge conflicts.
-
-An example of this can be seen in the [V2 Migration Guide](./v2_migration_guide.md) which walks through migrating from V1 to V2.
+- [V3 Migration Guide](./v3_migration_guide.md): V2 to V3. An in-place upgrade; the contact form moved to [contact-api](https://github.com/Unit2795/contact-api).
+- [V2 Migration Guide](./v2_migration_guide.md): V1 to V2. The versions differ so much that it's easier to start from a fresh copy of the template and reconcile your custom content and configurations by hand.

@@ -5,3 +5,8 @@ packages:
   - "shared"
   - "dev-api"
   - "terraform"
+# esbuild installs its binary through a platform package, so its install script is not needed
+allowBuilds:
+  esbuild: false
+# Scripts like ci:install only install some packages, so pnpm should not install everything before running a script
+verifyDepsBeforeRun: false

@@ -33,12 +33,19 @@ resource "aws_cloudfront_distribution" "distro" {
     }
   }
 
+  # S3 returns 403 (not 404) for missing keys because CloudFront is only granted s3:GetObject (no s3:ListBucket).
+  # NOTE: these apply distribution-wide. contact-api's bare 403 (wrong site key) and 404 (unknown route) also become this page.
   custom_error_response {
-    error_code         = 404
-    response_code      = 200
-    response_page_path = "/index.html"
+    error_code         = 403
+    response_code      = 404
+    response_page_path = "/404.html"
   }
 
+  custom_error_response {
+    error_code         = 404
+    response_code      = 404
+    response_page_path = "/404.html"
+  }
 
   restrictions {
     geo_restriction {
@@ -47,13 +54,63 @@ resource "aws_cloudfront_distribution" "distro" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.cert.arn
+    # Referencing the validation resource makes the distribution wait for the certificate to be validated
+    acm_certificate_arn      = aws_acm_certificate_validation.validation.certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
 
-  # Wait for certificate validation before creating distribution
-  depends_on = [aws_acm_certificate_validation.validation]
+  /*
+    ======================================================================
+    CONTACT FORM (contact-api, deployed separately from your contact-api config repo)
+    Skipped when var.disable_contactform is true
+    ======================================================================
+  */
+  # Bare Function URL host, no origin path. CloudFront sets the site key on every request, overwriting any viewer-sent value.
+  dynamic "origin" {
+    for_each = var.disable_contactform ? [] : [1]
+    content {
+      origin_id   = "contact-api"
+      domain_name = data.aws_ssm_parameter.contact_api_origin_domain[0].value
+      custom_origin_config {
+        http_port              = 80
+        https_port             = 443
+        origin_protocol_policy = "https-only"
+        origin_ssl_protocols   = ["TLSv1.2"]
+      }
+      custom_header {
+        name  = "x-contact-site-key"
+        value = data.aws_ssm_parameter.contact_api_site_key[0].value
+      }
+    }
+  }
+
+  # Must stay above the api/* behavior below: CloudFront uses the first path pattern that matches.
+  dynamic "ordered_cache_behavior" {
+    for_each = var.disable_contactform ? [] : [1]
+    content {
+      path_pattern             = "/api/contact/*"
+      target_origin_id         = "contact-api"
+      viewer_protocol_policy   = "https-only"
+      allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+      cached_methods           = ["GET", "HEAD"]
+      cache_policy_id          = data.aws_cloudfront_cache_policy.no_cache.id
+      origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_no_host.id
+    }
+  }
+
+  dynamic "ordered_cache_behavior" {
+    for_each = var.disable_contactform ? [] : [1]
+    content {
+      path_pattern             = "/api/stamp.gif"
+      target_origin_id         = "contact-api"
+      viewer_protocol_policy   = "https-only"
+      allowed_methods          = ["GET", "HEAD"]
+      cached_methods           = ["GET", "HEAD"]
+      cache_policy_id          = data.aws_cloudfront_cache_policy.no_cache.id
+      origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_no_host.id
+    }
+  }
 
   /*
     ======================================================================
@@ -118,9 +175,19 @@ resource "aws_cloudfront_cache_policy" "website_cache_policy" {
     }
   }
 }
-# Cache policiies for the API (no caching, forward all headers)
+# Cache policies for the API and contact-api (no caching, forward all viewer headers except Host)
 data "aws_cloudfront_cache_policy" "no_cache" { name = "Managed-CachingDisabled" }
 data "aws_cloudfront_origin_request_policy" "all_no_host" { name = "Managed-AllViewerExceptHostHeader" }
+
+# Written by the contact-api deploy in this account and region. Not read when the contact form is disabled.
+data "aws_ssm_parameter" "contact_api_origin_domain" {
+  count = var.disable_contactform ? 0 : 1
+  name  = "/contact-api/origin-domain"
+}
+data "aws_ssm_parameter" "contact_api_site_key" {
+  count = var.disable_contactform ? 0 : 1
+  name  = "/contact-api/sites/${var.contact_api_site_id}/origin-key"
+}
 
 /*
 	======================================================================
@@ -172,7 +239,7 @@ resource "aws_route53_record" "www_subdomain" {
 	======================================================================
 */
 resource "aws_acm_certificate" "cert" {
-  provider                  = aws.us-east-1 # WARNING! CloudFront requires certificates in us-east-1
+  region                    = "us-east-1" # WARNING! CloudFront requires certificates in us-east-1
   domain_name               = var.domain_name
   validation_method         = "DNS"
   subject_alternative_names = ["www.${var.domain_name}"]
@@ -184,9 +251,9 @@ resource "aws_acm_certificate" "cert" {
 
 # Check the validation status of the SSL certificate
 resource "aws_acm_certificate_validation" "validation" {
+  region                  = "us-east-1"
   certificate_arn         = aws_acm_certificate.cert.arn
   validation_record_fqdns = [for record in aws_route53_record.validation_records : record.fqdn]
-  provider                = aws.us-east-1
 }
 
 # Fetch the Route 53 zone ID for the domain

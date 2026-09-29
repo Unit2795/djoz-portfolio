@@ -2,10 +2,11 @@ import js from "@eslint/js";
 import astro from "eslint-plugin-astro";
 import noRelativeImport from "eslint-plugin-no-relative-import-paths";
 import prettierConfig from "eslint-plugin-prettier/recommended";
+import { defineConfig } from "eslint/config";
 import globals from "globals";
 import ts from "typescript-eslint";
 
-export default ts.config([
+export default defineConfig([
 	{
 		languageOptions: {
 			globals: {

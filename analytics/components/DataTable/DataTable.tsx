@@ -1,11 +1,14 @@
 import {
+	CellData,
 	Column,
 	ColumnDef,
 	flexRender,
-	getCoreRowModel,
 	Row,
-	useReactTable,
+	RowData,
+	rowSortingFeature,
 	SortingState,
+	tableFeatures,
+	useTable,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { HTMLAttributes, MouseEvent, useEffect, useState } from "react";
@@ -22,12 +25,19 @@ import {
 	ChevronsRight,
 } from "lucide-react";
 
-interface DataTableColumnHeaderProps<TableData, TableValue> extends HTMLAttributes<HTMLDivElement> {
-	column: Column<TableData, TableValue>;
+// Sorting is the only table feature used. Rows are sorted by the server, so no sorted row model is added.
+export const dataTableFeatures = tableFeatures({
+	rowSortingFeature,
+	columnMeta: {} as { className: string },
+});
+export type DataTableFeatures = typeof dataTableFeatures;
+
+interface DataTableColumnHeaderProps<TableData extends RowData, TableValue extends CellData> extends HTMLAttributes<HTMLDivElement> {
+	column: Column<DataTableFeatures, TableData, TableValue>;
 	title: string;
 }
 
-export const DataTableColumnHeader = <TableData, TableValue>({
+export const DataTableColumnHeader = <TableData extends RowData, TableValue extends CellData>({
 	column,
 	title,
 	className,
@@ -232,30 +242,30 @@ const DataTablePagination = ({ currentPage, pageSize, totalItems, onPageChange }
 	);
 };
 
-interface DataTableProps<TableData, TableValue> {
-	columns: ColumnDef<TableData, TableValue>[];
+interface DataTableProps<TableData extends RowData> {
+	columns: ColumnDef<DataTableFeatures, TableData, any>[];
 	data: TableData[];
-	onRowClick?: (row: Row<TableData>, event: MouseEvent<HTMLTableRowElement>) => void;
+	onRowClick?: (row: Row<DataTableFeatures, TableData>, event: MouseEvent<HTMLTableRowElement>) => void;
 	/** Controlled sorting state (optional). Keeps component generic and UI-only. */
 	sorting?: SortingState;
 	onSortingChange?: (sorting: SortingState) => void;
 	pagination?: DataTablePaginationProps;
 }
 
-const DataTable = <TableData, TableValue>({
+const DataTable = <TableData extends RowData>({
 	data,
 	columns,
 	onRowClick,
 	sorting: controlledSorting,
 	onSortingChange,
 	pagination,
-}: DataTableProps<TableData, TableValue>) => {
+}: DataTableProps<TableData>) => {
 	const [uncontrolledSorting, setUncontrolledSorting] = useState<SortingState>([]);
 	const sorting = controlledSorting ?? uncontrolledSorting;
-	const table = useReactTable<TableData>({
+	const table = useTable({
+		features: dataTableFeatures,
 		data,
 		columns,
-		getCoreRowModel: getCoreRowModel(),
 		enableSorting: true,
 		enableMultiSort: true,
 		state: { sorting },
@@ -309,7 +319,6 @@ const DataTable = <TableData, TableValue>({
 							return (
 								<TableRow
 									key={row.id}
-									data-state={row.getIsSelected() && "selected"}
 									className={cn(onRowClick && "cursor-pointer")}
 									onClick={(event) => {
 										if (onRowClick) {
@@ -317,7 +326,7 @@ const DataTable = <TableData, TableValue>({
 										}
 									}}
 								>
-									{row.getVisibleCells().map((cell) => (
+									{row.getAllCells().map((cell) => (
 										<TableCell
 											key={cell.id}
 											className={cell.column.columnDef.meta?.className ?? undefined}

@@ -1,4 +1,8 @@
-import DataTable, { DataTableColumnHeader, DataTablePaginationProps } from "@/components/DataTable/DataTable";
+import DataTable, {
+	DataTableColumnHeader,
+	DataTableFeatures,
+	DataTablePaginationProps,
+} from "@/components/DataTable/DataTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -17,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnalyticsEventEnriched, events } from "@djoz-portfolio/shared";
 
-const columnHelper = createColumnHelper<AnalyticsEventEnriched>();
+const columnHelper = createColumnHelper<DataTableFeatures, AnalyticsEventEnriched>();
 const userFriendlyColumnNames: Record<string, string> = {
 	timestamp: "Timestamp",
 	eventType: "Event",
@@ -66,7 +70,7 @@ const Table = ({
 		});
 	};
 
-	const columns = useMemo<ColumnDef<AnalyticsEventEnriched, any>[]>(
+	const columns = useMemo<ColumnDef<DataTableFeatures, AnalyticsEventEnriched, any>[]>(
 		() => [
 			columnHelper.accessor("timestamp", {
 				header: ({ column }) => <DataTableColumnHeader column={column} title="Timestamp" />,

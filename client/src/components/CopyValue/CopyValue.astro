@@ -33,6 +33,8 @@ export type Expose = Pick<Props & { successMessage: string }, "value" | "success
 			"[&[data-success=false]_.default-icon]:inline [&[data-success=false]_.success-icon]:hidden [&[data-success=true]_.default-icon]:hidden [&[data-success=true]_.success-icon]:inline",
 			// Show hide the correct message based on success state
 			"[&[data-success=false]_.copy-success-message]:opacity-0 [&[data-success=true]_.copy-success-message]:opacity-100",
+			// Hide when dismissed with Escape, overriding the hover/focus display from Tooltip
+			"data-dismissed:pointer-events-none! data-dismissed:opacity-0!",
 		]}
 		aria-label={copyValue.dialogAriaLabel}
 		id={tooltipId}
@@ -77,8 +79,7 @@ export type Expose = Pick<Props & { successMessage: string }, "value" | "success
 						<!-- Arrow pointer connecting the popover to the message -->
 						<div
 							class="absolute -bottom-2.5 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-r border-b border-green-500 bg-gray-600"
-						>
-						</div>
+						></div>
 					</div>
 				</div>
 			</div>
@@ -118,6 +119,22 @@ export type Expose = Pick<Props & { successMessage: string }, "value" | "success
 				// Remove the success message when the user interacts elsewhere
 				this.trigger?.addEventListener("blur", this.disconnectTimeout.bind(this));
 				this.trigger?.addEventListener("mouseleave", this.disconnectTimeout.bind(this));
+
+				// Escape dismisses the popover (WCAG 1.4.13). Listen on document so it also works while only hovered.
+				document.addEventListener("keydown", (event) => {
+					if (event.key === "Escape" && (this.matches(":hover") || this.contains(document.activeElement))) {
+						this.dismiss();
+					}
+				});
+				// A fresh hover or focus shows the popover again
+				this.addEventListener("mouseenter", () => this.tooltip?.removeAttribute("data-dismissed"));
+				this.addEventListener("focusin", () => this.tooltip?.removeAttribute("data-dismissed"));
+			}
+
+			private dismiss() {
+				// Keep focus off the hidden content by returning it to the trigger
+				if (this.tooltip?.contains(document.activeElement)) this.trigger?.focus();
+				this.tooltip?.setAttribute("data-dismissed", "");
 			}
 
 			// Remove the success message when the user interacts elewhere and clear the timeout
@@ -131,6 +148,8 @@ export type Expose = Pick<Props & { successMessage: string }, "value" | "success
 			}
 
 			private handleCopy() {
+				// Copying re-shows a dismissed popover so the success state is visible
+				this.tooltip!.removeAttribute("data-dismissed");
 				this.tooltip!.setAttribute("data-success", "true");
 				window.announce(this.successMessage);
 				// Hide the success message after a delay

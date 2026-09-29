@@ -35,16 +35,16 @@ This guide walks you through deploying your portfolio using AWS infrastructure. 
 The deployment automatically provisions:
 
 - **CloudFront** - Global CDN for fast content delivery
-- **S3** - Secure static file hosting & Terraform state storage
-- **DynamoDB** - Stores Terraform state locking and tracks contact form submissions
-- **Lambda** - Serverless backend for contact form and analytics
-- **API Gateway** - HTTP endpoints for contact form submissions and analytics
+- **S3** - Secure static file hosting & Terraform state storage and locking
+- **Lambda** - Serverless backend for analytics
+- **API Gateway** - HTTP endpoint for analytics
 - **IAM** - Identity and Access Management for secure access to AWS resources
 - **CloudFormation** - Bootstraps the Terraform state storage backend
 - **SQS** - Queue for storing analytics events before being processed
-- **SES** - Email handling for form submissions
 - **ACM** - SSL/TLS certificate management
 - **Route 53** - DNS management (optional)
+
+The contact form backend is not part of this deployment. It's [contact-api](https://github.com/Unit2795/contact-api), deployed separately; CloudFront forwards `/api/contact/*` and `/api/stamp.gif` to it. It's optional: deploy contact-api, or set `disable_contactform = true` in [terraform.tfvars](../terraform/terraform.tfvars) and `sections.CONTACT.disabled = true` in [content/index.ts](../client/src/content/index.ts).
 
 ### Prerequisites
 
@@ -52,8 +52,8 @@ The deployment automatically provisions:
 - [GitHub](https://github.com/) account
 - Registered domain name
 - [Route 53](https://aws.amazon.com/route53/) hosted zone for your domain (if using AWS DNS)
-- [SES](https://aws.amazon.com/ses/) verified email address or domain for sending contact form submissions
-- [Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) installed locally (if verifying configs or deploying locally)
+- [contact-api](https://github.com/Unit2795/contact-api) deployed in the same AWS account and region, unless the contact form is disabled (see above). This repo expects a site named `portfolio` and a form named `portfolio-contact` in its `forms.json` (see [Infrastructure Configuration](#5-infrastructure-configuration) to use other names). Follow its [Deploy](https://github.com/Unit2795/contact-api/blob/main/docs/deploy.md) and [Config reference](https://github.com/Unit2795/contact-api/blob/main/docs/config.md) guides; the recipient email, SES sender and limits are set there.
+- [Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) 1.16 or later 1.x installed locally (if verifying configs or deploying locally)
 - [AWS CLI](https://aws.amazon.com/cli/) installed and configured locally (if deploying locally)
 
 ### Deployment Steps
@@ -124,11 +124,9 @@ Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.t
 
    ```hcl
    # terraform/terraform.tfvars
-    domain_name        = "example.com"
-    aws_region         = "us-east-1"
-    bucket_name        = "djoz-portfolio"
-    admin_email        = "johndoe@example.com"
-    hmac_secret        = "your_long_random_secret_string"
+    domain_name = "example.com"
+    aws_region  = "us-east-1"
+    bucket_name = "djoz-portfolio"
    ```
 
    - Note: You can see the complete list of available variables in the [variables.tf](../terraform/variables.tf) file.
@@ -138,13 +136,13 @@ Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.t
    # terraform/state.config
     bucket = "tf-state-djoz-portfolio"
     key = "terraform.tfstate"
-    dynamodb_table = "tf-state-djoz-portfolio-lock"
     region = "us-east-1"
    ```
-   - Note: You can change the bucket and table names if you want, but they must be unique for your AWS account.
+   - Note: You can change the bucket name if you want, but it must be unique for your AWS account.
    - You could also utilize Terraform Cloud, another remote backend, or even local state if you prefer (if using GitHub Actions, you could potentially use "Artifacts" or something else).
-3. (Optional) Change SES Email sending identity:
-   - By default, the template uses an `Email-Based` sending identity for SES. If you have a verified domain, you can switch to the `Domain-Based` sending identity by updating the [terraform.tfvars](../terraform/terraform.tfvars) file.
+3. Match your contact-api names (skip if `disable_contactform = true`):
+   - Terraform reads the SSM parameters `/contact-api/origin-domain` and `/contact-api/sites/<contact_api_site_id>/origin-key`, which the contact-api deploy writes. If your contact-api site id isn't `portfolio`, set `contact_api_site_id` in [terraform.tfvars](../terraform/terraform.tfvars).
+   - The form posts to `/api/contact/<formId>`. If your form id isn't `portfolio-contact`, set `contactForm.formId` in [content/index.ts](../client/src/content/index.ts).
 
 #### 6. Deployment
 
@@ -158,7 +156,7 @@ Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.t
 
 2. Monitor the deployment:
    - Check GitHub Actions tab
-   - **⚠️Note! If you are using an Email-Based sending identity for SES**: You'll receive an email from Amazon SES to verify your `admin_email` address provided in the [terraform.tfvars](../terraform/terraform.tfvars) file _if_ you haven't already added this email to SES before. You must click the verification link before you can send emails from/to this address. This admin email is where you will receive contact form submissions.
+   - **⚠️Note!** If contact-api isn't deployed yet and `disable_contactform` isn't `true`, `terraform plan` fails because it can't read contact-api's SSM parameters.
    - Wait for CloudFront distribution (~15 mins)
 
 ### Alternative DNS Setup
@@ -177,6 +175,6 @@ If you need to manually rebuild the site and force cache invalidation on CloudFr
 
 ## Destroying the Infrastructure
 
-If you want to take down the website, you can run the `Manual Terraform Destroy` workflow in the GitHub Actions tab of your repository. This will remove all of the AWS resources that were created by Terraform. You may also manually run `terraform destroy` from your local machine if you have the AWS and Terraform CLIs installed and configured.
+If you want to take down the website, you can run the `Manual Terraform Destroy` workflow in the GitHub Actions tab of your repository. This will remove all of the AWS resources that were created by Terraform. You may also manually run `terraform destroy` from your local machine if you have the AWS and Terraform CLIs installed and configured. Run `pnpm ci:install` and `pnpm lambda:build` first, since Terraform reads the built Lambda zip files even when destroying.
 
 > 💡 **Tip:** If you have any issues with deleting AWS resources, such as an S3 bucket containing objects, you may need to forcibly empty the bucket before it can be deleted. Though the Terraform config is configured to force deletion of S3 buckets. If other resources refuse to delete, you may need to delete these manually using the AWS Console or CLI.
