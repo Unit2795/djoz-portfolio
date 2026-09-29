@@ -10,10 +10,9 @@
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"packageManager": "pnpm@10.14.0",
 	"dependencies": {
-		"express": "^5.1.0",
+		"express": "^5.2.1",
 		"express-file-routing": "^3.1.0",
-		"nodemon": "^3.1.10"
+		"nodemon": "^3.1.14"
 	}
 }

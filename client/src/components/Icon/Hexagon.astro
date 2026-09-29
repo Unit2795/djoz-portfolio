@@ -16,16 +16,14 @@ const { icon, class: baseClass, hexClass, iconClass } = Astro.props;
 	<!-- Hover pulse effect -->
 	<div
 		class="pointer-events-none absolute h-full w-full bg-white mask-[url('/hexagon.svg')] mask-contain mask-center mask-no-repeat opacity-0 group-hover:opacity-10 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:group-hover:animate-ping"
-	>
-	</div>
+	></div>
 	<!-- Hexagon background -->
 	<div
 		class:list={[
 			hexClass,
 			"absolute inset-0 h-full w-full bg-linear-to-r mask-[url('/hexagon.svg')] mask-contain mask-center mask-no-repeat",
 		]}
-	>
-	</div>
+	></div>
 	<!-- Icon inside of hexagon -->
 	<Icon
 		aria-hidden

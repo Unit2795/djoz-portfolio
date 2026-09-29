@@ -30,20 +30,16 @@ const getRandomItem = <T,>(array: T[], seed: string): T => {
 ---
 
 <ul class:list={["flex flex-wrap gap-2", customClass]}>
-	{
-		pills.map((pill) => {
-			const pillColor = getRandomItem(pillColors, pill);
-			return (
-				<li
-					class:list={[
-						"motion-safe:hover-shimmer relative cursor-default overflow-hidden rounded-lg border bg-gray-800/50 bg-linear-to-r px-3 py-1 text-sm ease-in-out hover:shadow-md hover:shadow-cyan-500/50 hover:brightness-150 motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:translate-y-[-1px]",
-						pillColor,
-						pillClass,
-					]}
-				>
-					{pill}
-				</li>
-			);
-		})
-	}
+	{pills.map((pill) => {
+		const pillColor = getRandomItem(pillColors, pill);
+		return <li
+			class:list={[
+				"motion-safe:hover-shimmer relative cursor-default overflow-hidden rounded-lg border bg-gray-800/50 bg-linear-to-r px-3 py-1 text-sm ease-in-out hover:shadow-md hover:shadow-cyan-500/50 hover:brightness-150 motion-safe:transition-all motion-safe:duration-300 motion-safe:hover:translate-y-[-1px]",
+				pillColor,
+				pillClass,
+			]}
+		>
+			{pill}
+		</li>;
+	})}
 </ul>

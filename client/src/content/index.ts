@@ -1,20 +1,42 @@
 import type {
 	ContactFormContent,
 	FooterContent,
+	FormStatePage,
 	IntroContent,
 	NavbarContent,
 	ProjectsContent,
 	Sections,
+	ShareImage,
 	SkillsContent,
+	WebManifestContent,
 } from "@/content/types";
 
-export const title = "Your Name - Your Profession";
-
 export const name = "Your Name";
+
+// Also used as the job title in the Person structured data (JSON-LD)
+export const jobTitle = "Your Profession";
+
+export const title = `${name} - ${jobTitle}`;
 
 export const email = "youremail@example.com";
 
 export const description = `Your Profession based in Your Location. I specialize in Your Specializations with a focus on Your Focus Areas.`;
+
+// Social share preview image (Open Graph / Twitter card). The file lives in `public/`, the path is relative to the site root.
+// Set to undefined to leave the image tags out
+export const shareImage: ShareImage | undefined = {
+	path: "/og-image.png",
+	alt: `Preview of ${name}'s portfolio`,
+	width: 1200,
+	height: 630,
+};
+
+// Generates site.webmanifest, which uses `name` as its name
+export const webManifest: WebManifestContent = {
+	shortName: "Portfolio",
+	themeColor: "#1f2937",
+	backgroundColor: "#1f2937",
+};
 
 // If set to undefined, the availability badge will be hidden
 export const showAvailability: string | undefined = "Available for new opportunities!";
@@ -23,6 +45,8 @@ export const sections: Sections = {
 	INTRO: {
 		id: "intro",
 		navTitle: "Home",
+		// Visually hidden (the Intro section hides its header), read by screen readers as the section heading
+		header: "Introduction",
 		description: "Introduction of Your Name, a Your Profession specializing in Your Specializations.",
 	},
 	PROJECTS: {
@@ -90,17 +114,15 @@ export const intro: IntroContent = {
 	// Set these to undefined if you don't want the buttons to show up
 	projectButton: {
 		text: "View Projects",
-		ariaLabel: "Scroll to projects section",
 	},
 	contactButton: {
 		text: "Get In Touch",
-		ariaLabel: "Scroll to contact section",
 	},
 	// Set this to undefined if you don't want any links to show up
 	links: [
 		{
 			label: "GitHub profile of Your Name",
-			link: "https://github.com/Unit2795",
+			link: "https://github.com/your-username",
 			icon: {
 				custom: "GitHub",
 			},
@@ -108,7 +130,7 @@ export const intro: IntroContent = {
 		},
 		{
 			label: "LinkedIn profile of Your Name",
-			link: "https://www.linkedin.com/in/djoz/",
+			link: "https://www.linkedin.com/in/your-username/",
 			icon: {
 				custom: "LinkedIn",
 			},
@@ -263,10 +285,12 @@ export const skills: SkillsContent = [
 ];
 
 export const contactForm: ContactFormContent = {
+	// The form's id in your contact-api config repo's forms.json. CloudFront forwards /api/contact/* to contact-api.
+	formId: "portfolio-contact",
 	links: [
 		{
 			label: "Visit my profile on LinkedIn",
-			link: "https://www.linkedin.com/in/djoz/",
+			link: "https://www.linkedin.com/in/your-username/",
 			icon: {
 				custom: "LinkedIn",
 			},
@@ -288,11 +312,27 @@ export const contactForm: ContactFormContent = {
 	message: {
 		label: "Message",
 		placeholder: "Your message here...",
+		hint: "12–2000 characters",
+		// Keep in sync with the form's messageMin/messageMax in forms.json (these are contact-api's defaults)
+		minLength: 12,
+		maxLength: 2000,
 	},
 	button: "Send Message",
 	buttonSending: "Sending...",
 	formAriaLabel: "Contact form",
 	errorMessage: "An error occurred while submitting the form. Please try again later.",
+	// See contact-api's docs/connect.md (Responses) for every reason
+	reasonMessages: {
+		too_soon:
+			"For security reasons, your submission was too fast to process. Please wait a few seconds and try again.",
+		stamp_missing: "Please enable cookies, reload the page and try again.",
+		stamp_invalid: "Please enable cookies, reload the page and try again.",
+		stamp_expired: "The form has expired. Please reload the page and try again.",
+		invalid_email: "The email address you entered is not valid. Please check and try again.",
+		invalid_message: "Your message is too short or too long. Please check its length and try again.",
+		ip_limit: "You've reached today's message limit. Please try again tomorrow.",
+		form_limit: `The contact form has reached its monthly limit. Please email me directly at ${email}.`,
+	},
 	// Customize the content of the form success and error pages
 	statusPages: {
 		success: {
@@ -325,9 +365,25 @@ export const contactForm: ContactFormContent = {
 			redirectText: "Return to Home",
 			redirectHref: "/",
 			autoRedirectSeconds: 10,
-			disableAutoRedirect: false,
+			// Keep the recovery info (email link) on screen instead of redirecting away from it
+			disableAutoRedirect: true,
 		},
 	},
+};
+
+// Content of the 404 page (served by CloudFront for unknown URLs)
+export const notFoundPage: FormStatePage = {
+	icon: {
+		lucide: "Compass",
+	},
+	browserTitle: "Page Not Found",
+	browserDescription: "The requested page could not be found.",
+	title: "404",
+	titleColor: intro.heading?.bottom.color,
+	message: "The page you're looking for doesn't exist or may have moved.",
+	redirectText: "Return to Home",
+	redirectHref: "/",
+	disableAutoRedirect: true,
 };
 
 // Set this to undefined if you don't want a footer
@@ -371,7 +427,7 @@ export const disableDynamicNavbar = false;
 // Set this to true if you want to disable analytics features.
 // NOTE!: Remember to also update your terraform variables to also disable deploying analytics infrastructure!
 export const disableAnalytics = false;
-// Set this to true if you want to disable the honeypot anti-spam feature on the contact form. If you disable this and also use the terraform deploy, ensure that you update the disable honeypot variable to 'true'.
+// Set this to true to leave the honeypot fields out of the contact form. contact-api still checks the honeypot names in its forms.json, so nothing else changes.
 export const disableHoneypot = false;
-// Set this to true if you want to disable the dwell time cookie feature on the contact form. If you disable this and also use the terraform deploy, ensure that you update the dwell cookie name variable to empty.
+// Set this to true to stop loading /api/stamp.gif. contact-api rejects every submission without its stamp cookie, so only disable this if the contact form is unused.
 export const disableDwellCookie = false;

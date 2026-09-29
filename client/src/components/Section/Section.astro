@@ -33,11 +33,9 @@ const getDescriptionId = (section: Section) => `${section.id}-description`;
 		<h2 class={headerClass} id={getLabelId(section)}>
 			{section.header || section.navTitle}
 		</h2>
-		{
-			section.description && (
-				<p class={descriptionClass} set:html={section.description} id={getDescriptionId(section)} />
-			)
-		}
+		{section.description && (
+			<p class={descriptionClass} set:html={section.description} id={getDescriptionId(section)} />
+		)}
 
 		<slot />
 	</div>

@@ -26,7 +26,7 @@
 
 - Thank you for checking out my portfolio template! It's built in [Astro](https://astro.build/) with vanilla HTML, JS, and [Tailwind CSS](https://tailwindcss.com/).
 - The site is deployed using [Terraform](https://www.terraform.io/), [GitHub Actions](https://docs.github.com/en/actions), and [AWS](https://aws.amazon.com/).
-- This site includes its own optional contact form API with anti-spam protection and a [simple analytics API](./docs/analytics.md) with a local dashboard to visualize analytics data.
+- This site includes a [simple analytics API](./docs/analytics.md) with a local dashboard to visualize analytics data. The contact form is sent through [contact-api](https://github.com/Unit2795/contact-api), a separate self-hosted contact form backend with anti-spam protection.
 - Click ["use this template"](https://github.com/Unit2795/djoz-portfolio/generate) and follow the instructions in the [Setup Guide](./docs/setup.md) if you'd like to set up a copy of this website for yourself! Optionally, use the [Deployment Guide](./docs/deployment.md) to deploy to AWS.
 - Want to learn more about the reasoning behind the implementation of this portfolio, other helpful context, or FAQs? See the [About page](./docs/about.md)
 - Need help or have a suggestion? Please create a GitHub issue.
@@ -55,8 +55,8 @@
 
 - Automated, low-cost, and secure AWS deployment (less than $2 per month) using Terraform for easy setup
 - GitHub Actions for CI/CD when code changes
-- CloudFormation script for bootstrapping Terraform state storage in AWS S3 & DynamoDB
-- Contact form and analytics APIs with abuse protection
+- CloudFormation script for bootstrapping Terraform state storage and locking in AWS S3
+- Analytics API and a [contact-api](https://github.com/Unit2795/contact-api) contact form, both with abuse protection
 
 ## Key Technologies
 

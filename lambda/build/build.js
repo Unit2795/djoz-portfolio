@@ -1,7 +1,7 @@
 import { buildSync } from "esbuild";
 import { createWriteStream, existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "path";
-import archiver from "archiver";
+import { ZipArchive } from "archiver";
 
 const FUNCTIONS_DIR = join(process.cwd(), "../functions");
 const CONFIG_FILE = "build.config.json";
@@ -43,7 +43,7 @@ for (const func of allFunctions) {
 			bundle: true,
 			outdir,
 			platform: "node",
-			target: [config.target || "node22"],
+			target: [config.target || "node24"],
 			sourcemap: config.sourcemap || false,
 			minify: true,
 			sourcesContent: false, // You wont see inline code preview in CloudWatch stack traces with this disabled, but you'll still see correct line numbers if sourcemaps are enabled
@@ -77,7 +77,7 @@ console.log("Build complete!");
 function zipDirectory(srcDir, outPath) {
 	return new Promise((resolve, reject) => {
 		const output = createWriteStream(outPath);
-		const archive = archiver("zip", { zlib: { level: 9 } });
+		const archive = new ZipArchive({ zlib: { level: 9 } });
 
 		output.on("close", () => resolve());
 		output.on("error", (err) => reject(err));

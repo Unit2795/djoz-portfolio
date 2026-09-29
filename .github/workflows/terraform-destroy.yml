@@ -22,21 +22,40 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # Terraform reads the Lambda zips even when destroying, so they must be built first
+      # We must ensure PNPM is installed before Node.js https://github.com/actions/setup-node/issues/530#issuecomment-1169317505
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: latest # package.json only sets a minimum pnpm version
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "latest"
+          cache: pnpm
+
+      - name: Install Dependencies
+        run: pnpm ci:install
+
+      - name: Build Lambda Functions
+        run: pnpm lambda:build
 
       # Learn more about AWS OIDC here: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_IAM_ROLE_NAME }}
           role-session-name: djoz-portfolio-session
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "^1.16" # Latest 1.x, matches required_version in main.tf
 
       - name: Cleanup stale Terraform locks
         working-directory: ./terraform/bootstrap
@@ -47,6 +66,7 @@ jobs:
       - name: Initialize, Plan, and Destroy Terraform
         working-directory: ./terraform
         run: |
+          # We disable locking here since it's not necessary while destroying
           terraform init -backend-config=state.config
           terraform plan -lock=false
           terraform destroy -auto-approve -input=false -lock=false

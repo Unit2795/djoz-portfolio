@@ -146,6 +146,8 @@ export interface FormStatePage {
 }
 
 export interface ContactFormContent {
+	// The form's id in your contact-api config repo's forms.json. The form posts to /api/contact/<formId>.
+	formId: string;
 	links?: LinkItem[];
 	email: {
 		label: string;
@@ -154,15 +156,38 @@ export interface ContactFormContent {
 	message: {
 		label: string;
 		placeholder: string;
+		// Describes the length limits below to visitors
+		hint: string;
+		// Keep in sync with the form's messageMin/messageMax in forms.json
+		minLength: number;
+		maxLength: number;
 	};
 	button: string;
 	buttonSending: string;
 	formAriaLabel?: string;
 	errorMessage: string;
+	// Messages for contact-api's error reasons, keyed by reason. Other reasons show errorMessage.
+	reasonMessages?: Record<string, string>;
 	statusPages?: {
 		success: FormStatePage;
 		error: FormStatePage;
 	};
+}
+
+// Social share preview image (Open Graph / Twitter card)
+export interface ShareImage {
+	// Path of an image in `public/`, relative to the site root
+	path: string;
+	alt: string;
+	width: number;
+	height: number;
+}
+
+// Web app manifest (site.webmanifest) settings, the manifest's name is `name`
+export interface WebManifestContent {
+	shortName: string;
+	themeColor: string;
+	backgroundColor: string;
 }
 
 export interface FooterContent {

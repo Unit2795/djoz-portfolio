@@ -1,9 +1,9 @@
 ---
-import { icons, type IconProps } from "@lucide/astro";
+import { icons, type LucideProps } from "@lucide/astro";
 
 export type LucideIcons = keyof typeof icons;
 
-export interface Props extends IconProps {
+export interface Props extends LucideProps {
 	name: LucideIcons;
 }
 

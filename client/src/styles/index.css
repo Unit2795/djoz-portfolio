@@ -190,7 +190,7 @@
 	&:has(:is(:user-invalid, [aria-invalid="true"])) {
 		&,
 		& * {
-			@apply text-red-600;
+			@apply text-red-400;
 		}
 
 		/* Give borders to inputs, textareas, and selects inside */

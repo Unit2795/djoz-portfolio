@@ -32,19 +32,17 @@ type Props = LucideProps | SimpleProps | CustomProps;
 const props = Astro.props;
 ---
 
-{
-	() => {
-		if (props.custom) {
-			const { custom, ...rest } = props;
-			return <CustomIcon name={custom} {...rest} />;
-		} else if (props.lucide) {
-			const { lucide, ...rest } = props;
-			return <LucideIcon name={lucide} {...rest} />;
-		} else if (props.simple) {
-			const { simple, ...rest } = props;
-			return <SimpleIcon name={simple} {...rest} />;
-		} else {
-			throw new Error("Icon component requires either 'custom', 'lucide', or 'simple' prop.");
-		}
+{() => {
+	if (props.custom) {
+		const { custom, ...rest } = props;
+		return <CustomIcon name={custom} {...rest} />;
+	} else if (props.lucide) {
+		const { lucide, ...rest } = props;
+		return <LucideIcon name={lucide} {...rest} />;
+	} else if (props.simple) {
+		const { simple, ...rest } = props;
+		return <SimpleIcon name={simple} {...rest} />;
+	} else {
+		throw new Error("Icon component requires either 'custom', 'lucide', or 'simple' prop.");
 	}
-}
+}}

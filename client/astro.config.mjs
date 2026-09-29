@@ -4,20 +4,17 @@ import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
+	// Production URL, used for canonical/Open Graph URLs (`Astro.site`)
+	site: "https://example.com",
 	compressHTML: true,
 	vite: {
 		plugins: [tailwindcss()],
 		build: {
 			assetsInlineLimit: 100000,
-			rollupOptions: {
-				output: {
-					compact: true,
-				},
+			rolldownOptions: {
 				treeshake: {
-					preset: "smallest",
 					moduleSideEffects: false,
 					propertyReadSideEffects: false,
-					tryCatchDeoptimization: false,
 				},
 			},
 			reportCompressedSize: false,

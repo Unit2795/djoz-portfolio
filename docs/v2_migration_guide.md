@@ -17,7 +17,7 @@ You have two approaches:
 1. **Start Fresh**
    1. Create a new private repository from the template. This is the simplest option if you don’t care about preserving your commit history.
    2. If you used Terraform to deploy your infrastructure, be sure to destroy your old infrastructure so you aren't charged for it.
-      1. ⚠️**Note:** You may wish to pull in the `terraform-destroy.yml` GitHub Action and `/terraform/bootstrap` directory files from V2, these are more comprehensive and more likely to successfully tear down your Terraform infrastructure. But you may still need to manually clear out S3 buckets or delete other AWS resources in the AWS console.
+      1. ⚠️**Note:** You may wish to pull in the `terraform-destroy.yml` GitHub Action and `/terraform/bootstrap` directory files from V2, these are more comprehensive and more likely to successfully tear down your Terraform infrastructure. The V2 destroy workflow also runs `pnpm ci:install` and `pnpm lambda:build` before destroying; remove those steps if your V1 repo does not have these scripts. But you may still need to manually clear out S3 buckets or delete other AWS resources in the AWS console.
 2. **Using Existing Repo**
    1. Use this approach if you want to keep your commit history
    2. Create a new branch in your existing repository.

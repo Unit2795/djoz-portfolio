@@ -15,7 +15,7 @@ import DwellBeacon from "@/components/DwellBeacon/DwellBeacon.astro";
 
 <AriaAnnouncer />
 {!disableAnalytics && <Analytics />}
-{!disableDwellCookie && <DwellBeacon />}
+{!disableDwellCookie && !sections.CONTACT.disabled && <DwellBeacon />}
 {!disableNavbar && <Nav />}
 <main class:list={["relative z-10"]} id="maincontent">
 	{!sections.INTRO.disabled && <Intro />}

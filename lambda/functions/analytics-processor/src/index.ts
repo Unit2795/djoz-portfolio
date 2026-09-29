@@ -12,7 +12,7 @@ import type { ScheduledHandler } from "aws-lambda";
 import { AnalyticsChunk, AnalyticsEvent, AnalyticsEventEnriched, FLUSH_INTERVAL_MS } from "@djoz-portfolio/shared";
 
 const SOFT_STOP_MS = 15000; // stop consuming when <15s left
-const VIS_TIMEOUT_SEC = 120; // per-batch invisibility window
+const VIS_BUFFER_SEC = 60; // keep received messages hidden this long past the end of the invocation
 const LONG_POLL_SEC = 20;
 const { QUEUE_URL, BUCKET, FUNCTION_NAME } = process.env;
 
@@ -97,7 +97,9 @@ export const handler: ScheduledHandler = async (_event, context) => {
 			new ReceiveMessageCommand({
 				QueueUrl: QUEUE_URL,
 				MaxNumberOfMessages: 10,
-				VisibilityTimeout: VIS_TIMEOUT_SEC,
+				// Messages are only deleted after the S3 upload at the end of the run,
+				// so they must stay hidden until this invocation is over or they will be received again
+				VisibilityTimeout: Math.ceil(context.getRemainingTimeInMillis() / 1000) + VIS_BUFFER_SEC,
 				WaitTimeSeconds: LONG_POLL_SEC,
 			})
 		);

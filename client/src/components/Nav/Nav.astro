@@ -18,7 +18,7 @@ const { disableAnalytics } = navbar;
 	<div class="pt-10 noscript:pt-0"></div>
 	<a
 		href="#maincontent"
-		class="sr-only top-0 left-0 z-50 text-center text-blue-500 underline focus:not-sr-only focus:absolute! focus:w-full! focus:bg-gray-800/90 focus:p-4! focus:hover:bg-gray-700/90"
+		class="sr-only top-0 left-0 z-50 text-center text-blue-400 underline focus:not-sr-only focus:absolute! focus:w-full! focus:bg-gray-800/90 focus:p-4! focus:hover:bg-gray-700/90 focus:hover:text-blue-300"
 		{...getAnalyticsAttribute("interact", "SkipLink", disableAnalytics)}
 	>
 		{navbar.skipLinkText ?? "Skip to main content"}
@@ -48,76 +48,68 @@ const { disableAnalytics } = navbar;
 			{/*Navbar content, scaled to container width (keeps content away from edges on larger screens)*/}
 			<div class="relative container mx-auto">
 				<div class="mx-auto flex h-16 items-center justify-between p-4 pr-2">
-					{
-						navbar.header && (
-							<h1
-								class:list={[
-									"from-primary to-secondary navbar-header-link inline-block bg-linear-to-r bg-clip-text font-bold text-transparent transition-transform duration-300 motion-safe:hover:scale-105",
-									navbar.header.size ?? "text-2xl",
-								]}
-								{...getAnalyticsAttribute("interact", "NavHeader", disableAnalytics)}
-							>
-								<a href={navbar.header.href ?? "#top"}>{navbar.header.text}</a>
-							</h1>
-						)
-					}
+					{navbar.header && <h1
+						class:list={[
+							"from-primary to-secondary navbar-header-link inline-block bg-linear-to-r bg-clip-text font-bold text-transparent transition-transform duration-300 motion-safe:hover:scale-105",
+							navbar.header.size ?? "text-2xl",
+						]}
+						{...getAnalyticsAttribute("interact", "NavHeader", disableAnalytics)}
+					>
+						<a href={navbar.header.href ?? "#top"}>{navbar.header.text}</a>
+					</h1>}
 					{/* Desktop Menu */}
 					<ul class="hidden md:flex">
-						{
-							sections
-								.filter((item) => !item.disabled)
-								.map(({ id, navTitle, analyticsLabel }) => (
-									<li class="h-16">
-										<a
-											class="navbar-link user-select-none flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
-											href={`#${id}`}
-											{...getAnalyticsAttribute(
-												"interact",
-												`NavLink-${analyticsLabel ?? id}`,
-												disableAnalytics,
-											)}
-										>
-											{navTitle}
-										</a>
-									</li>
-								))
-						}
-						{
-							navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && (
-								<li class="group relative flex h-16 items-center justify-center px-3">
-									<button
-										aria-haspopup="true"
-										class="flex items-center justify-center gap-1"
-										{...getAnalyticsAttribute("interact", `NavMoreLinks`, disableAnalytics)}
+						{sections
+							.filter((item) => !item.disabled)
+							.map(({ id, navTitle, analyticsLabel }) => <li class="h-16">
+								<a
+									class="navbar-link user-select-none flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+									href={`#${id}`}
+									{...getAnalyticsAttribute(
+										"interact",
+										`NavLink-${analyticsLabel ?? id}`,
+										disableAnalytics,
+									)}
+								>
+									{navTitle}
+								</a>
+							</li>)}
+						{navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && <li
+							class="group relative flex h-16 items-center justify-center px-3"
+						>
+							<button
+								aria-haspopup="true"
+								class="flex items-center justify-center gap-1"
+								{...getAnalyticsAttribute("interact", `NavMoreLinks`, disableAnalytics)}
+							>
+								<span>{navbar.moreLinks.label}</span>
+								<ChevronDown
+									size={20}
+									aria-hidden="true"
+									class="transition-transform duration-200 group-focus-within:rotate-180 group-hover:rotate-180 motion-reduce:transition-none"
+								/>
+							</button>
+							<ul
+								class="absolute top-full right-0 hidden min-w-48 list-none rounded-md border border-gray-700 bg-gray-900 bg-linear-to-b from-gray-800 to-gray-900 p-2 drop-shadow-md/50 group-focus-within:block group-hover:block"
+							>
+								{navbar.moreLinks.items?.map(({ label, href, newTab, analyticsLabel }) => <li
+									class="border-t border-gray-700 first:mt-0 first:border-t-0"
+								>
+									<a
+										class="user-select-none block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+										href={href}
+										target={newTab ? "_blank" : "_self"}
+										{...getAnalyticsAttribute(
+											"interact",
+											`NavMoreLink-${analyticsLabel}`,
+											disableAnalytics || !analyticsLabel,
+										)}
 									>
-										<span>{navbar.moreLinks.label}</span>
-										<ChevronDown
-											size={20}
-											aria-hidden="true"
-											class="transition-transform duration-200 group-focus-within:rotate-180 group-hover:rotate-180 motion-reduce:transition-none"
-										/>
-									</button>
-									<ul class="absolute top-full right-0 hidden min-w-48 list-none rounded-md border border-gray-700 bg-gray-900 bg-linear-to-b from-gray-800 to-gray-900 p-2 drop-shadow-md/50 group-focus-within:block group-hover:block">
-										{navbar.moreLinks.items?.map(({ label, href, newTab, analyticsLabel }) => (
-											<li class="border-t border-gray-700 first:mt-0 first:border-t-0">
-												<a
-													class="user-select-none block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
-													href={href}
-													target={newTab ? "_blank" : "_self"}
-													{...getAnalyticsAttribute(
-														"interact",
-														`NavMoreLink-${analyticsLabel}`,
-														disableAnalytics || !analyticsLabel,
-													)}
-												>
-													{label}
-												</a>
-											</li>
-										))}
-									</ul>
-								</li>
-							)
-						}
+										{label}
+									</a>
+								</li>)}
+							</ul>
+						</li>}
 					</ul>
 				</div>
 
@@ -138,68 +130,54 @@ const { disableAnalytics } = navbar;
 							class="divide-y divide-white/5 p-2 px-4 pt-1 pb-2 text-right"
 							aria-label={navbar.mobileMenuAriaLabel ?? "Mobile navigation menu"}
 						>
-							{
-								sections
-									.filter((item) => !item.disabled)
-									.map(({ id, navTitle, analyticsLabel }) => (
-										<li>
+							{sections
+								.filter((item) => !item.disabled)
+								.map(({ id, navTitle, analyticsLabel }) => <li>
+									<a
+										href={`#${id}`}
+										class="navbar-mobile-link user-select-none block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+										{...getAnalyticsAttribute(
+											"interact",
+											`NavMobileLink-${analyticsLabel ?? id}`,
+											disableAnalytics,
+										)}
+									>
+										{navTitle}
+									</a>
+								</li>)}
+							{navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && <li>
+								<details class="group/section rounded-lg pb-2">
+									<summary
+										class="flex cursor-pointer items-center justify-end gap-1 rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+										{...getAnalyticsAttribute("interact", `NavMobileMoreLinks`, disableAnalytics)}
+									>
+										<span class="font-semibold">{navbar.moreLinks.label}</span>
+										<ChevronDown
+											size={20}
+											aria-hidden="true"
+											class="transition-transform duration-200 group-open/section:rotate-180 motion-reduce:transition-none"
+										/>
+									</summary>
+									<ul
+										class="mx-3 mt-1 space-y-1 divide-y divide-white/10 rounded-lg border border-white/10 bg-gray-700/20"
+									>
+										{navbar.moreLinks.items?.map(({ label, href, newTab, analyticsLabel }) => <li>
 											<a
-												href={`#${id}`}
-												class="navbar-mobile-link user-select-none block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+												href={href}
+												class="user-select-none block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+												target={newTab ? "_blank" : "_self"}
 												{...getAnalyticsAttribute(
 													"interact",
-													`NavMobileLink-${analyticsLabel ?? id}`,
-													disableAnalytics,
+													`NavMoreLinkMobile-${analyticsLabel}`,
+													disableAnalytics || !analyticsLabel,
 												)}
 											>
-												{navTitle}
+												{label}
 											</a>
-										</li>
-									))
-							}
-							{
-								navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && (
-									<li>
-										<details class="group/section rounded-lg pb-2">
-											<summary
-												class="flex cursor-pointer items-center justify-end gap-1 rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
-												{...getAnalyticsAttribute(
-													"interact",
-													`NavMobileMoreLinks`,
-													disableAnalytics,
-												)}
-											>
-												<span class="font-semibold">{navbar.moreLinks.label}</span>
-												<ChevronDown
-													size={20}
-													aria-hidden="true"
-													class="transition-transform duration-200 group-open/section:rotate-180 motion-reduce:transition-none"
-												/>
-											</summary>
-											<ul class="mx-3 mt-1 space-y-1 divide-y divide-white/10 rounded-lg border border-white/10 bg-gray-700/20">
-												{navbar.moreLinks.items?.map(
-													({ label, href, newTab, analyticsLabel }) => (
-														<li>
-															<a
-																href={href}
-																class="user-select-none block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
-																target={newTab ? "_blank" : "_self"}
-																{...getAnalyticsAttribute(
-																	"interact",
-																	`NavMoreLinkMobile-${analyticsLabel}`,
-																	disableAnalytics || !analyticsLabel,
-																)}
-															>
-																{label}
-															</a>
-														</li>
-													),
-												)}
-											</ul>
-										</details>
-									</li>
-								)
-							}
+										</li>)}
+									</ul>
+								</details>
+							</li>}
 						</ul>
 					</div>
 				</details>
@@ -238,8 +216,13 @@ const { disableAnalytics } = navbar;
 
 <style>
 	html {
-		scroll-behavior: smooth;
 		scroll-padding-top: 64px;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		html {
+			scroll-behavior: smooth;
+		}
 	}
 
 	/* Animation for mobile menu in browsers that support it */
