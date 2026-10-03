@@ -6,7 +6,7 @@
 
 ---
 
-<p align="center"><a target="_blank" href="https://djoz.us/"><img src="./docs/assets/button.png" alt="Click to visit the live website" width="200"/></a></p>
+<p align="center"><a target="_blank" href="https://acedev.us/"><img src="./docs/assets/button.png" alt="Click to visit the live website" width="200"/></a></p>
 
 - [David's Portfolio Template](#davids-portfolio-template)
   - [Links](#links)
@@ -20,7 +20,7 @@
 
 ## Links
 
-[About](./docs/about.md) | [Setup Guide](./docs/setup.md) | [Deployment Guide](./docs/deployment.md) | [Analytics](./docs/analytics.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
+[About](./docs/about.md) | [Setup Guide](./docs/setup.md) | [Deployment Guide](./docs/deployment.md) | [Analytics](./docs/analytics.md) | [Live Demo](https://acedev.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
 ## Overview
 

@@ -26,7 +26,7 @@
 
 ## Links
 
-[Return to main README.md](../README.md) | [Setup Guide](./setup.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
+[Return to main README.md](../README.md) | [Setup Guide](./setup.md) | [Live Demo](https://acedev.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
 ## Overview
 
@@ -132,7 +132,7 @@ If you find that you are still having issues with bots, you can raise `stamp.min
 
 For simple questions, **open a GitHub issue**.
 
-For in-depth help, such as customization or deployment assistance, please reach out. I am available for consulting and freelance work. Please reach out via the contact form on my [personal website](https://djoz.us/), email me at [d@djoz.us](mailto:d@djoz.us), or create a GitHub issue.
+For in-depth help, such as customization or deployment assistance, please reach out. I am available for consulting and freelance work. Please reach out via the contact form on my [personal website](https://acedev.us/), email me at [d@djoz.us](mailto:d@djoz.us), or create a GitHub issue.
 
 ### Why No UI Libraries/Frameworks?
 
@@ -152,4 +152,4 @@ This portfolio uses static site generation at build time for optimal performance
 
 ### I Have A Question Not Answered Here
 
-Please create a GitHub issue or reach out via the contact form on my [personal website](https://djoz.us/), or email me at [d@djoz.us](mailto:d@djoz.us).
+Please create a GitHub issue or reach out via the contact form on my [personal website](https://acedev.us/), or email me at [d@djoz.us](mailto:d@djoz.us).

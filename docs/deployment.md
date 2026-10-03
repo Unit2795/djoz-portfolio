@@ -18,7 +18,7 @@
 
 ## Links
 
-[Return to main README.md](../README.md) | [Setup Guide](./setup.md) | [Live Demo](https://djoz.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
+[Return to main README.md](../README.md) | [Setup Guide](./setup.md) | [Live Demo](https://acedev.us/) | [Use This Template](https://github.com/Unit2795/djoz-portfolio/generate)
 
 ## Overview
 
