@@ -1,19 +1,14 @@
 name: Build and Deploy
 
-# Ensure only one deployment per branch at a time, we will NOT interrupt in-progress deployments in order to prevent half-deployed infrastructure and corrupted Terraform state
+# Shared with the destroy workflow so only one Terraform run touches the state at a time. In-progress runs are NOT interrupted, to prevent half-deployed infrastructure and corrupted Terraform state
 concurrency:
-  group: terraform-apply-${{ github.ref_name }}
+  group: terraform
   cancel-in-progress: false
 
 on:
   push:
     branches: ["main"] # Trigger on push to main branch
   workflow_dispatch: # Allow manual triggering (for disabling in the template repo)
-    inputs:
-      force_invalidation:
-        description: 'Type "1" to force client rebuild/deploy and CloudFront invalidation even if no client changes detected'
-        required: false
-        type: string
 
 permissions:
   id-token: write # This is required for requesting the AWS OIDC JWT
@@ -27,8 +22,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0 # Full history so the client change check can compare against the commit before this push
 
       # We must ensure PNPM is installed before Node.js https://github.com/actions/setup-node/issues/530#issuecomment-1169317505
       - name: Install pnpm
@@ -47,6 +40,7 @@ jobs:
         working-directory: .
         run: pnpm ci:install
 
+      # Terraform zips the built Lambda files, so they must be built first
       - name: Build Lambda Functions
         working-directory: .
         run: pnpm lambda:build
@@ -74,64 +68,21 @@ jobs:
         working-directory: ./terraform
         run: terraform init -backend-config=state.config
 
-      - name: Terraform Plan
-        working-directory: ./terraform
-        id: tf-plan
-        run: terraform plan -detailed-exitcode -input=false -lock-timeout=5m -out=tfplan
-        continue-on-error: true
-
-      - name: Detect Terraform Changes
-        id: tf-change
-        run: |
-          echo "Terraform plan exit code: ${{ steps.tf-plan.outputs.exitcode }}"
-          case "${{ steps.tf-plan.outputs.exitcode }}" in
-            0) echo "terraform_changed=false" >> $GITHUB_OUTPUT ;;
-            2) echo "terraform_changed=true" >> $GITHUB_OUTPUT ;;
-            *) echo "Unexpected exit code from terraform plan: ${{ steps.tf-plan.outputs.exitcode }}" >&2; exit 1;;
-          esac
-
+      # Runs before the client deploy, so new Lambdas and infrastructure are live before the new client
       - name: Terraform Apply
         working-directory: ./terraform
         run: |
-          terraform apply -auto-approve -input=false -lock-timeout=5m tfplan
+          terraform apply -auto-approve -input=false -lock-timeout=5m
 
           # Export Terraform outputs as GitHub environment variables
           echo "S3_BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
           echo "CLOUDFRONT_DIST_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_ENV
-          echo "API_INGEST_ENDPOINT=$(terraform output -raw ingest_endpoint)" >> $GITHUB_ENV
-
-      - name: Cleanup Stale Terraform locks
-        if: always()
-        working-directory: ./terraform/bootstrap
-        run: |
-          chmod +x ./forcefully-unlock.sh
-          ./forcefully-unlock.sh
-
-      - name: Check for client/shared directory changes
-        id: client-change
-        env:
-          # The commit before this push. Manual runs have no push, so compare against the previous commit.
-          BASE_SHA: ${{ github.event.before || 'HEAD^' }}
-        run: |
-          # git diff exits 1 when there are changes and 128 when BASE_SHA is unknown (first push, force push), both count as changed
-          if git diff --quiet "$BASE_SHA" HEAD -- client shared; then
-            echo "any_changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "Client/Shared directory has changed, will rebuild and redeploy client."
-            git diff --name-only "$BASE_SHA" HEAD -- client shared || true
-            echo "any_changed=true" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Build Client
-        # Only run if the client directory has changed, FORCE_INVALIDATION is set (for manual trigger), or TERRAFORM_CHANGED is true (terraform applied changes)
-        if: steps.client-change.outputs.any_changed == 'true' || github.event.inputs.force_invalidation == '1' || steps.tf-change.outputs.terraform_changed == 'true'
         working-directory: .
-        env:
-          PUBLIC_API_INGEST_ENDPOINT: ${{ env.API_INGEST_ENDPOINT }}
         run: pnpm client:build
 
       - name: Upload to S3 and invalidate CloudFront
-        if: steps.client-change.outputs.any_changed == 'true' || github.event.inputs.force_invalidation == '1' || steps.tf-change.outputs.terraform_changed == 'true'
         working-directory: ./client
         run: |
           # Upload to S3 bucket

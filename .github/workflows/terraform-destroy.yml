@@ -1,5 +1,10 @@
 name: Manual Terraform Destroy
 
+# Shared with the deploy workflow so only one Terraform run touches the state at a time. In-progress runs are NOT interrupted
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
     inputs:
@@ -24,7 +29,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # Terraform reads the Lambda zips even when destroying, so they must be built first
+      # Terraform zips the built Lambda files even when destroying, so they must be built first
       # We must ensure PNPM is installed before Node.js https://github.com/actions/setup-node/issues/530#issuecomment-1169317505
       - name: Install pnpm
         uses: pnpm/action-setup@v6
@@ -57,19 +62,11 @@ jobs:
         with:
           terraform_version: "^1.16" # Latest 1.x, matches required_version in main.tf
 
-      - name: Cleanup stale Terraform locks
-        working-directory: ./terraform/bootstrap
-        run: |
-          chmod +x ./forcefully-unlock.sh
-          ./forcefully-unlock.sh
-
-      - name: Initialize, Plan, and Destroy Terraform
+      - name: Initialize and Destroy Terraform
         working-directory: ./terraform
         run: |
-          # We disable locking here since it's not necessary while destroying
           terraform init -backend-config=state.config
-          terraform plan -lock=false
-          terraform destroy -auto-approve -input=false -lock=false
+          terraform destroy -auto-approve -input=false -lock-timeout=5m
 
       # Assuming the Terraform destroy was successful, clean up the CloudFormation stack used for the TF state backend
       - name: Destroy CloudFormation TF State Backend

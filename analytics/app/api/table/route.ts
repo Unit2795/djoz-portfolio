@@ -1,42 +1,47 @@
 export const dynamic = "force-dynamic";
 
-import { toEndOfDay } from "@/lib/dates";
-import { getDb } from "@/lib/db";
-import { buildWhere } from "@/lib/queries";
+import { toDayRange } from "@/lib/dates";
+import { TABLE_NAME, withConnection } from "@/lib/db";
+import { buildWhere, TABLE_PAGE_SIZE } from "@/lib/queries";
 import { SortingState } from "@tanstack/react-table";
 
 export async function POST(request: Request) {
-	const db = await getDb();
 	const { from, to, page, sort, filters } = await request.json();
-	const dbConnection = await db.connect();
 
-	const fromMs = new Date(from).getTime();
-	const toMs = toEndOfDay(new Date(to)).getTime(); // Ensure we capture inclusively up to end of day
+	const { fromMs, toMs } = toDayRange(from, to);
 	const pageNum = Number(page);
 	const orderBy = buildOrderBy(sort);
 	const where = buildWhere(filters);
 
 	try {
-		const tableResult = await dbConnection.runAndReadAll(
-			`
-				SELECT * FROM logs_v1
-				WHERE timestamp BETWEEN ? AND ? ${where}
-				${orderBy}
-				LIMIT 20
-				OFFSET 20 * (? - 1);
-			`,
-			[String(fromMs), String(toMs), pageNum]
-		);
+		return await withConnection(async (connection) => {
+			const countResult = await connection.runAndReadAll(
+				`
+					SELECT COUNT(*)::INT AS total FROM ${TABLE_NAME}
+					WHERE timestamp >= ? AND timestamp < ? ${where}
+				`,
+				[String(fromMs), String(toMs)]
+			);
 
-		const tableRows = tableResult.getRowObjectsJson();
-		return Response.json({
-			events: tableRows,
+			const tableResult = await connection.runAndReadAll(
+				`
+					SELECT * EXCLUDE (filename) FROM ${TABLE_NAME}
+					WHERE timestamp >= ? AND timestamp < ? ${where}
+					${orderBy}
+					LIMIT ${TABLE_PAGE_SIZE}
+					OFFSET ${TABLE_PAGE_SIZE} * (? - 1);
+				`,
+				[String(fromMs), String(toMs), pageNum]
+			);
+
+			return Response.json({
+				events: tableResult.getRowObjectsJson(),
+				total: countResult.getRowObjectsJson()[0].total,
+			});
 		});
 	} catch (error) {
 		console.error("Error fetching table data:", error);
 		return new Response("Internal Server Error", { status: 500 });
-	} finally {
-		db.disconnect();
 	}
 }
 

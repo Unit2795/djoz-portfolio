@@ -4,7 +4,7 @@ import Pills from "@/components/Pills/Pills.astro";
 import { shuffleDeterministic } from "@/utils/shuffle";
 import Section from "@/components/Section/Section.astro";
 import { projects, sections } from "@/content";
-import { getAnalyticsAttribute } from "@/utils/analytics";
+import { getAnalyticsAttribute } from "@/utils/analyticsAttribute";
 import AnimatedGrid from "@/components/AnimatedGrid/AnimatedGrid.astro";
 
 const themes = [
@@ -59,7 +59,7 @@ const themeOrder = shuffleDeterministic(
 );
 ---
 
-<Section section={sections.PROJECTS} solidBackground={sections.PROJECTS.solidBackground} analyticsId="Projects">
+<Section section={sections.PROJECTS} analyticsId="Projects">
 	<div class="mt-12">
 		<AnimatedGrid animationInterval={250} class={["animate-fade-down-blur"]}>
 			<ul class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">

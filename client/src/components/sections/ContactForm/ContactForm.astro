@@ -1,12 +1,12 @@
 ---
-import { contactForm, disableHoneypot } from "@/content";
+import { contactForm, disableHoneypot, formSuccessPath } from "@/content";
 import { CircleX, Send } from "@lucide/astro";
 import Section from "@/components/Section/Section.astro";
 import { sections } from "@/content";
 import Icon from "@/components/Icon/Icon.astro";
 import CopyValue from "@/components/CopyValue/CopyValue.astro";
-import { getAnalyticsAttribute } from "@/utils/analytics";
-import { props } from "@/utils/customEl/server";
+import { getAnalyticsAttribute } from "@/utils/analyticsAttribute";
+import { elementProps } from "@/utils/elementProps";
 
 const fieldClasses = "has-invalid";
 const labelClasses = "block text-md text-gray-300 mb-1 motion-safe:transition motion-safe:duration-300";
@@ -20,14 +20,15 @@ const apiEndpoint = `/api/contact/${contactForm.formId}`;
 
 const disableAnalytics = sections.CONTACT.disableAnalytics;
 
-export type Expose = {
-	endpoint: string;
-	errorText: string;
+// Values the <script> reads as this.props
+export type ElementProps = {
+	// Inline error messages, keyed by the failure reason contact-api returns
 	reasonMessages: Record<string, string>;
+	successPath: string;
 };
 ---
 
-<Section section={sections.CONTACT} solidBackground={sections.CONTACT.solidBackground} analyticsId="Contact">
+<Section section={sections.CONTACT} analyticsId="Contact">
 	<div class="mt-6">
 		{contactForm.links && contactForm.links.length > 0 && <ul
 			class:list={["mt-14 flex flex-wrap justify-center gap-8"]}
@@ -89,10 +90,9 @@ export type Expose = {
 		</ul>}
 		<div class="mx-auto max-w-2xl p-6">
 			<contact-form
-				{...props<Expose>({
-					endpoint: apiEndpoint,
-					errorText: contactForm.errorMessage,
+				{...elementProps<ElementProps>({
 					reasonMessages: contactForm.reasonMessages ?? {},
+					successPath: formSuccessPath,
 				})}
 			>
 				<form
@@ -193,10 +193,8 @@ export type Expose = {
 	}
 </style>
 <script>
-	import { customEl, CustomEl } from "@/utils/customEl/client";
-	import type { Expose } from "@/components/sections/ContactForm/ContactForm.astro";
-	import { throttle } from "@/utils/throttle";
-	import { formSuccessPath } from "@/content";
+	import type { ElementProps } from "@/components/sections/ContactForm/ContactForm.astro";
+	import { PropsElement } from "@/utils/PropsElement";
 
 	/*
 		Progressive enhancement for the contact form which adds:
@@ -210,130 +208,125 @@ export type Expose = {
 	// This is to prevent bots from filling out the form and submitting it immediately
 	const UNLOCK_DELAY_MS = 5000;
 
-	customEl(
-		"contact-form",
-		class ContactForm extends CustomEl<Expose> {
-			root = this.querySelector<HTMLFormElement>("[data-formroot]");
-			submitButton = this.querySelector<HTMLButtonElement>("[data-submit]");
-			sendingIndicator = this.querySelector<HTMLSpanElement>("[data-sending]");
-			defaultIndicator = this.querySelector<HTMLSpanElement>("[data-default]");
-			errorRoot = this.querySelector<HTMLDivElement>("[data-error]");
-			errorMessage = this.querySelector<HTMLParagraphElement>("[data-error] p");
-			msgLength = this.querySelector<HTMLSpanElement>("[data-msg-length]");
-			msgField = this.querySelector<HTMLTextAreaElement>("textarea[name='message']");
-			endpoint = this.props.endpoint;
-			errorText = this.props.errorText;
-			reasonMessages = this.props.reasonMessages;
+	class ContactForm extends PropsElement<ElementProps> {
+		root = this.querySelector<HTMLFormElement>("[data-formroot]");
+		submitButton = this.querySelector<HTMLButtonElement>("[data-submit]");
+		sendingIndicator = this.querySelector<HTMLSpanElement>("[data-sending]");
+		defaultIndicator = this.querySelector<HTMLSpanElement>("[data-default]");
+		errorRoot = this.querySelector<HTMLDivElement>("[data-error]");
+		errorMessage = this.querySelector<HTMLParagraphElement>("[data-error] p");
+		msgLength = this.querySelector<HTMLSpanElement>("[data-msg-length]");
+		msgField = this.querySelector<HTMLTextAreaElement>("textarea[name='message']");
+		endpoint = this.root?.getAttribute("action") ?? "";
+		errorText = this.errorMessage?.textContent ?? "";
 
-			connectedCallback() {
-				const {
-					root,
-					submitButton,
-					errorMessage,
-					errorRoot,
-					msgField,
-					msgLength,
-					defaultIndicator,
-					sendingIndicator,
-				} = this;
+		connectedCallback() {
+			const {
+				root,
+				submitButton,
+				errorMessage,
+				errorRoot,
+				msgField,
+				msgLength,
+				defaultIndicator,
+				sendingIndicator,
+			} = this;
 
-				if (
-					!root ||
-					!submitButton ||
-					!errorMessage ||
-					!errorRoot ||
-					!msgField ||
-					!msgLength ||
-					!defaultIndicator ||
-					!sendingIndicator
-				) {
-					console.error("form elements not found");
-					return;
-				}
+			if (
+				!root ||
+				!submitButton ||
+				!errorMessage ||
+				!errorRoot ||
+				!msgField ||
+				!msgLength ||
+				!defaultIndicator ||
+				!sendingIndicator
+			) {
+				console.error("form elements not found");
+				return;
+			}
 
-				// Remove action/method to prevent default HTML based submission
-				root.removeAttribute("action");
-				root.removeAttribute("method");
-				submitButton.disabled = true;
-				msgLength.textContent = `${msgField.value.length} / `;
+			// Remove action/method to prevent default HTML based submission
+			root.removeAttribute("action");
+			root.removeAttribute("method");
+			submitButton.disabled = true;
+			msgLength.textContent = `${msgField.value.length} / `;
 
-				// Validity isn't gated here: once enabled, submit reports any invalid fields instead
-				root.addEventListener(
-					"input",
-					() => {
-						setTimeout(() => {
-							submitButton.disabled = false;
-						}, UNLOCK_DELAY_MS);
-					},
-					{ once: true },
-				);
-
-				// Mirror :user-invalid into aria-invalid so the state isn't conveyed by color alone
-				for (const field of root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("#email, #message")) {
-					const syncInvalid = () => field.setAttribute("aria-invalid", String(!field.validity.valid));
-					field.addEventListener("invalid", syncInvalid);
-					field.addEventListener("change", syncInvalid);
-					field.addEventListener("input", () => {
-						if (field.hasAttribute("aria-invalid")) syncInvalid();
-					});
-				}
-
-				msgField.addEventListener(
-					"input",
-					throttle(() => {
-						msgLength.textContent = `${msgField.value.length} / `;
-					}, 100),
-				);
-
-				root.addEventListener("submit", async (e) => {
-					e.preventDefault();
-					if (!root.reportValidity()) return;
-					this.defaultIndicator?.setAttribute("hidden", "true");
-					this.sendingIndicator?.removeAttribute("hidden");
-
-					const formData = new FormData(root);
-
-					submitButton.disabled = true;
-					submitButton.setAttribute("aria-busy", "true");
-
-					const showError = async (message: string) => {
-						errorRoot?.removeAttribute("hidden");
-						errorMessage.textContent = message;
-						window.announce(message, "assertive");
+			// Validity isn't gated here: once enabled, submit reports any invalid fields instead
+			root.addEventListener(
+				"input",
+				() => {
+					setTimeout(() => {
 						submitButton.disabled = false;
-						submitButton.removeAttribute("aria-busy");
-						this.defaultIndicator?.removeAttribute("hidden");
-						this.sendingIndicator?.setAttribute("hidden", "true");
-					};
+					}, UNLOCK_DELAY_MS);
+				},
+				{ once: true },
+			);
 
-					try {
-						// Without Accept: application/json, contact-api redirects to the success or error page instead
-						const response = await fetch(this.endpoint, {
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-								Accept: "application/json",
-							},
-							// Includes the honeypots; contact-api checks them and answers a tripped one with a normal success
-							body: JSON.stringify(Object.fromEntries(formData)),
-						});
-
-						// A wrong site key or form id gets a bare 403/404, which CloudFront replaces with the HTML 404 page
-						const isJson = response.headers.get("content-type")?.includes("application/json");
-						const { ok, reason } = isJson
-							? await response.json()
-							: { ok: false, reason: `http_${response.status}` };
-
-						if (ok) {
-							window.location.href = formSuccessPath;
-						} else {
-							showError(this.reasonMessages[reason] ?? this.errorText);
-						}
-					} catch {
-						showError(this.errorText);
-					}
+			// Mirror :user-invalid into aria-invalid so the state isn't conveyed by color alone
+			for (const field of root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("#email, #message")) {
+				const syncInvalid = () => field.setAttribute("aria-invalid", String(!field.validity.valid));
+				field.addEventListener("invalid", syncInvalid);
+				field.addEventListener("change", syncInvalid);
+				field.addEventListener("input", () => {
+					if (field.hasAttribute("aria-invalid")) syncInvalid();
 				});
 			}
-		},
-	);
+
+			msgField.addEventListener("input", () => {
+				msgLength.textContent = `${msgField.value.length} / `;
+			});
+
+			root.addEventListener("submit", async (e) => {
+				e.preventDefault();
+				if (!root.reportValidity()) return;
+				this.defaultIndicator?.setAttribute("hidden", "true");
+				this.sendingIndicator?.removeAttribute("hidden");
+
+				const formData = new FormData(root);
+
+				submitButton.disabled = true;
+				submitButton.setAttribute("aria-busy", "true");
+
+				const showError = async (message: string) => {
+					errorRoot?.removeAttribute("hidden");
+					errorMessage.textContent = message;
+					window.announce(message, "assertive");
+					submitButton.disabled = false;
+					submitButton.removeAttribute("aria-busy");
+					this.defaultIndicator?.removeAttribute("hidden");
+					this.sendingIndicator?.setAttribute("hidden", "true");
+				};
+
+				try {
+					// Without Accept: application/json, contact-api redirects to the success or error page instead
+					const response = await fetch(this.endpoint, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Accept: "application/json",
+						},
+						// Includes the honeypots; contact-api checks them and answers a tripped one with a normal success
+						body: JSON.stringify(Object.fromEntries(formData)),
+					});
+
+					// A wrong site key or form id gets a bare 403/404, which CloudFront replaces with the HTML 404 page
+					const isJson = response.headers.get("content-type")?.includes("application/json");
+					const { ok, reason } = isJson
+						? await response.json()
+						: { ok: false, reason: `http_${response.status}` };
+
+					if (ok) {
+						window.location.href = this.props.successPath;
+					} else {
+						showError(this.props.reasonMessages[reason] ?? this.errorText);
+					}
+				} catch {
+					showError(this.errorText);
+				}
+			});
+		}
+	}
+
+	customElements.define("contact-form", ContactForm);
 </script>

@@ -19,22 +19,6 @@ const eventArray = Object.values(events) as EventName[];
 export interface AnalyticsEvent {
 	// Event type
 	eventType: EventName;
-	/* 
-		Milliseconds since the first event in the batch. Used to reconstruct event order and timing.
-
-		The server assigns one timestamp to the entire event batch when it’s received.
-		Each event only includes an offset, how long after the batch started that event happened.
-		A larger offset means the event occurred more recently, closer to when the batch was sent.
-
-		To reconstruct when each event actually happened relative to the batch timestamp, we work backwards.
-		The event with the largest offset should line up exactly with the batch timestamp.
-		Events with smaller offsets get shifted back in time accordingly.
-
-		This avoids issues with clock skew, timezones, and intentional manipulation of analytics data.
-
-		This is not perfect, but it's a reasonable compromise between accuracy and complexity.
-	*/
-	offsetMs?: number;
 	// Optional metadata such as an analytics ID
 	id?: string;
 	// Session ID
@@ -43,7 +27,10 @@ export interface AnalyticsEvent {
 
 // Metadata automatically added by the ingest Lambda API
 export interface AnalyticsContext {
-	// Unix timestamp in seconds
+	/*
+		Unix timestamp in milliseconds, set by the ingest Lambda when the batch is received.
+		Every event in a batch shares it. The client never sends timestamps, which avoids clock skew and manipulation.
+	*/
 	timestamp: number;
 	// Schema version to allow backward/forward compatibility
 	schemaVersion: number;
@@ -77,8 +64,7 @@ export type ChartData = ChartPoint[];
 // Time step information for the x-axis of analytics graphs
 export type TimeSteps = {
 	unit: "hour" | "day";
-	step: number;
-	ticks: number;
+	// Bucket size in milliseconds
 	ms: number;
 };
 // The shape of the graph data returned from the analytics API
@@ -88,3 +74,5 @@ export type APIGraphData = {
 };
 
 export const FLUSH_INTERVAL_MS = 5000; // 5 seconds
+// Max events per request. The client flushes when its queue reaches this size, and the ingest Lambda rejects larger batches
+export const BATCH_SIZE = 10;

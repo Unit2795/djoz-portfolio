@@ -1,19 +1,19 @@
 ---
-import { navbar, disableDynamicNavbar } from "@/content";
-import { props } from "@/utils/customEl/server";
+import { navbar, disableDynamicNavbar, sections } from "@/content";
 import { ChevronDown, Menu, X } from "@lucide/astro";
-import { sectionsArray as sections } from "@/content/types";
-import { getAnalyticsAttribute } from "@/utils/analytics";
+import { getAnalyticsAttribute } from "@/utils/analyticsAttribute";
+import { elementProps } from "@/utils/elementProps";
 
-export type Expose = {
-	sections: typeof sections;
-	disableDynamicNavbar?: boolean;
+// Values the <script> reads as this.props
+export type ElementProps = {
+	disableDynamicNavbar: boolean;
 };
 
 const { disableAnalytics } = navbar;
+const navSections = Object.values(sections).filter((item) => !item.disabled);
 ---
 
-<djoz-nav {...props<Expose>({ sections, disableDynamicNavbar })}>
+<djoz-nav {...elementProps<ElementProps>({ disableDynamicNavbar })}>
 	{/* Spacer to help the navbar stand off of the top of the page a little bit for the sticky effect */}
 	<div class="pt-10 noscript:pt-0"></div>
 	<a
@@ -59,21 +59,19 @@ const { disableAnalytics } = navbar;
 					</h1>}
 					{/* Desktop Menu */}
 					<ul class="hidden md:flex">
-						{sections
-							.filter((item) => !item.disabled)
-							.map(({ id, navTitle, analyticsLabel }) => <li class="h-16">
-								<a
-									class="navbar-link user-select-none flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
-									href={`#${id}`}
-									{...getAnalyticsAttribute(
-										"interact",
-										`NavLink-${analyticsLabel ?? id}`,
-										disableAnalytics,
-									)}
-								>
-									{navTitle}
-								</a>
-							</li>)}
+						{navSections.map(({ id, navTitle, analyticsLabel }) => <li class="h-16">
+							<a
+								class="navbar-link select-none flex h-full items-center justify-center px-3 text-gray-200 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+								href={`#${id}`}
+								{...getAnalyticsAttribute(
+									"interact",
+									`NavLink-${analyticsLabel ?? id}`,
+									disableAnalytics,
+								)}
+							>
+								{navTitle}
+							</a>
+						</li>)}
 						{navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && <li
 							class="group relative flex h-16 items-center justify-center px-3"
 						>
@@ -96,7 +94,7 @@ const { disableAnalytics } = navbar;
 									class="border-t border-gray-700 first:mt-0 first:border-t-0"
 								>
 									<a
-										class="user-select-none block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
+										class="select-none block px-3 py-2 text-gray-200 transition-all duration-300 hover:bg-white/5 hover:text-blue-400 motion-safe:transition-colors motion-safe:duration-300"
 										href={href}
 										target={newTab ? "_blank" : "_self"}
 										{...getAnalyticsAttribute(
@@ -130,21 +128,19 @@ const { disableAnalytics } = navbar;
 							class="divide-y divide-white/5 p-2 px-4 pt-1 pb-2 text-right"
 							aria-label={navbar.mobileMenuAriaLabel ?? "Mobile navigation menu"}
 						>
-							{sections
-								.filter((item) => !item.disabled)
-								.map(({ id, navTitle, analyticsLabel }) => <li>
-									<a
-										href={`#${id}`}
-										class="navbar-mobile-link user-select-none block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
-										{...getAnalyticsAttribute(
-											"interact",
-											`NavMobileLink-${analyticsLabel ?? id}`,
-											disableAnalytics,
-										)}
-									>
-										{navTitle}
-									</a>
-								</li>)}
+							{navSections.map(({ id, navTitle, analyticsLabel }) => <li>
+								<a
+									href={`#${id}`}
+									class="navbar-mobile-link select-none block rounded-lg px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+									{...getAnalyticsAttribute(
+										"interact",
+										`NavMobileLink-${analyticsLabel ?? id}`,
+										disableAnalytics,
+									)}
+								>
+									{navTitle}
+								</a>
+							</li>)}
 							{navbar.moreLinks && navbar.moreLinks.items && navbar.moreLinks.items.length > 0 && <li>
 								<details class="group/section rounded-lg pb-2">
 									<summary
@@ -164,7 +160,7 @@ const { disableAnalytics } = navbar;
 										{navbar.moreLinks.items?.map(({ label, href, newTab, analyticsLabel }) => <li>
 											<a
 												href={href}
-												class="user-select-none block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
+												class="select-none block px-4 py-3 text-gray-300 transition-all duration-300 hover:bg-white/5 hover:text-blue-400"
 												target={newTab ? "_blank" : "_self"}
 												{...getAnalyticsAttribute(
 													"interact",
@@ -187,31 +183,39 @@ const { disableAnalytics } = navbar;
 </djoz-nav>
 
 <script>
-	import type { Expose } from "@/components/Nav/Nav.astro";
-	import { useNavbar } from "@/components/Nav/utils/useNavbar";
-	import { customEl, CustomEl } from "@/utils/customEl/client";
+	import { initMobileMenu } from "@/components/Nav/utils/initMobileMenu";
+	import { initNavbarAnimation } from "@/components/Nav/utils/initNavbarAnimation";
+	import { initScrollSpy } from "@/components/Nav/utils/initScrollSpy";
+	import type { ElementProps } from "@/components/Nav/Nav.astro";
+	import { PropsElement } from "@/utils/PropsElement";
 
-	customEl(
-		"djoz-nav",
-		class DjozNav extends CustomEl<Expose> {
-			root = this.querySelector<HTMLElementTagNameMap["nav"]>("[data-navroot]");
-			navContainer = this.querySelector<HTMLDivElement>("[data-navcontainer]");
-			mobileMenu = this.querySelector<HTMLDetailsElement>("[data-mobile-menu]");
-			sections = this.props.sections;
-			disableDynamicNavbar = this.props.disableDynamicNavbar ?? false;
+	/**
+	 * Initializes all navbar features:
+	 * - Mobile menu functionality (hamburger menu, click outside to close)
+	 * - Scroll-based resize animation (with reduced motion support)
+	 * - Active section highlighting based on scroll position
+	 */
+	class DjozNav extends PropsElement<ElementProps> {
+		root = this.querySelector<HTMLElementTagNameMap["nav"]>("[data-navroot]");
+		navContainer = this.querySelector<HTMLDivElement>("[data-navcontainer]");
+		mobileMenu = this.querySelector<HTMLDetailsElement>("[data-mobile-menu]");
 
-			connectedCallback() {
-				const { root, mobileMenu, sections, navContainer } = this;
+		connectedCallback() {
+			const { root, mobileMenu, navContainer } = this;
 
-				if (!root || !mobileMenu || !navContainer) {
-					console.error("Navbar elements not found");
-					return;
-				}
-
-				useNavbar(root, mobileMenu, sections, navContainer, this.disableDynamicNavbar);
+			if (!root || !mobileMenu || !navContainer) {
+				console.error("Navbar elements not found");
+				return;
 			}
-		},
-	);
+
+			initMobileMenu(root, mobileMenu);
+			initNavbarAnimation(navContainer, this.props.disableDynamicNavbar);
+			// Use a top offset to account for the fixed navbar height when determining active sections
+			initScrollSpy(root, 80);
+		}
+	}
+
+	customElements.define("djoz-nav", DjozNav);
 </script>
 
 <style>
@@ -240,47 +244,5 @@ const { disableAnalytics } = navbar;
 			max-height: 500px;
 			opacity: 1;
 		}
-	}
-
-	.has-submenu {
-		position: relative;
-	}
-	.trigger {
-		background: none;
-		border: 0;
-		padding: 0;
-		font: inherit;
-		cursor: pointer;
-	}
-
-	/* dropdown */
-	.submenu {
-		position: absolute;
-		left: 0;
-		top: 100%;
-		display: none;
-		margin: 0;
-		list-style: none;
-		background: red;
-		border: 1px solid #ccc;
-		padding: 0.25rem 0;
-		min-width: 10rem;
-	}
-	.submenu a {
-		display: block;
-		padding: 0.5rem 0.75rem;
-		text-decoration: none;
-	}
-	.submenu a:focus,
-	.submenu a:hover,
-	.trigger:focus {
-		outline: 2px solid;
-		outline-offset: 2px;
-	}
-
-	/* open on hover OR keyboard focus */
-	.has-submenu:hover .submenu,
-	.has-submenu:focus-within .submenu {
-		display: block;
 	}
 </style>

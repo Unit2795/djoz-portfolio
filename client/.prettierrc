@@ -4,6 +4,7 @@
 		"prettier-plugin-organize-imports",
 		"prettier-plugin-tailwindcss"
 	],
+	"tailwindStylesheet": "./src/styles/index.css",
 	"overrides": [
 		{
 			"files": "*.astro",

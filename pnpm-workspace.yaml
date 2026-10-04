@@ -1,10 +1,10 @@
 packages:
   - "client"
-  - "lambda/**"
+  - "lambda/functions/*"
+  - "lambda/function-boilerplate"
   - "analytics"
   - "shared"
   - "dev-api"
-  - "terraform"
 # esbuild installs its binary through a platform package, so its install script is not needed
 allowBuilds:
   esbuild: false

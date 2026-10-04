@@ -105,7 +105,7 @@ You'll need the following in order to build the site:
    pnpm preview
    ```
 
-   > The production build will be created in the `/dist` directory, ready for deployment.
+   > The production build will be created in the `/dist` directory, ready for deployment. `pnpm build` runs `astro check` first, so type errors fail the build. Run `pnpm typecheck` to check types on their own.
 
 ### Deployment Options
 
@@ -160,7 +160,8 @@ If you created your repo with **Use this template**, it shares no history with t
 
 #### Major Version Changes
 
-The code for this portfolio is actively being updated and improved. It's likely to continue to experience significant changes. Each major version has a migration guide:
+The code for this portfolio is actively being updated and improved. It's likely to continue to experience significant changes. Each major version, and each minor version with breaking changes, has a migration guide:
 
+- [V3.1 Migration Guide](./v3.1_migration_guide.md): V3.0 to V3.1. An in-place upgrade; re-sync the analytics dashboard and update any customized site components.
 - [V3 Migration Guide](./v3_migration_guide.md): V2 to V3. An in-place upgrade; the contact form moved to [contact-api](https://github.com/Unit2795/contact-api).
 - [V2 Migration Guide](./v2_migration_guide.md): V1 to V2. The versions differ so much that it's easier to start from a fresh copy of the template and reconcile your custom content and configurations by hand.

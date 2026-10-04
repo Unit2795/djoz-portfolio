@@ -9,7 +9,7 @@ import {
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 import type { ScheduledHandler } from "aws-lambda";
-import { AnalyticsChunk, AnalyticsEvent, AnalyticsEventEnriched, FLUSH_INTERVAL_MS } from "@djoz-portfolio/shared";
+import { AnalyticsChunk, AnalyticsEvent, AnalyticsEventEnriched } from "@djoz-portfolio/shared";
 
 const SOFT_STOP_MS = 15000; // stop consuming when <15s left
 const VIS_BUFFER_SEC = 60; // keep received messages hidden this long past the end of the invocation
@@ -73,15 +73,6 @@ function isValidEvent(item: AnalyticsEvent) {
 	if (typeof item.eventType !== "string") {
 		return false;
 	}
-	// offsetMs is invalid if not a number or out of range (0 to twice the flush interval, to allow for some clock skew and latency)
-	if (
-		typeof item.offsetMs !== "number" ||
-		isNaN(item.offsetMs) ||
-		item.offsetMs < 0 ||
-		item.offsetMs > FLUSH_INTERVAL_MS * 12
-	) {
-		return false;
-	}
 
 	// Ensure that needed properties are present
 	return true;
@@ -121,7 +112,6 @@ export const handler: ScheduledHandler = async (_event, context) => {
 			}
 
 			try {
-				let validEvents = [];
 				const { events: bodyEvents, ...metadata } = JSON.parse(Body) as AnalyticsChunk;
 				if (!Array.isArray(bodyEvents) || !bodyEvents.length) {
 					console.warn("No events in message, skipping");
@@ -129,30 +119,21 @@ export const handler: ScheduledHandler = async (_event, context) => {
 				}
 
 				for (const item of bodyEvents) {
-					if (isValidEvent(item)) {
-						validEvents.push(item);
-					} else {
+					if (!isValidEvent(item)) {
 						console.warn("Invalid event structure, skipping!", item);
+						continue;
 					}
-				}
 
-				// Find the largest offset (in milliseconds) among all valid events.
-				const maxOffset = Math.max(...validEvents.map((e) => e.offsetMs ?? 0));
-				// Store the batch's original timestamp when the batch was recorded or received.
-				const batchTimestampMs = metadata.timestamp;
-				for (const item of validEvents) {
-					// Reconstruct when each event actually happened relative to the batch timestamp
-					const adjustedTimestamp = batchTimestampMs - (maxOffset - (item.offsetMs ?? 0));
-
-					delete item.offsetMs; // No longer needed
-
-					/* 
-						Enrich each event with batch-level info (like IP, timestamp, userAgent) and adjusted timestamp.
+					/*
+						Enrich each event with batch-level info (like IP, timestamp, userAgent).
+						Only known fields are kept, anything else a client sends is dropped.
 					*/
+					const { eventType, id, sessionId } = item;
 					events.push({
-						...item,
+						eventType,
+						id,
+						sessionId,
 						...metadata,
-						timestamp: adjustedTimestamp,
 					});
 				}
 			} catch {
@@ -165,23 +146,33 @@ export const handler: ScheduledHandler = async (_event, context) => {
 		return;
 	}
 
-	// Write to S3
-	const ndjson = events.map((e) => JSON.stringify(e)).join("\n");
-	const gz = gzipSync(Buffer.from(ndjson, "utf8"));
+	// Group events by the UTC date they were received, so each lands in its own day's folder
+	const eventsByDate = new Map<string, AnalyticsEventEnriched[]>();
+	for (const e of events) {
+		const dt = new Date(e.timestamp).toISOString().slice(0, 10); // YYYY-MM-DD format
+		const dateEvents = eventsByDate.get(dt) ?? [];
+		dateEvents.push(e);
+		eventsByDate.set(dt, dateEvents);
+	}
 
-	const now = new Date();
-	const dt = now.toISOString().slice(0, 10); // YYYY-MM-DD format
-	const key = `events/${dt}/part-${randomUUID()}.ndjson.gz`;
+	// Write one file per date to S3
+	const keys = [];
+	for (const [dt, dateEvents] of eventsByDate) {
+		const ndjson = dateEvents.map((e) => JSON.stringify(e)).join("\n");
+		const gz = gzipSync(Buffer.from(ndjson, "utf8"));
+		const key = `events/${dt}/part-${randomUUID()}.ndjson.gz`;
 
-	await s3.send(
-		new PutObjectCommand({
-			Bucket: BUCKET,
-			Key: key,
-			Body: gz,
-			ContentType: "application/x-ndjson",
-			ContentEncoding: "gzip",
-		})
-	);
+		await s3.send(
+			new PutObjectCommand({
+				Bucket: BUCKET,
+				Key: key,
+				Body: gz,
+				ContentType: "application/x-ndjson",
+				ContentEncoding: "gzip",
+			})
+		);
+		keys.push(key);
+	}
 
 	console.log(`Processed ${events.length} events from ${receipts.length} messages`);
 
@@ -201,7 +192,7 @@ export const handler: ScheduledHandler = async (_event, context) => {
 		);
 	}
 
-	console.log(`Wrote ${events.length} events to s3://${BUCKET}/${key}`);
+	console.log(`Wrote ${events.length} events to ${keys.map((key) => `s3://${BUCKET}/${key}`).join(", ")}`);
 
 	return;
 };

@@ -15,7 +15,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef, createColumnHelper, SortingState } from "@tanstack/react-table";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,32 +42,26 @@ const Table = ({
 	setTimezone,
 }: {
 	data: AnalyticsEventEnriched[];
-	sorting?: SortingState;
-	onSortingChange?: (sorting: SortingState) => void;
+	sorting: SortingState;
+	onSortingChange: (sorting: SortingState) => void;
 	pagination: DataTablePaginationProps;
 	filters: TableFilter[];
 	onFiltersChange: (filters: TableFilter[]) => void;
 	timezone: "utc" | "local";
 	setTimezone: Dispatch<SetStateAction<"utc" | "local">>;
 }) => {
-	const [localFilters, setLocalFilters] = useState<FiltersState>({ items: [], applied: false });
-
-	// Bubble filter changes up only when they are applied/committed
-	useEffect(() => {
-		if (localFilters.applied) {
-			onFiltersChange(localFilters.items);
-		}
-	}, [localFilters]);
+	// Filters being edited, only sent to the parent when applied
+	const [draft, setDraft] = useState<TableFilter[]>(filters);
+	const dirty = JSON.stringify(draft) !== JSON.stringify(filters);
 
 	const addFilter = (id: string, value?: string | null) => {
 		if (!value) return;
+		setDraft((prev) => [...prev, { id, value, exclude: false }]);
+	};
 
-		setLocalFilters((prevState) => {
-			return {
-				applied: false,
-				items: [...prevState.items, { id, value, exclude: false }],
-			};
-		});
+	const clearFilters = () => {
+		setDraft([]);
+		if (filters.length > 0) onFiltersChange([]);
 	};
 
 	const columns = useMemo<ColumnDef<DataTableFeatures, AnalyticsEventEnriched, any>[]>(
@@ -172,7 +166,13 @@ const Table = ({
 
 			<Card>
 				<CardContent className="px-4 py-4 space-y-3">
-					<Filter value={localFilters} onChange={setLocalFilters} />
+					<Filter
+						items={draft}
+						onChange={setDraft}
+						dirty={dirty}
+						onApply={() => onFiltersChange(draft)}
+						onClear={clearFilters}
+					/>
 					<div className="mt-4">
 						<DataTable
 							columns={columns}
@@ -195,49 +195,29 @@ export interface TableFilter {
 	value: string;
 	exclude: boolean;
 }
-export type FilterChangeHandler = (filters: TableFilter[]) => void;
 
-export interface FiltersState {
+const Filter = ({
+	items,
+	onChange,
+	dirty,
+	onApply,
+	onClear,
+}: {
 	items: TableFilter[];
-	applied: boolean;
-}
-
-const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch<SetStateAction<FiltersState>> }) => {
-	const [local, setLocal] = useState<FiltersState>({ items: [], applied: false });
-	const isControlled = value !== undefined;
-
-	const state = isControlled ? value : local;
-
-	// Helper to update state either locally or via onChange callback depending on if the component is controlled/uncontrolled
-	const update = (updater: (prev: FiltersState) => FiltersState) => {
-		if (isControlled) {
-			onChange?.(updater(state));
-		} else {
-			setLocal((prev) => updater(prev));
-		}
-	};
-
+	onChange: Dispatch<SetStateAction<TableFilter[]>>;
+	// True when the edited filters differ from the applied ones
+	dirty: boolean;
+	onApply: () => void;
+	onClear: () => void;
+}) => {
 	// Add a new filter with optional default value
 	const addFilter = (id: string, defaultValue?: string) => {
-		update((prev) => ({
-			applied: false,
-			items: [...prev.items, { id, value: defaultValue || "", exclude: false }],
-		}));
+		onChange((prev) => [...prev, { id, value: defaultValue || "", exclude: false }]);
 	};
 
 	// Handle changes to an existing filter's value or exclusion status
 	const handleFilterChange = (index: number, value: string, exclude: boolean) => {
-		update((prev) => {
-			const newItems = [...prev.items];
-			newItems[index] = { ...newItems[index], value, exclude };
-			return { applied: false, items: newItems };
-		});
-	};
-	const onFilterApply = () => {
-		update((prev) => ({ ...prev, applied: true }));
-	};
-	const onClearFilters = () => {
-		update(() => ({ items: [], applied: true }));
+		onChange((prev) => prev.map((filter, i) => (i === index ? { ...filter, value, exclude } : filter)));
 	};
 
 	return (
@@ -261,18 +241,17 @@ const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch
 								<DropdownMenuItem onClick={() => addFilter("ip")}>IP Address</DropdownMenuItem>
 								<DropdownMenuItem onClick={() => addFilter("sessionId")}>Session</DropdownMenuItem>
 								<DropdownMenuItem onClick={() => addFilter("userAgent")}>User Agent</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => addFilter("browser")}>Browser</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
-						{state.items.length > 0 ? (
-							<Button variant="ghost" size="sm" onClick={onClearFilters}>
+						{items.length > 0 ? (
+							<Button variant="ghost" size="sm" onClick={onClear}>
 								Clear all <X className="ml-2 h-4 w-4 text-red-500" />
 							</Button>
 						) : null}
-						{!state.applied && state.items.length > 0 ? (
+						{dirty ? (
 							<Button
 								variant="outline"
-								onClick={onFilterApply}
+								onClick={onApply}
 								className="bg-green-950 hover:bg-green-900 border-green-900 text-green-300"
 							>
 								Apply Filters <Check className="ml-2 h-4 w-4 text-green-400" />
@@ -280,7 +259,7 @@ const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch
 						) : null}
 					</div>
 					<div className="ml-auto flex items-center gap-2">
-						<span className="text-sm rounded-md bg-blue-900 px-3 py-1">{state.items.length}</span>
+						<span className="text-sm rounded-md bg-blue-900 px-3 py-1">{items.length}</span>
 						<span className="transition-transform duration-200 ease-in-out group-open:-rotate-180">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -296,7 +275,7 @@ const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch
 					</div>
 				</summary>
 				<div className="flex flex-wrap gap-3 p-4 bg-gray-925 rounded-b-lg">
-					{state.items.length === 0 ? (
+					{items.length === 0 ? (
 						<span className="text-sm text-gray-500">
 							No filters applied&nbsp;
 							<span className="text-xs text-gray-600">
@@ -304,7 +283,7 @@ const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch
 							</span>
 						</span>
 					) : null}
-					{state.items.map((filter, index) => (
+					{items.map((filter, index) => (
 						<div
 							key={index}
 							className="flex items-center gap-2 rounded-lg border border-white/10 px-2.5 py-1.5 shadow-sm transition hover:border-white/20 focus-within:ring-1 focus-within:ring-ring bg-gray-900"
@@ -349,15 +328,7 @@ const Filter = ({ value, onChange }: { value?: FiltersState; onChange?: Dispatch
 								className="border border-white/10 rounded-md p-1 text-muted-foreground hover:bg-red-950/50 hover:text-red-400 focus:ring-2 focus:ring-red-400"
 								variant="ghost"
 								size="icon"
-								onClick={() => {
-									update((prev) => {
-										const newItems = prev.items.filter((_, i) => i !== index);
-										if (newItems.length === 0) {
-											return { items: [], applied: true };
-										}
-										return { items: newItems, applied: false };
-									});
-								}}
+								onClick={() => onChange((prev) => prev.filter((_, i) => i !== index))}
 								aria-label="Remove filter"
 							>
 								<X className="h-4 w-4" />

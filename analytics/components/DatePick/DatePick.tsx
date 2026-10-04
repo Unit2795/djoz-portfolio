@@ -16,7 +16,6 @@ const DatePick = ({
 }) => {
 	const [open, setOpen] = useState(false);
 	const id = useId();
-	const maxDate = getMaxSelectableDate();
 
 	return (
 		<div>
@@ -41,7 +40,7 @@ const DatePick = ({
 						}}
 						disabled={{
 							// Disable future dates
-							after: maxDate,
+							after: new Date(),
 						}}
 						timeZone="UTC"
 					/>
@@ -52,17 +51,3 @@ const DatePick = ({
 };
 
 export default DatePick;
-
-function getMaxSelectableDate() {
-	const now = new Date();
-	const utcHour = now.getUTCHours();
-
-	// If before 2 AM UTC, disallow "today"
-	if (utcHour < 2) {
-		// Return yesterday's date
-		return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
-	}
-
-	// Otherwise, allow today
-	return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-}

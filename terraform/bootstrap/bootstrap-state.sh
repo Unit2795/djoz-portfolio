@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Creates or updates the CloudFormation stack that owns the Terraform state bucket
+
 # Exit on unset vars, pipefail, and any error
 set -euo pipefail
 
@@ -8,62 +10,34 @@ CONFIG_PATH="../state.config"
 # CloudFormation template location
 CLOUDFORMATION_TEMPLATE="terraform-state.yml"
 
-# Read bucket name from config file
-STATE_S3_BUCKET=$(grep '^bucket[[:space:]]*=' "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]')
+# Read a quoted value from state.config, e.g. `bucket = "my-bucket"`
+config_value() {
+	grep "^$1[[:space:]]*=" "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]' || true
+}
 
-# Check if required environment variables are set
-if [ -z "$STATE_S3_BUCKET" ]; then
-	echo "Error: bucket variable must be set in state.config"
+STATE_S3_BUCKET=$(config_value bucket)
+REGION=$(config_value region)
+
+if [ -z "$STATE_S3_BUCKET" ] || [ -z "$REGION" ]; then
+	echo "Error: bucket and region must be set in state.config"
 	exit 1
 fi
 
 # Set stack name based on bucket name
 STACK_NAME="cf-stack-${STATE_S3_BUCKET}"
 
-# Check if stack exists
-check_stack() {
-	aws cloudformation describe-stacks --stack-name "$STACK_NAME" 2>/dev/null
-	return $?
-}
+# Creates the stack or updates it, waits for it to finish, and succeeds when nothing changed
+echo "Deploying CloudFormation stack '$STACK_NAME' in $REGION..."
+aws cloudformation deploy \
+	--region "$REGION" \
+	--stack-name "$STACK_NAME" \
+	--template-file "$CLOUDFORMATION_TEMPLATE" \
+	--parameter-overrides BucketName="$STATE_S3_BUCKET" \
+	--no-fail-on-empty-changeset
 
-# Deploy or update the stack
-deploy_stack() {
-	local operation
-	if check_stack; then
-		operation="update"
-	else
-		operation="create"
-	fi
-
-	echo "${operation} CloudFormation stack..."
-
-	if ! output=$(aws cloudformation ${operation}-stack \
-		--stack-name "$STACK_NAME" \
-		--template-body file://"$CLOUDFORMATION_TEMPLATE" \
-		--parameters \
-		ParameterKey=BucketName,ParameterValue="$STATE_S3_BUCKET" \
-		--capabilities CAPABILITY_NAMED_IAM 2>&1); then
-
-		if [[ "$output" == *"No updates are to be performed"* ]]; then
-			echo "No updates needed for stack"
-			return 0
-		fi
-		echo "$output"
-		return 1
-	fi
-
-	echo "Waiting for stack ${operation} to complete..."
-	aws cloudformation wait stack-${operation}-complete --stack-name "$STACK_NAME"
-}
-
-# Deploy the stack
-deploy_stack
-
-echo "Stack deployed successfully"
-
-# Output the stack resources
 echo "Deployed resources:"
 aws cloudformation describe-stacks \
+	--region "$REGION" \
 	--stack-name "$STACK_NAME" \
 	--query 'Stacks[0].Outputs[]' \
 	--output table

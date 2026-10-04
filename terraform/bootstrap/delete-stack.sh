@@ -1,17 +1,23 @@
 #!/bin/bash
 
+# Empties the Terraform state bucket and deletes the CloudFormation stack that owns it
+
 # Exit on unset vars, pipefail, and any error
 set -euo pipefail
 
 # backend config location
 CONFIG_PATH="../state.config"
 
-# Read values from state.config
-STATE_S3_BUCKET=$(grep '^bucket[[:space:]]*=' "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]')
+# Read a quoted value from state.config, e.g. `bucket = "my-bucket"`
+config_value() {
+	grep "^$1[[:space:]]*=" "$CONFIG_PATH" | cut -d'"' -f2 | tr -d '[:space:]' || true
+}
 
-# Check required vars
-if [ -z "$STATE_S3_BUCKET" ]; then
-	echo "Error: bucket variable must be set in state.config"
+STATE_S3_BUCKET=$(config_value bucket)
+REGION=$(config_value region)
+
+if [ -z "$STATE_S3_BUCKET" ] || [ -z "$REGION" ]; then
+	echo "Error: bucket and region must be set in state.config"
 	exit 1
 fi
 
@@ -20,32 +26,21 @@ STACK_NAME="cf-stack-${STATE_S3_BUCKET}"
 
 # Does the stack exist (not DELETE_COMPLETE)?
 stack_exists() {
-	aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>&1
-}
-
-# Best-effort: disable termination protection
-disable_termination_protection() {
-	aws cloudformation update-termination-protection \
-		--stack-name "$STACK_NAME" \
-		--no-enable-termination-protection >/dev/null 2>&1 || true
+	aws cloudformation describe-stacks --region "$REGION" --stack-name "$STACK_NAME" >/dev/null 2>&1
 }
 
 bucket_exists() {
-	aws s3api head-bucket --bucket "$STATE_S3_BUCKET" >/dev/null 2>&1
+	aws s3api head-bucket --region "$REGION" --bucket "$STATE_S3_BUCKET" >/dev/null 2>&1
 }
 
-# Empty S3 bucket (handles versioned & unversioned)
+# The bucket is versioned, so every object version and delete marker must go before CloudFormation can delete it
 empty_bucket() {
 	local bucket="$1"
 
 	echo "Emptying S3 bucket: s3://${bucket}"
 
-	# First, try a simple recursive remove (works for unversioned buckets)
-	aws s3 rm "s3://${bucket}" --recursive >/dev/null 2>&1 || true
-
-	# now clear all versions + delete markers
 	while :; do
-		payload=$(aws s3api list-object-versions --bucket "$bucket" --output json |
+		payload=$(aws s3api list-object-versions --region "$REGION" --bucket "$bucket" --output json |
 			jq '[ (.Versions[]? | {Key, VersionId}),
                   (.DeleteMarkers[]? | {Key, VersionId}) ] | .[:1000]')
 
@@ -53,6 +48,7 @@ empty_bucket() {
 		[ "$(jq 'length' <<<"$payload")" -eq 0 ] && break
 
 		aws s3api delete-objects \
+			--region "$REGION" \
 			--cli-input-json "$(printf '%s' "$payload" |
 				jq -c --arg bucket "$bucket" '{Bucket:$bucket, Delete:{Objects: ., Quiet:true}}')" \
 			--cli-binary-format raw-in-base64-out
@@ -68,9 +64,6 @@ if ! stack_exists; then
 	exit 0
 fi
 
-# Disable termination protection (best-effort)
-disable_termination_protection
-
 # Empty bucket (if present); this avoids CFN delete failures on non-empty buckets
 if bucket_exists; then
 	empty_bucket "$STATE_S3_BUCKET"
@@ -80,9 +73,9 @@ fi
 
 # Initiate delete
 echo "Deleting CloudFormation stack '$STACK_NAME'..."
-aws cloudformation delete-stack --stack-name "$STACK_NAME"
+aws cloudformation delete-stack --region "$REGION" --stack-name "$STACK_NAME"
 
 echo "Waiting for stack deletion to complete..."
-aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+aws cloudformation wait stack-delete-complete --region "$REGION" --stack-name "$STACK_NAME"
 
 echo "Stack deleted successfully."

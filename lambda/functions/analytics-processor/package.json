@@ -2,16 +2,16 @@
 	"name": "@djoz-portfolio/lambda-analytics-processor",
 	"version": "1.0.0",
 	"description": "",
-	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"build": "esbuild src/index.ts --bundle --platform=node --target=node24 --minify --legal-comments=none --outfile=dist/index.js"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.163",
-		"@types/node": "^24.19.0"
+		"@types/node": "^24.19.0",
+		"esbuild": "^0.28.2"
 	},
 	"dependencies": {
 		"@aws-sdk/client-lambda": "^3.1141.0",

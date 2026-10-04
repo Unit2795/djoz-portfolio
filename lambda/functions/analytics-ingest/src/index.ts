@@ -1,5 +1,5 @@
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import { AnalyticsChunk } from "@djoz-portfolio/shared";
+import { AnalyticsChunk, BATCH_SIZE } from "@djoz-portfolio/shared";
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 
 // Cache constants
@@ -22,7 +22,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 	let events;
 	try {
 		events = JSON.parse(event.body).events;
-		if (!Array.isArray(events) || !events.length || events.length > 11) {
+		if (!Array.isArray(events) || !events.length || events.length > BATCH_SIZE) {
 			console.error(
 				Array.isArray(events) ? `Invalid events array length: ${events.length}` : "Events is not an array"
 			);

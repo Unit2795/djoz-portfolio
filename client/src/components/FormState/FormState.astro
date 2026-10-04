@@ -10,8 +10,7 @@ interface Props {
 
 const { config, theme } = Astro.props;
 
-let redirectHref = config?.redirectHref;
-const isDevelopment = import.meta.env.DEV;
+const redirectHref = config?.redirectHref ?? "/";
 const isError = theme === "error";
 
 const title = config?.title ?? (isError ? "Oops!" : "Thank You!");
@@ -20,12 +19,6 @@ const message =
 	(isError
 		? "Something went wrong when trying to submit the form. Please try again later."
 		: "Your message has been successfully submitted.");
-
-if (isDevelopment) {
-	redirectHref = "/";
-} else {
-	redirectHref = redirectHref ?? "/";
-}
 ---
 
 <!doctype html>

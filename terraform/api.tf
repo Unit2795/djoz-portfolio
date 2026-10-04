@@ -1,5 +1,4 @@
 locals {
-  disable_api     = var.disable_analytics
   api_origin_id   = "ApiGatewayOrigin"
   api_domain_name = try(trimprefix(aws_apigatewayv2_api.api[0].api_endpoint, "https://"), null)
   lambda_runtime  = "nodejs24.x"
@@ -47,37 +46,20 @@ removed {
 	======================================================================
 */
 resource "aws_apigatewayv2_api" "api" {
-  count         = local.disable_api ? 0 : 1
+  count         = var.disable_analytics ? 0 : 1
   name          = "api-${var.bucket_name}"
   protocol_type = "HTTP"
-  cors_configuration {
-    allow_origins     = ["https://${var.domain_name}", "https://www.${var.domain_name}"]
-    allow_methods     = ["POST", "GET", "OPTIONS"]
-    allow_headers     = ["content-type"]
-    allow_credentials = true
-    max_age           = 3600
-  }
 }
 
 resource "aws_apigatewayv2_stage" "stage" {
-  count       = local.disable_api ? 0 : 1
+  count       = var.disable_analytics ? 0 : 1
   api_id      = aws_apigatewayv2_api.api[0].id
   name        = "$default"
   auto_deploy = true
 
   default_route_settings {
-    throttling_burst_limit = 1
-    throttling_rate_limit  = 1
-  }
-
-  # Higher throttle limits for the analytics ingest route, when it exists
-  dynamic "route_settings" {
-    for_each = aws_apigatewayv2_route.ingest
-    content {
-      route_key              = route_settings.value.route_key
-      throttling_burst_limit = 50
-      throttling_rate_limit  = 10
-    }
+    throttling_burst_limit = 50
+    throttling_rate_limit  = 10
   }
 }
 
@@ -107,8 +89,13 @@ resource "aws_apigatewayv2_route" "ingest" {
 	INGEST (ANALYTICS) LAMBDA
 	======================================================================
 */
-locals {
-  ingest_zip = "${path.module}/../lambda/functions/analytics-ingest/index.zip"
+# Zips the bundle built by `pnpm lambda:build`
+data "archive_file" "ingest" {
+  count            = var.disable_analytics ? 0 : 1
+  type             = "zip"
+  source_file      = "${path.module}/../lambda/functions/analytics-ingest/dist/index.js"
+  output_path      = "${path.module}/../lambda/functions/analytics-ingest/dist/index.zip"
+  output_file_mode = "0644" # Same zip hash on every OS, so a local apply doesn't redeploy the Lambda
 }
 
 resource "aws_lambda_function" "ingest" {
@@ -118,8 +105,8 @@ resource "aws_lambda_function" "ingest" {
   handler          = "index.handler"
   runtime          = local.lambda_runtime
   architectures    = ["arm64"]
-  filename         = local.ingest_zip
-  source_code_hash = filebase64sha256(local.ingest_zip)
+  filename         = data.archive_file.ingest[0].output_path
+  source_code_hash = data.archive_file.ingest[0].output_base64sha256
   timeout          = 5
   memory_size      = 256
 
@@ -179,8 +166,12 @@ resource "aws_lambda_permission" "ingest_api" {
 	PROCESSOR (ANALYTICS) LAMBDA
 	======================================================================
 */
-locals {
-  processor_zip = "${path.module}/../lambda/functions/analytics-processor/index.zip"
+data "archive_file" "processor" {
+  count            = var.disable_analytics ? 0 : 1
+  type             = "zip"
+  source_file      = "${path.module}/../lambda/functions/analytics-processor/dist/index.js"
+  output_path      = "${path.module}/../lambda/functions/analytics-processor/dist/index.zip"
+  output_file_mode = "0644"
 }
 
 resource "aws_lambda_function" "processor" {
@@ -190,8 +181,8 @@ resource "aws_lambda_function" "processor" {
   handler          = "index.handler"
   runtime          = local.lambda_runtime
   architectures    = ["arm64"]
-  filename         = local.processor_zip
-  source_code_hash = filebase64sha256(local.processor_zip)
+  filename         = data.archive_file.processor[0].output_path
+  source_code_hash = data.archive_file.processor[0].output_base64sha256
   timeout          = 900
   memory_size      = 2048
 

@@ -119,7 +119,7 @@ resource "aws_cloudfront_distribution" "distro" {
   */
   # Add API Gateway as an origin so it can use the same domain as the website
   dynamic "origin" {
-    for_each = local.disable_api ? [] : [1]
+    for_each = var.disable_analytics ? [] : [1]
     content {
       domain_name = local.api_domain_name
       origin_id   = local.api_origin_id
@@ -133,7 +133,7 @@ resource "aws_cloudfront_distribution" "distro" {
   }
   # Disable caching for API requests and ensure all headers are forwarded
   dynamic "ordered_cache_behavior" {
-    for_each = local.disable_api ? [] : [1]
+    for_each = var.disable_analytics ? [] : [1]
     content {
       path_pattern             = "api/*"
       target_origin_id         = local.api_origin_id
@@ -199,7 +199,7 @@ resource "aws_cloudfront_function" "www_redirect" {
   runtime = "cloudfront-js-2.0"
   comment = "Redirect www to non-www"
   publish = true
-  code    = file("${path.module}/../lambda/functions/www-redirect/src/index.js")
+  code    = file("${path.module}/www-redirect.js")
 }
 
 

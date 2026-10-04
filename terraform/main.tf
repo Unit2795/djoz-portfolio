@@ -14,14 +14,15 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.66"
     }
+    # Zips the built Lambda bundles (see api.tf)
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.8"
+    }
   }
 }
 
 # Configure the default AWS provider
 provider "aws" {
   region = var.aws_region
-
-  skip_metadata_api_check     = true
-  skip_region_validation      = true
-  skip_credentials_validation = true
 }

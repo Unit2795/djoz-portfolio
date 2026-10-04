@@ -1,17 +1,13 @@
 {
 	"name": "djoz-portfolio",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
 	"private": true,
 	"scripts": {
-		"ci:install": "pnpm install --prefer-offline --frozen-lockfile --filter '!./analytics' --filter '!./dev-api'",
-		"lambda:build": "pnpm --filter @djoz-portfolio/lambda-build build",
+		"ci:install": "pnpm install --prefer-offline --frozen-lockfile --filter \"!./analytics\" --filter \"!./dev-api\"",
+		"lambda:build": "pnpm --filter \"./lambda/functions/*\" build",
 		"client:build": "pnpm --filter @djoz-portfolio/client build"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"license": "MIT",
 	"engines": {
 		"pnpm": ">=12"
 	}

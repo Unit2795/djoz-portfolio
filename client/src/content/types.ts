@@ -1,5 +1,4 @@
 import type { IconType } from "@/components/Icon/Icon.astro";
-import { sections } from "@/content";
 
 export interface Section {
 	// href that corresponds to the section/link
@@ -22,11 +21,7 @@ export interface Section {
 	analyticsLabel?: string;
 }
 
-export type Sections = Record<string, Section>;
-
-export type SectionArray = typeof sectionsArray;
-
-export const sectionsArray: Section[] = Object.values(sections);
+export type Sections = Record<"INTRO" | "PROJECTS" | "SKILLS" | "CONTACT", Section>;
 
 export interface NavbarContent {
 	header?: {

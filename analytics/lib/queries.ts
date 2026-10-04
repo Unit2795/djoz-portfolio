@@ -1,4 +1,7 @@
-import { TableFilter } from "@/components/sections/Table/Table";
+import type { TableFilter } from "@/components/sections/Table/Table";
+
+// Rows per page in the events table
+export const TABLE_PAGE_SIZE = 20;
 
 // Columns that will use wildcard matching instead of exact matching
 const wildcardColumns = ["ip", "userAgent", "id"];

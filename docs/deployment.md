@@ -13,7 +13,8 @@
       - [5. Infrastructure Configuration](#5-infrastructure-configuration)
       - [6. Deployment](#6-deployment)
     - [Alternative DNS Setup](#alternative-dns-setup)
-    - [Manually Rebuilding the Site \& Forcing Cache Invalidation](#manually-rebuilding-the-site--forcing-cache-invalidation)
+    - [Manually Redeploying the Site](#manually-redeploying-the-site)
+    - [Stuck State Lock](#stuck-state-lock)
   - [Destroying the Infrastructure](#destroying-the-infrastructure)
 
 ## Links
@@ -98,7 +99,7 @@ Want to use another DNS provider? See [Alternative DNS Setup](#alternative-dns-s
          "repo:<organization-or-username>/<repo-3>:ref:refs/heads/*"
       ]
       ```
-   6. For the permissions, you may start with the `AdministratorAccess` policy to get everything working, then later restrict the permissions to only what is needed.
+   6. For the permissions, you may start with the `AdministratorAccess` policy to get everything working, then later restrict the permissions to only what is needed. The workflow's state backend step uses `aws cloudformation deploy`, so a restricted role needs to create and run CloudFormation change sets.
    7. Copy your AWS account ID. It can be found in the top right of the AWS web Console when you click your name. The dropdown menu will show your “Account ID”
 
 More Info:
@@ -113,7 +114,7 @@ In your GitHub repository's settings, under the "Secrets and variables" section,
 ```bash
 AWS_ACCOUNT_ID      # Your AWS Account ID
 AWS_IAM_ROLE_NAME   # Role name from step 3
-AWS_DEFAULT_REGION  # e.g., us-east-1
+AWS_DEFAULT_REGION  # Same as region in terraform/state.config, e.g., us-east-1
 ```
 
 #### 5. Infrastructure Configuration
@@ -156,25 +157,35 @@ Configure Terraform in the [terraform/terraform.tfvars](../terraform/terraform.t
 
 2. Monitor the deployment:
    - Check GitHub Actions tab
-   - **⚠️Note!** If contact-api isn't deployed yet and `disable_contactform` isn't `true`, `terraform plan` fails because it can't read contact-api's SSM parameters.
+   - **⚠️Note!** If contact-api isn't deployed yet and `disable_contactform` isn't `true`, the `Terraform Apply` step fails because it can't read contact-api's SSM parameters.
    - Wait for CloudFront distribution (~15 mins)
 
 ### Alternative DNS Setup
 
 If not using Route 53:
 
-1. Remove Route 53 configurations from [client.tf](./terraform/client.tf) file.
+1. Remove Route 53 configurations from [client.tf](../terraform/client.tf) file.
 2. Configure DNS manually:
    - Retrieve the ACM validation records from AWS Console after deploying
    - Add CNAME records to your DNS provider
    - Add CloudFront distribution CNAME
 
-### Manually Rebuilding the Site & Forcing Cache Invalidation
+### Manually Redeploying the Site
 
-If you need to manually rebuild the site and force cache invalidation on CloudFront; you can manually trigger the `Build and Deploy` GitHub Action and indicate you'd like to force the client redeploy in the dialog that appears. This will trigger a cache invalidation on CloudFront after the deployment, note that there is a small cost associated with cache invalidation requests.
+Every run of the `Build and Deploy` GitHub Action applies Terraform, then rebuilds and uploads the site and invalidates the CloudFront cache. To redeploy without pushing a commit, trigger it manually from the Actions tab. Each run invalidates `/*`, which CloudFront counts as a single path (the first 1,000 invalidation paths each month are free).
+
+### Stuck State Lock
+
+Terraform locks its state while a deploy or destroy runs. If a run is cancelled or crashes, the lock can stay behind, and later runs fail after waiting 5 minutes with `Error acquiring the state lock`. If no workflow run or local Terraform command is running, the lock is stale. Remove it from your machine, using the lock ID from the error message:
+
+```bash
+cd terraform
+terraform init -backend-config=state.config
+terraform force-unlock <LOCK_ID>
+```
 
 ## Destroying the Infrastructure
 
-If you want to take down the website, you can run the `Manual Terraform Destroy` workflow in the GitHub Actions tab of your repository. This will remove all of the AWS resources that were created by Terraform. You may also manually run `terraform destroy` from your local machine if you have the AWS and Terraform CLIs installed and configured. Run `pnpm ci:install` and `pnpm lambda:build` first, since Terraform reads the built Lambda zip files even when destroying.
+If you want to take down the website, you can run the `Manual Terraform Destroy` workflow in the GitHub Actions tab of your repository. This will remove all of the AWS resources that were created by Terraform. You may also manually run `terraform destroy` from your local machine if you have the AWS and Terraform CLIs installed and configured. Run `pnpm ci:install` and `pnpm lambda:build` first, since Terraform zips the built Lambda files even when destroying.
 
 > 💡 **Tip:** If you have any issues with deleting AWS resources, such as an S3 bucket containing objects, you may need to forcibly empty the bucket before it can be deleted. Though the Terraform config is configured to force deletion of S3 buckets. If other resources refuse to delete, you may need to delete these manually using the AWS Console or CLI.

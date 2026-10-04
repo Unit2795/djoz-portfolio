@@ -3,7 +3,6 @@
 @theme {
 	--color-primary: #60a5fa;
 	--color-secondary: #ff9933;
-	--color-neutral: #a6a6a6;
 
 	--animate-fade: fadeIn 1s ease-in-out forwards;
 	--animate-fade-up: fadeUp 1s ease-in-out both;
@@ -15,7 +14,6 @@
 	--animate-text-reveal: textReveal 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
 	--animate-gradient-shift: gradient-shift 20s ease-in-out infinite;
 	--animate-gradient-shift-reverse: gradient-shift-reverse 25s ease-in-out infinite;
-	--animate-pulse-slow: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 	--animate-ping-slow: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
 	--animate-scale-swing-in: scale-swing-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 	--animate-spin-slow: spin-slow 8s linear infinite;
@@ -131,17 +129,6 @@
 		}
 		75% {
 			transform: translate(-5%, 5%) rotate(-1deg);
-		}
-	}
-	@keyframes pulse-slow {
-		0%,
-		100% {
-			opacity: 0.2;
-			transform: scale(1);
-		}
-		50% {
-			opacity: 0.3;
-			transform: scale(1.1);
 		}
 	}
 	@keyframes ping-slow {
@@ -429,22 +416,13 @@
 @custom-variant hover (&:hover);
 
 :root {
-	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-	line-height: 1.5;
-	font-weight: 400;
-
-	color-scheme: light dark;
-	color: rgba(255, 255, 255, 0.87);
-	background-color: #242424;
+	/* The site is dark-only; keeps native scrollbars/form controls dark regardless of OS theme */
+	color-scheme: dark;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-}
-
-body {
-	margin: 0;
 }
 
 button {
