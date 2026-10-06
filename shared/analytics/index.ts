@@ -2,10 +2,10 @@
 	We unify all analytics types in one file for easy reference and to ensure consistency across the frontend client, the lambdas, and the local analytics dashboard. It's possible the schema for analytics events may evolve over time, so having a single source of truth helps manage that complexity.
 */
 
-// The various types of analytics events that the client can produce
+// The various types of analytics events that the client can produce, in the order the dashboard shows them
 export const events = {
-	exit: "exit",
 	visit: "visit",
+	exit: "exit",
 	scroll: "scroll",
 	click: "click",
 	focus: "focus",
@@ -23,13 +23,20 @@ export interface AnalyticsEvent {
 	id?: string;
 	// Session ID
 	sessionId?: string;
+	/*
+		Milliseconds between the event and the client sending its batch.
+		The processor computes the event's timestamp as the batch's receive time minus ageMs, so the client's clock is never used and its skew doesn't matter.
+		Events without it get the receive time. It isn't stored.
+	*/
+	ageMs?: number;
 }
 
 // Metadata automatically added by the ingest Lambda API
 export interface AnalyticsContext {
 	/*
-		Unix timestamp in milliseconds, set by the ingest Lambda when the batch is received.
-		Every event in a batch shares it. The client never sends timestamps, which avoids clock skew and manipulation.
+		Unix timestamp in milliseconds.
+		In an AnalyticsChunk, it's set by the ingest Lambda when the batch is received.
+		In a stored event, it's when the event happened: the batch's timestamp minus the event's ageMs.
 	*/
 	timestamp: number;
 	// Schema version to allow backward/forward compatibility
@@ -40,8 +47,8 @@ export interface AnalyticsContext {
 	ip: string | null;
 }
 
-// Fully enriched analytics event, including actual event and system metadata
-export type AnalyticsEventEnriched = AnalyticsEvent & AnalyticsContext;
+// Fully enriched analytics event as stored, including actual event and system metadata
+export type AnalyticsEventEnriched = Omit<AnalyticsEvent, "ageMs"> & AnalyticsContext;
 
 // A batch of analytics events that is received by the ingest Lambda and placed into SQS
 export interface AnalyticsChunk extends AnalyticsContext {
@@ -72,6 +79,12 @@ export type APIGraphData = {
 	axis: TimeSteps;
 	data: ChartData;
 };
+
+/*
+	S3 folder the processor writes event files to and the dashboard reads them from, as <EVENTS_S3_PREFIX>/YYYY-MM-DD/part-<uuid>.ndjson.gz.
+	Both sides must use this constant, or the dashboard won't find the processor's files.
+*/
+export const EVENTS_S3_PREFIX = "events";
 
 export const FLUSH_INTERVAL_MS = 5000; // 5 seconds
 // Max events per request. The client flushes when its queue reaches this size, and the ingest Lambda rejects larger batches

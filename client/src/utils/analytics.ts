@@ -1,31 +1,36 @@
 import { type AnalyticsEvent, BATCH_SIZE, type EventName, events, FLUSH_INTERVAL_MS } from "@djoz-portfolio/shared";
 
-const analyticsEndpoint = "/api/ingest";
+// Same-origin by default. Set PUBLIC_API_INGEST_ENDPOINT at build time to send events elsewhere (see docs/analytics.md)
+const analyticsEndpoint = import.meta.env.PUBLIC_API_INGEST_ENDPOINT || "/api/ingest";
 
-const eventQueue: AnalyticsEvent[] = [];
+// Queued events, each with the performance.now() time it happened. Unlike Date.now(), it isn't affected by changes to the device's clock
+const eventQueue: { event: AnalyticsEvent; createdAt: number }[] = [];
 
 /*
 	Retrieve or generate a session ID, kept in sessionStorage so it survives reloads in the same tab
 */
 let _cachedSessionId: string | null = null;
+// crypto.randomUUID only exists on HTTPS and localhost, not plain HTTP on a LAN address (e.g. `astro dev --host`)
+const newSessionId = () =>
+	crypto.randomUUID?.() ?? `${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 const getSessionId = () => {
 	if (_cachedSessionId) return _cachedSessionId;
 	try {
 		_cachedSessionId = sessionStorage.getItem("sessionID");
 		if (!_cachedSessionId) {
-			_cachedSessionId = crypto.randomUUID();
+			_cachedSessionId = newSessionId();
 			sessionStorage.setItem("sessionID", _cachedSessionId);
 		}
 	} catch {
 		// sessionStorage is unavailable (e.g. blocked by privacy settings), keep the ID in memory for this page load
-		_cachedSessionId ??= crypto.randomUUID();
+		_cachedSessionId ??= newSessionId();
 	}
 	return _cachedSessionId;
 };
 
 // Add an analytics event to the queue and flush if batch size reached
 export const analyticsEvent = (eventName: EventName, id?: string) => {
-	eventQueue.push(createEvent(eventName, id));
+	eventQueue.push({ event: createEvent(eventName, id), createdAt: performance.now() });
 
 	if (eventQueue.length >= BATCH_SIZE) {
 		flush();
@@ -98,13 +103,26 @@ const createEvent = (eventType: EventName, id?: string): AnalyticsEvent => ({
 /*
 	Empty the queue and send its events to the server.
 	sendBeacon is used for every send because the browser still delivers it after the page is hidden or closed.
+	If the browser refuses the beacon (e.g. its size quota is used up), fetch sends the batch instead so it isn't lost.
 */
 const flush = () => {
 	if (!eventQueue.length) return;
 
-	const payload = JSON.stringify({ events: eventQueue.splice(0, eventQueue.length) });
+	// Each event is sent with its age, the server subtracts it from the time it receives the batch to get the event's time
+	const now = performance.now();
+	const batch = eventQueue
+		.splice(0, eventQueue.length)
+		.map(({ event, createdAt }): AnalyticsEvent => ({ ...event, ageMs: Math.round(now - createdAt) }));
+	const payload = JSON.stringify({ events: batch });
 	// Give the server a JSON Content-Type even though we can't set headers
-	navigator.sendBeacon(analyticsEndpoint, new Blob([payload], { type: "application/json; charset=UTF-8" }));
+	const blob = new Blob([payload], { type: "application/json; charset=UTF-8" });
+	if (!navigator.sendBeacon(analyticsEndpoint, blob)) {
+		fetch(analyticsEndpoint, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: payload,
+		}).catch(() => {});
+	}
 };
 
 export const initAnalytics = () => {

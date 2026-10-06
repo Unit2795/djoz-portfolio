@@ -12,16 +12,13 @@ interface Props {
 	class?: string[];
 }
 
-// Values the <script> reads as this.props
-export type ElementProps = {
-	animationInterval?: number;
-	classes?: string[];
-};
+// Values the script reads as this.props
+export type ElementProps = Props;
 
 const { animationInterval, class: classes } = Astro.props;
 ---
 
-<animated-grid {...elementProps<ElementProps>({ animationInterval, classes })}>
+<animated-grid {...elementProps<ElementProps>({ animationInterval, class: classes })}>
 	<slot />
 </animated-grid>
 <script>
@@ -31,7 +28,7 @@ const { animationInterval, class: classes } = Astro.props;
 	class AnimatedGrid extends PropsElement<ElementProps> {
 		items = Array.from(this.querySelectorAll(".animated-grid-item"));
 		animationInterval = this.props.animationInterval ?? 0;
-		classes = this.props.classes;
+		classes = this.props.class;
 		// Track when the next animation slot is available
 		nextAvailableAnimationTime = performance.now();
 

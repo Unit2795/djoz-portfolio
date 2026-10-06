@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "@/components/sections/Header/Header";
 import Stats from "@/components/sections/Stats/Stats";
 import Graph from "@/components/sections/Graph/Graph";
@@ -91,15 +91,24 @@ export default function Page() {
 		};
 	}, [from, to, filters, page, sort, syncCount]);
 
-	const sync = async () => {
+	// A rebuild empties the local table and imports every event file in S3 again
+	const sync = async (rebuild: boolean) => {
 		setSyncing(true);
 		await track(async () => {
-			const { files, rows } = await postJson<{ files: number; rows: number }>("/api/sync");
+			const { files, rows } = await postJson<{ files: number; rows: number }>("/api/sync", { rebuild });
 			setSyncResult(files ? `Imported ${files} files (${rows.toLocaleString()} rows)` : "Already up to date");
 			setSyncCount((n) => n + 1);
 		});
 		setSyncing(false);
 	};
+
+	// Sync once when the dashboard opens. The ref stops React's development double run of effects from syncing twice
+	const syncedOnLoad = useRef(false);
+	useEffect(() => {
+		if (syncedOnLoad.current) return;
+		syncedOnLoad.current = true;
+		sync(false);
+	}, []);
 
 	// A new range or filter starts back at the first page
 	const changeFrom = (date: Date | undefined) => {
@@ -125,7 +134,8 @@ export default function Page() {
 					to={to}
 					onFromChange={changeFrom}
 					onToChange={changeTo}
-					onSync={sync}
+					onSync={() => sync(false)}
+					onRebuild={() => sync(true)}
 					syncing={syncing}
 					syncResult={syncResult}
 				/>

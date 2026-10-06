@@ -172,7 +172,7 @@ If not using Route 53:
 
 ### Manually Redeploying the Site
 
-Every run of the `Build and Deploy` GitHub Action applies Terraform, then rebuilds and uploads the site and invalidates the CloudFront cache. To redeploy without pushing a commit, trigger it manually from the Actions tab. Each run invalidates `/*`, which CloudFront counts as a single path (the first 1,000 invalidation paths each month are free).
+Every run of the `Build and Deploy` GitHub Action applies Terraform, then rebuilds and uploads the site and invalidates the CloudFront cache. It runs on every push to `main`, except pushes that only change files in `docs/` or Markdown (`.md`) files. To redeploy without pushing a commit, or after a docs-only push, trigger it manually from the Actions tab (`Run workflow`). Each run invalidates `/*`, which CloudFront counts as a single path (the first 1,000 invalidation paths each month are free).
 
 ### Stuck State Lock
 

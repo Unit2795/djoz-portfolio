@@ -53,7 +53,7 @@ You'll need the following in order to build the site:
 
    ```bash
    # Edit the main content file
-   vim client/src/content/index.ts  # or use your preferred editor
+   vim src/content/index.ts  # from the client directory, or use your preferred editor
    ```
 
    Also set `site` in [astro.config.mjs](../client/astro.config.mjs) to your production URL. It's used for the canonical and Open Graph URLs, and to generate `robots.txt` and `sitemap.xml`.

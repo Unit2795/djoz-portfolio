@@ -55,10 +55,38 @@ This document provides additional context about the architecture, implementation
 6. `robots.txt`, `sitemap.xml` and `site.webmanifest` are generated at build time by small endpoints in [pages/](../client/src/pages/), from `site` in [astro.config.mjs](../client/astro.config.mjs) and the content in [content/index.ts](../client/src/content/index.ts). `site` also sets the canonical and Open Graph URLs, so set it to your domain.
 7. A post-build script inlines any JS that Astro left as external files, so index.html stays self-contained, and strips console calls. You can find it at: [postbuild.js](../client/scripts/postbuild.js).
 8. If analytics are enabled; page views, interactions, and scroll depth will be tracked. You can selectively enable or disable analytics for some elements.
-9. Interactive components are plain custom elements. Frontmatter values reach their `<script>` through `elementProps`, which serializes them into a `data-props` attribute, and `PropsElement`, which reads them back as typed `this.props`. Both sides share one `ElementProps` type, so a misspelled, missing or mistyped value fails `pnpm typecheck` (which `pnpm build` runs first). [SnowParticles](../client/src/components/SnowParticles/SnowParticles.astro) shows the pattern. [More info about passing frontmatter to scripts in Astro docs](https://docs.astro.build/en/guides/client-side-scripts/#pass-frontmatter-variables-to-scripts)
+9. Interactive components are plain custom elements. Frontmatter values reach their `<script>` through `elementProps`, which serializes them into a `data-props` attribute, and `PropsElement`, which reads them back as typed `this.props`. Both sides share one `ElementProps` type, so a misspelled, missing or mistyped value, or one that JSON can't carry (a Date, Map, Set, function or class instance), fails `pnpm typecheck` (which `pnpm build` runs first). In `pnpm dev`, an element that never got defined (a missing `customElements.define()` or a mistyped tag name) is reported in the console. A component with props looks like this; one without props extends `HTMLElement` instead. [More info about passing frontmatter to scripts in Astro docs](https://docs.astro.build/en/guides/client-side-scripts/#pass-frontmatter-variables-to-scripts)
+
+   ```astro
+   ---
+   import { elementProps } from "@/utils/elementProps";
+
+   interface Props {
+   	interval: number;
+   }
+   // Props, Pick<Props, ...>, or a type of its own for values that don't come from Props
+   export type ElementProps = Props;
+   ---
+
+   <my-element {...elementProps<ElementProps>({ interval: Astro.props.interval })}></my-element>
+
+   <script>
+   	import type { ElementProps } from "@/components/MyElement/MyElement.astro";
+   	import { PropsElement } from "@/utils/PropsElement";
+
+   	class MyElement extends PropsElement<ElementProps> {
+   		connectedCallback() {
+   			setInterval(() => this.toggleAttribute("data-on"), this.props.interval);
+   		}
+   	}
+
+   	customElements.define("my-element", MyElement);
+   </script>
+   ```
+
 10. The colors for project cards and tech pills are generated deterministically based on their text content using a hash function. This ensures consistent colors across builds and avoids unnecessary cache-busting. An example of this can be seen in the [Pills](../client/src/components/Pills/Pills.astro) component.
 11. If a visitor has JavaScript disabled, the contact form redirects to a generic success or error page after submission. With JS enabled, it either redirects to a success page or shows inline errors without reloading.
-12. With JS enabled, the contact form activates the submit button only when all fields are valid. It disables the button during submission to prevent duplicates and uses a short delay to reduce spam attempts.
+12. With JS enabled, the contact form's submit button turns on 5 seconds after the visitor starts typing, which slows down spam bots. Submitting with invalid fields points out the invalid fields instead of sending. The button is disabled during submission to prevent duplicates.
 13. The home page requests `/api/stamp.gif` (unless the contact section is disabled), which sets a signed cookie. contact-api rejects a submission without this cookie, or one sent too soon after the cookie was set. This helps prevent spam submissions even when JS is disabled.
 14. The contact form utilizes honeypot fields to help prevent spam submissions. These fields are hidden from human users but visible to bots. If one is filled out, contact-api returns a normal success but sends no email.
 15. In development, the `pnpm dev` command will also start a mock REST API for testing the contact form and analytics features. This can be found here: [dev-api/index.js](../dev-api/index.js). To start Astro without the mock API, use `pnpm dev:client` instead.
@@ -88,8 +116,8 @@ This document provides additional context about the architecture, implementation
 
 #### Analytics Ingest & Processor
 
-1. The [analytics-ingest.js](../lambda/functions/analytics-ingest/src/index.ts) function is responsible for receiving analytics events from the website, applying some basic validation, and storing them in an SQS queue for later processing.
-2. The [analytics-processor.js](../lambda/functions/analytics-processor/src/index.ts) function runs once a day, shortly after midnight UTC. It processes the analytics events in the SQS queue and stores them as NDJSON files in an S3 bucket for later analysis, in a folder for the UTC date each event happened.
+1. The [analytics-ingest](../lambda/functions/analytics-ingest/src/index.ts) function is responsible for receiving analytics events from the website, applying some basic validation, and storing them in an SQS queue for later processing.
+2. The [analytics-processor](../lambda/functions/analytics-processor/src/index.ts) function runs once a day, shortly after midnight UTC. It processes the analytics events in the SQS queue and stores them as NDJSON files in an S3 bucket for later analysis, in a folder for the UTC date each event happened.
 3. This setup of using SQS as a buffer between the ingest and processor allows us to efficiently aggregate events while also being able to handle bursts of traffic.
 4. The analytics system is designed to be cost-effective and scalable. SQS and S3 storage is very cheap, and the ingest/processor functions can write large numbers of events.
 

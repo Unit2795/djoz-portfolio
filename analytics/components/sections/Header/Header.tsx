@@ -8,6 +8,7 @@ const Header = ({
 	onFromChange,
 	onToChange,
 	onSync,
+	onRebuild,
 	syncing,
 	syncResult,
 }: {
@@ -16,6 +17,7 @@ const Header = ({
 	onFromChange: (date: Date | undefined) => void;
 	onToChange: (date: Date | undefined) => void;
 	onSync: () => void;
+	onRebuild: () => void;
 	syncing: boolean;
 	syncResult: string | null;
 }) => {
@@ -28,12 +30,22 @@ const Header = ({
 				{syncResult && <span className="mb-2 text-sm text-muted-foreground">{syncResult}</span>}
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button variant="outline" className="mr-4" onClick={onSync} disabled={syncing}>
+						<Button variant="outline" onClick={onSync} disabled={syncing}>
 							{syncing ? "Syncing..." : "Sync"}
 						</Button>
 					</TooltipTrigger>
 					<TooltipContent>
 						<p>Imports new event files from S3 into the local database.</p>
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button variant="outline" className="mr-4" onClick={onRebuild} disabled={syncing}>
+							Rebuild
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p>Clears the local database and re-downloads all event files from S3.</p>
 					</TooltipContent>
 				</Tooltip>
 

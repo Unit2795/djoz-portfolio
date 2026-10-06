@@ -36,6 +36,8 @@ export const initScrollSpy = (navbar: HTMLElement, topOffset: number = 0) => {
 
 	// Measure on load, and re-measure if layout changes after load (images/fonts/accordions/resizing)
 	new ResizeObserver(() => {
+		// Sorted by position on the page, which may differ from the order of the nav links
+		sections.sort((a, b) => a.offsetTop - b.offsetTop);
 		sectionTops = sections.map((section) => section.offsetTop - topOffset);
 		update();
 	}).observe(document.documentElement);

@@ -1,9 +1,11 @@
 name: Manual Terraform Destroy
 
 # Shared with the deploy workflow so only one Terraform run touches the state at a time. In-progress runs are NOT interrupted
+# Runs started meanwhile wait and run in the order they were started (up to 100 waiting), instead of the newest replacing the waiting one
 concurrency:
   group: terraform
   cancel-in-progress: false
+  queue: max
 
 on:
   workflow_dispatch:

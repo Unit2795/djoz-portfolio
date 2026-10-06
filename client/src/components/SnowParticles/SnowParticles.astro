@@ -6,10 +6,8 @@ interface Props {
 	config: SnowEffectConfig;
 }
 
-// Values the <script> reads as this.props
-export type ElementProps = {
-	config: SnowEffectConfig;
-};
+// Values the script reads as this.props
+export type ElementProps = Props;
 
 const { config } = Astro.props;
 ---
@@ -30,7 +28,6 @@ const { config } = Astro.props;
 		canvas = this.querySelector<HTMLCanvasElement>("canvas");
 
 		connectedCallback() {
-			// Initialize navbar features when DOM is ready
 			// Respect user preference for reduced motion, disabling animation if needed
 			if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
 				console.log("Reduced motion preference detected, will not render snow effect particles");

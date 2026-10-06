@@ -1,13 +1,16 @@
 name: Build and Deploy
 
 # Shared with the destroy workflow so only one Terraform run touches the state at a time. In-progress runs are NOT interrupted, to prevent half-deployed infrastructure and corrupted Terraform state
+# Runs started meanwhile wait and run in the order they were started (up to 100 waiting), instead of the newest replacing the waiting one
 concurrency:
   group: terraform
   cancel-in-progress: false
+  queue: max
 
 on:
   push:
     branches: ["main"] # Trigger on push to main branch
+    paths-ignore: ["docs/**", "**.md"] # Docs-only pushes don't deploy, run the workflow manually to redeploy
   workflow_dispatch: # Allow manual triggering (for disabling in the template repo)
 
 permissions:

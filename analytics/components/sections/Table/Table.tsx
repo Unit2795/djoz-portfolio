@@ -328,7 +328,10 @@ const Filter = ({
 								className="border border-white/10 rounded-md p-1 text-muted-foreground hover:bg-red-950/50 hover:text-red-400 focus:ring-2 focus:ring-red-400"
 								variant="ghost"
 								size="icon"
-								onClick={() => onChange((prev) => prev.filter((_, i) => i !== index))}
+								// Removing the last filter works like "Clear all", so applied filters are removed right away
+								onClick={() =>
+									items.length === 1 ? onClear() : onChange((prev) => prev.filter((_, i) => i !== index))
+								}
 								aria-label="Remove filter"
 							>
 								<X className="h-4 w-4" />

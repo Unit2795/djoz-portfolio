@@ -9,7 +9,7 @@ import {
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 import type { ScheduledHandler } from "aws-lambda";
-import { AnalyticsChunk, AnalyticsEvent, AnalyticsEventEnriched } from "@djoz-portfolio/shared";
+import { AnalyticsChunk, AnalyticsEvent, AnalyticsEventEnriched, EVENTS_S3_PREFIX } from "@djoz-portfolio/shared";
 
 const SOFT_STOP_MS = 15000; // stop consuming when <15s left
 const VIS_BUFFER_SEC = 60; // keep received messages hidden this long past the end of the invocation
@@ -78,6 +78,16 @@ function isValidEvent(item: AnalyticsEvent) {
 	return true;
 }
 
+/*
+	When the event happened: the batch's receive time minus the event's age (ms between the event and the client sending its batch).
+	A missing or invalid age counts as 0, so the event gets the receive time instead of being dropped.
+	So does an age that would put the event before 1970, since a huge age makes an invalid date that fails the whole run.
+*/
+function getEventTimestamp({ ageMs }: AnalyticsEvent, receivedAt: number) {
+	const validAge = typeof ageMs === "number" && Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= receivedAt;
+	return receivedAt - (validAge ? ageMs : 0);
+}
+
 export const handler: ScheduledHandler = async (_event, context) => {
 	const events = [] as AnalyticsEventEnriched[];
 	const receipts = [];
@@ -125,8 +135,9 @@ export const handler: ScheduledHandler = async (_event, context) => {
 					}
 
 					/*
-						Enrich each event with batch-level info (like IP, timestamp, userAgent).
-						Only known fields are kept, anything else a client sends is dropped.
+						Enrich each event with batch-level info (like IP, userAgent).
+						Its timestamp is the batch's receive time minus the event's age.
+						Only known fields are kept, anything else a client sends (including ageMs) is dropped.
 					*/
 					const { eventType, id, sessionId } = item;
 					events.push({
@@ -134,6 +145,7 @@ export const handler: ScheduledHandler = async (_event, context) => {
 						id,
 						sessionId,
 						...metadata,
+						timestamp: getEventTimestamp(item, metadata.timestamp),
 					});
 				}
 			} catch {
@@ -146,7 +158,7 @@ export const handler: ScheduledHandler = async (_event, context) => {
 		return;
 	}
 
-	// Group events by the UTC date they were received, so each lands in its own day's folder
+	// Group events by the UTC date they happened, so each lands in its own day's folder
 	const eventsByDate = new Map<string, AnalyticsEventEnriched[]>();
 	for (const e of events) {
 		const dt = new Date(e.timestamp).toISOString().slice(0, 10); // YYYY-MM-DD format
@@ -160,7 +172,7 @@ export const handler: ScheduledHandler = async (_event, context) => {
 	for (const [dt, dateEvents] of eventsByDate) {
 		const ndjson = dateEvents.map((e) => JSON.stringify(e)).join("\n");
 		const gz = gzipSync(Buffer.from(ndjson, "utf8"));
-		const key = `events/${dt}/part-${randomUUID()}.ndjson.gz`;
+		const key = `${EVENTS_S3_PREFIX}/${dt}/part-${randomUUID()}.ndjson.gz`;
 
 		await s3.send(
 			new PutObjectCommand({

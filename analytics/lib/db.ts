@@ -2,10 +2,6 @@ import { mkdir } from "node:fs/promises";
 import { type DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
 import { dbDirectory, dbPath } from "./envvars";
 
-/*
-	Databases from before the file-based sync have a logs_v1 table without a filename column, which is left unused.
-	Deleting .data removes it.
-*/
 export const TABLE_NAME = "events_v1";
 
 /*
@@ -39,6 +35,10 @@ const TABLE_SCHEMA = `
 		filename TEXT NOT NULL
 	)
 `;
+
+// Replaces the table with an empty one, for a rebuild that imports every event file again
+export const recreateTable = (connection: DuckDBConnection) =>
+	connection.run(`DROP TABLE IF EXISTS ${TABLE_NAME}; ${TABLE_SCHEMA}`);
 
 /*
 	fromCache returns the same instance for the same path, which prevents file lock errors on hot reload.

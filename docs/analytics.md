@@ -23,6 +23,10 @@ This site provides a simple analytics setup to track page visits and user intera
 
 The client side code is located in [`client/src/utils/analytics.ts`](../client/src/utils/analytics.ts). It provides some simple utility functions that can be used to send analytics events to the backend.
 
+Each event is sent with its age, the milliseconds between the event and when its batch is sent. The processor sets the event's timestamp to the time the ingest Lambda received the batch minus that age, so events keep their own time without relying on the visitor's clock.
+
+By default, events are sent to `/api/ingest` on the site's own domain, which CloudFront forwards to the ingest Lambda (`pnpm dev` proxies it to the mock API server). To send them elsewhere, set `PUBLIC_API_INGEST_ENDPOINT` when building the client: in `client/.env` for local builds, or as an `env` value on the `Build Client` step of the deploy workflow. An endpoint on another origin must allow CORS requests from your site. The API Gateway API in this repo is only set up for requests from the same domain, so a different endpoint must handle CORS itself. Events are sent by `navigator.sendBeacon` (or `fetch` if the browser refuses the beacon) as a `POST` with `Content-Type: application/json`. The beacon includes credentials, so allow your site's origin (not `*`), the `POST` method and the `Content-Type` header, and allow credentials.
+
 ### Serverless Backend (Lambda Functions)
 
 The serverless backend is implemented using AWS Lambda functions. There are two key functions:
@@ -71,14 +75,15 @@ To use the local analytics dashboard, follow these steps:
    }
    ```
 5. Create an access key for the IAM user and add the access key ID and secret access key to the `.env` file.
+   - Or skip the access key and use credentials the AWS CLI can use, such as a profile or SSO login with the permissions above: set `AWS_PROFILE=<profile>` in `.env` (for SSO, run `aws sso login --profile <profile>` first) and delete the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` lines, since keys in `.env` take priority. Without `AWS_PROFILE`, your `default` profile is used.
 6. Run `pnpm install` to install dependencies in the `analytics` directory.
 7. Run `pnpm build` to build the dashboard.
 8. Run `pnpm start` to start the dashboard.
 9. Open your browser and navigate to `http://localhost:3000` to view the dashboard.
-10. Click `Sync` to import new event files from S3 into DuckDB, then select a date range for the analytics data you want to view.
+10. The dashboard syncs when you open it, importing new event files from S3 into DuckDB. Select a date range for the analytics data you want to view.
     1. The first sync may take a while. Later syncs only download files that haven't been imported yet.
-    2. The data is saved into the DB and persists across restarts of the dashboard. Page loads only read the local DB, so click `Sync` again whenever you want newer data.
-    3. If your data in DuckDB is corrupted or stale for some reason, stop the dashboard, delete `analytics/.data`, start it again and click `Sync`.
+    2. The data is saved into the DB and persists across restarts of the dashboard. Click `Sync` (or reload the page) to import newer files.
+    3. If your data in DuckDB is wrong or stale for some reason, click `Rebuild`. It clears the local table and re-downloads all event files from S3. If the database file itself is corrupted and the dashboard can't open it, stop the dashboard, delete `analytics/.data` and start it again. Opening it imports everything.
 11. You can apply filters and sorting to the table to find specific events or patterns. The filters and sorting can be combined. The filters can be inclusive/exclusive and can match against partial strings.
 12. ℹ️Note: You can use `pnpm dev` to run the dashboard in development mode with hot reloading if you want to make changes to the dashboard code.
 13. ⚠️Note: The dashboard is an experimental testbed and simple proof of concept. It is not intended to be a production ready analytics solution. It is intended to be run locally for personal use only. If you want a more robust analytics solution, consider using a third party service like Google Analytics, Plausible, or Fathom.
