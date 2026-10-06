@@ -26,3 +26,17 @@ import DwellBeacon from "@/components/DwellBeacon/DwellBeacon.astro";
 <Footer />
 <AvailabilityBadge />
 <Hero />
+
+<script>
+	// Dev only: a custom element whose tag isn't defined stays inert without any error, so report it
+	if (import.meta.env.DEV) {
+		document.addEventListener("DOMContentLoaded", () => {
+			const tags = new Set(Array.from(document.querySelectorAll(":not(:defined)"), (el) => el.localName));
+			if (tags.size > 0) {
+				console.error(
+					`<${[...tags].join(">, <")}> never got defined. Check its customElements.define() call and tag name.`,
+				);
+			}
+		});
+	}
+</script>

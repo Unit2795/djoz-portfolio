@@ -6,22 +6,19 @@ import Icon from "@/components/Icon/Icon.astro";
 import RotatingText from "@/components/RotatingText/RotatingText.astro";
 import Section from "@/components/Section/Section.astro";
 import { intro, sections } from "@/content";
-import { getAnalyticsAttribute } from "@/utils/analytics";
+import { getAnalyticsAttribute } from "@/utils/analyticsAttribute";
 import { ChevronDown } from "@lucide/astro";
 
-const { aboutMe, contactButton, projectButton, links, heading, subHeading } = intro;
+const { aboutMe, links, heading, subHeading } = intro;
+// Hide the buttons that link to disabled sections
+const projectButton = !sections.PROJECTS.disabled && intro.projectButton;
+const contactButton = !sections.CONTACT.disabled && intro.contactButton;
 
 const headerId = heading ? "intro-tagline-header" : undefined;
 const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 ---
 
-<Section
-	section={sections.INTRO}
-	sectionClass="min-h-lvh flex items-center"
-	hideHeader
-	solidBackground={sections.INTRO.solidBackground}
-	analyticsId="Intro"
->
+<Section section={sections.INTRO} sectionClass="min-h-lvh flex items-center" hideHeader analyticsId="Intro">
 	<div class:list={["my-6 grid items-center gap-10", aboutMe && "lg:grid-cols-2"]}>
 		<section
 			class:list={["py-16 text-center lg:py-0", aboutMe && "lg:text-left"]}
@@ -29,7 +26,7 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 			aria-describedby={descriptionId}
 		>
 			{heading && <RotatingText class="text-4xl font-bold sm:text-5xl" id={headerId}>
-				<span slot="top" class="tracking-tight" set:html={heading.top.text} />
+				<span slot="top" class:list={[heading.top.color, "tracking-tight"]} set:html={heading.top.text} />
 				<span
 					slot="bottom"
 					class:list={[heading.bottom.color, "tracking-tight"]}
@@ -110,7 +107,6 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 			>
 				{projectButton && <GlassButton
 					class="motion-safe:animate-fade-up group flex rounded-xl border border-white/20 bg-blue-600 py-3 pr-3 pl-5 text-sm font-semibold shadow-xl transition-all duration-300 hover:bg-blue-700 hover:shadow-blue-500/25 motion-safe:hover:scale-105"
-					type="button"
 					aria-label={projectButton.ariaLabel}
 					as="a"
 					href={`#${sections.PROJECTS.id}`}
@@ -128,7 +124,6 @@ const descriptionId = subHeading ? "intro-tagline-description" : undefined;
 				{contactButton && <GlassButton
 					as="a"
 					class="motion-safe:animate-fade-up rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10 motion-safe:hover:scale-105"
-					type="button"
 					aria-label={contactButton.ariaLabel}
 					href={`#${sections.CONTACT.id}`}
 					style={{

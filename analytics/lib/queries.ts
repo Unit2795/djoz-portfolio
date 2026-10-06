@@ -1,4 +1,7 @@
-import { TableFilter } from "@/components/sections/Table/Table";
+import type { TableFilter } from "@/components/sections/Table/Table";
+
+// Rows per page in the events table
+export const TABLE_PAGE_SIZE = 20;
 
 // Columns that will use wildcard matching instead of exact matching
 const wildcardColumns = ["ip", "userAgent", "id"];
@@ -14,9 +17,9 @@ const wildcardColumns = ["ip", "userAgent", "id"];
 
 	Returns a string like "AND eventType = 'scroll' AND (eventType != 'visit' AND eventType != 'exit') AND ip LIKE '%127.0.0.1%' AND (ip NOT LIKE '%192.18.0.1%' AND ip NOT LIKE '%192.18.0.2%') AND (id LIKE '%Intro%' OR id LIKE '%NavLink%')"
 
-	- If you have multiple inclusions for the same column, you don’t want all of them to be true at once (that’s impossible: e.g., event = 'scroll' AND event = 'visit'). Instead, you want any one of them to match. That means you combine them with OR, like: (event = 'scroll' OR event = 'visit')
-	- If you have multiple exclusions for the same column, you want to block all of them. That means you combine them with AND like: (event != 'scroll' AND event != 'visit')
-	- You could mix inclusions and exclusions on the same column. In which case you join both with "AND", because both rules need to hold true. Like: (user_agent LIKE '%Mozilla%' OR user_agent LIKE '%Chrome%') AND (user_agent NOT LIKE '%Windows%' AND user_agent NOT LIKE '%Edge%')
+	- If you have multiple inclusions for the same column, you don’t want all of them to be true at once (that’s impossible: e.g., eventType = 'scroll' AND eventType = 'visit'). Instead, you want any one of them to match. That means you combine them with OR, like: (eventType = 'scroll' OR eventType = 'visit')
+	- If you have multiple exclusions for the same column, you want to block all of them. That means you combine them with AND like: (eventType != 'scroll' AND eventType != 'visit')
+	- You could mix inclusions and exclusions on the same column. In which case you join both with "AND", because both rules need to hold true. Like: (userAgent LIKE '%Mozilla%' OR userAgent LIKE '%Chrome%') AND (userAgent NOT LIKE '%Windows%' AND userAgent NOT LIKE '%Edge%')
 		- This means: the user agent must include either "Mozilla" or "Chrome" AND at the same time, must not include "Windows" or "Edge."
 	- Parentheses tell SQL how to group the logic together. Without them, SQL may misapply the AND/OR order.
 
@@ -96,7 +99,7 @@ function buildConditions(column: string, values: string[], isExclusion: boolean)
 		}
 
 		// Otherwise, use exact equality or inequality
-		// Example: event = 'scroll' or event != 'exit'
+		// Example: eventType = 'scroll' or eventType != 'exit'
 		return isExclusion ? `${column} != '${safeValue}'` : `${column} = '${safeValue}'`;
 	});
 }

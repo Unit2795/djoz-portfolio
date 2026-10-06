@@ -6,7 +6,7 @@ type ButtonProps = HTMLAttributes<"button"> & {
 	as?: "button";
 };
 
-type AnchorProps = HTMLAttributes<"a"> & {
+type AnchorProps = Omit<HTMLAttributes<"a">, "type"> & {
 	as: "a";
 	href: string;
 };

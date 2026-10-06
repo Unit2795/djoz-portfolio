@@ -347,7 +347,6 @@ export const contactForm: ContactFormContent = {
 			redirectText: "Return to Home",
 			/* 
 				Optional redirect link, if value is undefined, will automatically detect and redirect to root of current domain "/"
-				In development, this will always be "/" (and redirects to localhost)
 			*/
 			redirectHref: "/",
 			autoRedirectSeconds: 10,

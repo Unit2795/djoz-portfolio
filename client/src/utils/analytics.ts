@@ -1,117 +1,52 @@
-import { disableAnalytics } from "@/content";
-import { type AnalyticsEvent, type EventName, events, FLUSH_INTERVAL_MS } from "@djoz-portfolio/shared";
+import { type AnalyticsEvent, BATCH_SIZE, type EventName, events, FLUSH_INTERVAL_MS } from "@djoz-portfolio/shared";
 
-const analyticsEndpoint = (import.meta.env.PUBLIC_API_INGEST_ENDPOINT as string) ?? "/api/ingest";
-// If this batch size is changed, be sure to adjust the ingest lambda accordingly!
-const BATCH_SIZE = 10;
+// Same-origin by default. Set PUBLIC_API_INGEST_ENDPOINT at build time to send events elsewhere (see docs/analytics.md)
+const analyticsEndpoint = import.meta.env.PUBLIC_API_INGEST_ENDPOINT || "/api/ingest";
 
-const eventQueue: AnalyticsEvent[] = [];
-let timer: NodeJS.Timeout | null = null;
-let batchStartTime: number | null = null;
+// Queued events, each with the performance.now() time it happened. Unlike Date.now(), it isn't affected by changes to the device's clock
+const eventQueue: { event: AnalyticsEvent; createdAt: number }[] = [];
 
-// Get current time with high resolution if available
-const getNow = () => {
-	if (typeof performance !== "undefined" && performance.now) {
-		return performance.now();
-	}
-	return Date.now();
-};
-
-const getOffsetMs = () => {
-	if (!batchStartTime) batchStartTime = getNow();
-	const offset = getNow() - batchStartTime;
-
-	return offset;
-};
-
-/* 
-	Generate a unique ID, preferring crypto.randomUUID if available.
-	Fallback to a combination of timestamp and random number if not.
-*/
-const genUUID = () => {
-	if (typeof crypto === "undefined" || typeof crypto.randomUUID !== "function")
-		return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-	if (crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
-
-	return "uuidfailed";
-};
-/* 
-	Check if localStorage is functional
-*/
-const localStorageFunctional = () => {
-	try {
-		const value = "test";
-		const key = "__analytics_storage_test__";
-		localStorage.setItem(key, value);
-		const readout = localStorage.getItem(key);
-		localStorage.removeItem(key);
-		return value === readout;
-	} catch {
-		return false;
-	}
-};
-/* 
-	Retrieve or generate a persistent session ID
+/*
+	Retrieve or generate a session ID, kept in sessionStorage so it survives reloads in the same tab
 */
 let _cachedSessionId: string | null = null;
+// crypto.randomUUID only exists on HTTPS and localhost, not plain HTTP on a LAN address (e.g. `astro dev --host`)
+const newSessionId = () =>
+	crypto.randomUUID?.() ?? `${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 const getSessionId = () => {
 	if (_cachedSessionId) return _cachedSessionId;
-	if (localStorageFunctional()) {
-		let sessionId = sessionStorage.getItem("sessionID");
-		if (!sessionId) {
-			sessionId = genUUID();
-			sessionStorage.setItem("sessionID", sessionId);
+	try {
+		_cachedSessionId = sessionStorage.getItem("sessionID");
+		if (!_cachedSessionId) {
+			_cachedSessionId = newSessionId();
+			sessionStorage.setItem("sessionID", _cachedSessionId);
 		}
-		_cachedSessionId = sessionId;
-		return sessionId;
-	} else {
-		_cachedSessionId = genUUID();
-		return _cachedSessionId;
+	} catch {
+		// sessionStorage is unavailable (e.g. blocked by privacy settings), keep the ID in memory for this page load
+		_cachedSessionId ??= newSessionId();
 	}
+	return _cachedSessionId;
 };
 
 // Add an analytics event to the queue and flush if batch size reached
 export const analyticsEvent = (eventName: EventName, id?: string) => {
-	eventQueue.push(createEvent(eventName, id, getOffsetMs()));
+	eventQueue.push({ event: createEvent(eventName, id), createdAt: performance.now() });
 
 	if (eventQueue.length >= BATCH_SIZE) {
-		flushEvents();
+		flush();
 	}
 };
 
-// Add data attributes to elements for analytics tracking
-// Scroll captures intersection, interact captures clicks, focus, hovers, keydowns
-export const getAnalyticsAttribute = (
-	eventName: "scroll" | "interact",
-	id: string | boolean,
-	isDisabled?: boolean | null,
-) => {
-	if (isDisabled || disableAnalytics) return {};
-	return { [`data-analytics-${eventName}`]: id };
-};
-
-// Send a single event immediately (for critical events like page visit)
-const sendImmediateEvent = (eventName: EventName, id?: string) => {
-	return sendEvents([createEvent(eventName, id, getOffsetMs())]);
-};
-
-// Handle page close - flush queue and send exit event
+// Handle page close - queue the exit event and send everything left in the queue
 const handlePageClose = () => {
-	const finalEvents = [...eventQueue, createEvent(events.exit, undefined, getOffsetMs())];
-	return sendEvents(finalEvents, true);
+	analyticsEvent(events.exit);
+	flush();
 };
 
-// Handle visibility changes - pause/resume the flush timer
+// Send queued events when the page is hidden, it may never become visible again (e.g. a mobile browser killing the tab)
 const handleVisibilityChange = () => {
 	if (document.visibilityState === "hidden") {
-		if (timer) {
-			clearInterval(timer);
-			timer = null;
-		}
-	} else {
-		if (!timer) {
-			timer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
-		}
+		flush();
 	}
 };
 
@@ -141,15 +76,14 @@ const interactWatcher = () => {
 		el.addEventListener("click", () => analyticsEvent("click", el.dataset?.analyticsInteract), { once: true });
 		el.addEventListener("focus", () => analyticsEvent("focus", el.dataset?.analyticsInteract), { once: true });
 		el.addEventListener("mouseenter", () => analyticsEvent("hover", el.dataset?.analyticsInteract), { once: true });
-		el.addEventListener(
-			"keydown",
-			(event) => {
-				if (event.code === "Space" || event.code === "Enter") {
-					analyticsEvent("keydown", el.dataset?.analyticsInteract);
-				}
-			},
-			{ once: true },
-		);
+		// Record only the first Space/Enter press, other keys (e.g. Tab) shouldn't use up the listener
+		const handleKeydown = (event: KeyboardEvent) => {
+			if (event.code === "Space" || event.code === "Enter") {
+				el.removeEventListener("keydown", handleKeydown);
+				analyticsEvent("keydown", el.dataset?.analyticsInteract);
+			}
+		};
+		el.addEventListener("keydown", handleKeydown);
 	});
 };
 
@@ -159,58 +93,45 @@ function attachInteractionHandlers() {
 }
 
 // Create an analytics event object with the required metadata
-const createEvent = (eventType: EventName, id?: string, offsetMs?: number): AnalyticsEvent => ({
+const createEvent = (eventType: EventName, id?: string): AnalyticsEvent => ({
 	// ⚠️If the AnalyticsEvent schema changes, be sure to adjust the ingest & processor lambda accordingly!
 	eventType,
 	sessionId: getSessionId(),
 	id,
-	offsetMs: Math.round(offsetMs ?? 0), // milliseconds since batch start
 });
 
-// Send events to the server using fetch or sendBeacon
-const sendEvents = async (events: AnalyticsEvent[], useBeacon = false) => {
-	if (!events.length) return;
+/*
+	Empty the queue and send its events to the server.
+	sendBeacon is used for every send because the browser still delivers it after the page is hidden or closed.
+	If the browser refuses the beacon (e.g. its size quota is used up), fetch sends the batch instead so it isn't lost.
+*/
+const flush = () => {
+	if (!eventQueue.length) return;
 
-	const payload = JSON.stringify({ events });
-
-	if (useBeacon) {
-		// Give the server a JSON Content-Type even though we can't set headers
-		const blob = new Blob([payload], { type: "application/json; charset=UTF-8" });
-		const queued = navigator.sendBeacon(analyticsEndpoint, blob);
-
-		// If the beacon queue rejects (too big), fall back to fetch
-		if (!queued) {
-			return fetch(analyticsEndpoint, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: payload,
-				keepalive: true,
-			});
-		}
-
-		return;
+	// Each event is sent with its age, the server subtracts it from the time it receives the batch to get the event's time
+	const now = performance.now();
+	const batch = eventQueue
+		.splice(0, eventQueue.length)
+		.map(({ event, createdAt }): AnalyticsEvent => ({ ...event, ageMs: Math.round(now - createdAt) }));
+	const payload = JSON.stringify({ events: batch });
+	// Give the server a JSON Content-Type even though we can't set headers
+	const blob = new Blob([payload], { type: "application/json; charset=UTF-8" });
+	if (!navigator.sendBeacon(analyticsEndpoint, blob)) {
+		fetch(analyticsEndpoint, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: payload,
+		}).catch(() => {});
 	}
-
-	return fetch(analyticsEndpoint, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: payload,
-	});
-};
-
-// Flush all queued events to the server
-const flushEvents = () => {
-	const eventsToSend = eventQueue.splice(0, eventQueue.length);
-	batchStartTime = null; // Reset batch timer for next batch
-	return sendEvents(eventsToSend);
 };
 
 export const initAnalytics = () => {
-	// Send initial visit event
-	sendImmediateEvent(events.visit);
+	// Send the visit event right away
+	analyticsEvent(events.visit);
+	flush();
 
-	// Start the flush timer
-	timer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
+	// Periodically send any queued events
+	setInterval(flush, FLUSH_INTERVAL_MS);
 
 	attachInteractionHandlers();
 

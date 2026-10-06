@@ -2,10 +2,10 @@
 	We unify all analytics types in one file for easy reference and to ensure consistency across the frontend client, the lambdas, and the local analytics dashboard. It's possible the schema for analytics events may evolve over time, so having a single source of truth helps manage that complexity.
 */
 
-// The various types of analytics events that the client can produce
+// The various types of analytics events that the client can produce, in the order the dashboard shows them
 export const events = {
-	exit: "exit",
 	visit: "visit",
+	exit: "exit",
 	scroll: "scroll",
 	click: "click",
 	focus: "focus",
@@ -19,31 +19,25 @@ const eventArray = Object.values(events) as EventName[];
 export interface AnalyticsEvent {
 	// Event type
 	eventType: EventName;
-	/* 
-		Milliseconds since the first event in the batch. Used to reconstruct event order and timing.
-
-		The server assigns one timestamp to the entire event batch when it’s received.
-		Each event only includes an offset, how long after the batch started that event happened.
-		A larger offset means the event occurred more recently, closer to when the batch was sent.
-
-		To reconstruct when each event actually happened relative to the batch timestamp, we work backwards.
-		The event with the largest offset should line up exactly with the batch timestamp.
-		Events with smaller offsets get shifted back in time accordingly.
-
-		This avoids issues with clock skew, timezones, and intentional manipulation of analytics data.
-
-		This is not perfect, but it's a reasonable compromise between accuracy and complexity.
-	*/
-	offsetMs?: number;
 	// Optional metadata such as an analytics ID
 	id?: string;
 	// Session ID
 	sessionId?: string;
+	/*
+		Milliseconds between the event and the client sending its batch.
+		The processor computes the event's timestamp as the batch's receive time minus ageMs, so the client's clock is never used and its skew doesn't matter.
+		Events without it get the receive time. It isn't stored.
+	*/
+	ageMs?: number;
 }
 
 // Metadata automatically added by the ingest Lambda API
 export interface AnalyticsContext {
-	// Unix timestamp in seconds
+	/*
+		Unix timestamp in milliseconds.
+		In an AnalyticsChunk, it's set by the ingest Lambda when the batch is received.
+		In a stored event, it's when the event happened: the batch's timestamp minus the event's ageMs.
+	*/
 	timestamp: number;
 	// Schema version to allow backward/forward compatibility
 	schemaVersion: number;
@@ -53,8 +47,8 @@ export interface AnalyticsContext {
 	ip: string | null;
 }
 
-// Fully enriched analytics event, including actual event and system metadata
-export type AnalyticsEventEnriched = AnalyticsEvent & AnalyticsContext;
+// Fully enriched analytics event as stored, including actual event and system metadata
+export type AnalyticsEventEnriched = Omit<AnalyticsEvent, "ageMs"> & AnalyticsContext;
 
 // A batch of analytics events that is received by the ingest Lambda and placed into SQS
 export interface AnalyticsChunk extends AnalyticsContext {
@@ -77,8 +71,7 @@ export type ChartData = ChartPoint[];
 // Time step information for the x-axis of analytics graphs
 export type TimeSteps = {
 	unit: "hour" | "day";
-	step: number;
-	ticks: number;
+	// Bucket size in milliseconds
 	ms: number;
 };
 // The shape of the graph data returned from the analytics API
@@ -87,4 +80,12 @@ export type APIGraphData = {
 	data: ChartData;
 };
 
+/*
+	S3 folder the processor writes event files to and the dashboard reads them from, as <EVENTS_S3_PREFIX>/YYYY-MM-DD/part-<uuid>.ndjson.gz.
+	Both sides must use this constant, or the dashboard won't find the processor's files.
+*/
+export const EVENTS_S3_PREFIX = "events";
+
 export const FLUSH_INTERVAL_MS = 5000; // 5 seconds
+// Max events per request. The client flushes when its queue reaches this size, and the ingest Lambda rejects larger batches
+export const BATCH_SIZE = 10;

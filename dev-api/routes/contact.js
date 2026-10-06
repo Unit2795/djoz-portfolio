@@ -1,4 +1,4 @@
-import { sleep } from "../../utils/sleep.js";
+import { setTimeout as sleep } from "node:timers/promises";
 
 // Rough stand-in for contact-api's checks; the real ones live in contact-api
 function findProblem(email, message) {

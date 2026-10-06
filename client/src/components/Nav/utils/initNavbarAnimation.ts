@@ -2,7 +2,7 @@ const fixedClasses = ["w-full", "max-w-screen"];
 const relativeClasses = ["w-4/5", "rounded-lg", "max-w-3xl"];
 
 // Animates the navbar size/position based on scroll position
-export const useNavbarAnimation = (navContainer: HTMLDivElement, disableDynamic: boolean) => {
+export const initNavbarAnimation = (navContainer: HTMLDivElement, disableDynamic: boolean) => {
 	const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 	// Skip all animations if user prefers reduced motion or the animations have been intentionally disabled

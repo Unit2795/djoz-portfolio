@@ -11,12 +11,6 @@ export default defineConfig({
 		plugins: [tailwindcss()],
 		build: {
 			assetsInlineLimit: 100000,
-			rolldownOptions: {
-				treeshake: {
-					moduleSideEffects: false,
-					propertyReadSideEffects: false,
-				},
-			},
 			reportCompressedSize: false,
 		},
 		server: {

@@ -1,17 +1,16 @@
 ---
 import { type Section } from "@/content/types";
-import { getAnalyticsAttribute } from "@/utils/analytics";
+import { getAnalyticsAttribute } from "@/utils/analyticsAttribute";
 
 interface Props {
 	section: Section;
-	solidBackground?: boolean;
 	hideHeader?: boolean;
 	containerClass?: string;
 	sectionClass?: string;
 	analyticsId: string;
 }
 
-const { section, solidBackground, hideHeader, containerClass, sectionClass, analyticsId } = Astro.props;
+const { section, hideHeader, containerClass, sectionClass, analyticsId } = Astro.props;
 
 const headerClass = hideHeader ? "sr-only" : "mb-8 text-center text-4xl font-bold heading-accent";
 const descriptionClass = hideHeader || section.hideDescription ? "sr-only" : "text-center text-xl text-gray-400";
@@ -24,7 +23,7 @@ const getDescriptionId = (section: Section) => `${section.id}-description`;
 ---
 
 <section
-	class:list={["py-20", solidBackground && "bg-gray-900", sectionClass]}
+	class:list={["py-20", section.solidBackground && "bg-gray-900", sectionClass]}
 	id={section.id}
 	{...getHeaderArias(section)}
 	{...getAnalyticsAttribute("scroll", analyticsId, section.disableAnalytics)}

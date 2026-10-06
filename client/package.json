@@ -7,8 +7,9 @@
 		"dev": "concurrently --kill-others-on-fail --kill-others -n '🔷 API,🟢 CLIENT' -c 'blue.bold,green.bold' 'pnpm run dev:api' 'pnpm run dev:client'",
 		"dev:api": "cd ../dev-api && pnpm start",
 		"dev:client": "astro dev --host",
-		"dev:setup": "pnpm install && cd ../dev-api && pnpm install",
-		"build": "astro build && node ./scripts/postbuild.js",
+		"dev:setup": "pnpm install",
+		"typecheck": "astro check",
+		"build": "astro check && astro build && node ./scripts/postbuild.js",
 		"preview": "astro preview --host",
 		"astro": "astro"
 	},
@@ -21,6 +22,7 @@
 		"tailwindcss": "^4.3.3"
 	},
 	"devDependencies": {
+		"@astrojs/check": "^0.9.10",
 		"@eslint/js": "^10.0.1",
 		"@typescript-eslint/parser": "^8.70.1",
 		"cheerio": "^1.2.0",
@@ -33,11 +35,11 @@
 		"eslint-plugin-no-relative-import-paths": "^1.7.3",
 		"eslint-plugin-prettier": "^5.5.6",
 		"globals": "^17.12.0",
-		"html-minifier-terser": "^7.2.0",
 		"prettier": "3.9.9",
 		"prettier-plugin-astro": "1.1.0",
 		"prettier-plugin-organize-imports": "^4.3.0",
 		"prettier-plugin-tailwindcss": "^0.8.1",
+		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.70.1"
 	}
 }

@@ -18,11 +18,6 @@ output "route53_domain" {
   value       = aws_route53_record.root_domain.fqdn
 }
 
-output "ingest_endpoint" {
-  description = "Public API endpoint for analytics ingest"
-  value       = "https://${var.domain_name}/api/ingest"
-}
-
 output "analytics_bucket_name" {
   value       = one(aws_s3_bucket.analytics[*].bucket)
   description = "S3 bucket for gzipped NDJSON files"

@@ -1,18 +1,12 @@
 {
 	"name": "dev-api",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
 	"type": "module",
 	"scripts": {
-		"start": "nodemon index.js"
+		"start": "node --watch index.js"
 	},
-	"keywords": [],
-	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"express": "^5.2.1",
-		"express-file-routing": "^3.1.0",
-		"nodemon": "^3.1.14"
+		"express": "^5.2.1"
 	}
 }

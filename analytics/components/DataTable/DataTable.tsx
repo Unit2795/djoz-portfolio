@@ -3,7 +3,6 @@ import {
 	Column,
 	ColumnDef,
 	flexRender,
-	Row,
 	RowData,
 	rowSortingFeature,
 	SortingState,
@@ -11,7 +10,7 @@ import {
 	useTable,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { HTMLAttributes, MouseEvent, useEffect, useState } from "react";
+import { HTMLAttributes, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -96,7 +95,7 @@ export interface DataTablePaginationProps {
 	pageSize: number;
 	// Total number of items across all pages
 	totalItems: number;
-	onPageChange?: (page: number) => void;
+	onPageChange: (page: number) => void;
 }
 
 const DataTablePagination = ({ currentPage, pageSize, totalItems, onPageChange }: DataTablePaginationProps) => {
@@ -116,12 +115,6 @@ const DataTablePagination = ({ currentPage, pageSize, totalItems, onPageChange }
 		setPageInput(String(currentPage));
 	}, [currentPage]);
 
-	const safeOnPageChange = (page: number) => {
-		if (onPageChange) {
-			onPageChange(page);
-		}
-	};
-
 	const goToInputPage = () => {
 		let clamped = 1;
 		const parsedInput = Number(pageInput);
@@ -135,33 +128,33 @@ const DataTablePagination = ({ currentPage, pageSize, totalItems, onPageChange }
 			clamped = parsedInput;
 		}
 		setPageInput(String(clamped));
-		safeOnPageChange(clamped);
+		onPageChange(clamped);
 	};
 
 	const handlePrev = () => {
 		if (currentPage <= 1) return;
-		safeOnPageChange(currentPage - 1);
+		onPageChange(currentPage - 1);
 	};
 
 	const handleNext = () => {
 		if (currentPage >= totalPages) return;
-		safeOnPageChange(currentPage + 1);
+		onPageChange(currentPage + 1);
 	};
 
 	const handleFirst = () => {
 		if (currentPage === 1) return;
-		safeOnPageChange(1);
+		onPageChange(1);
 	};
 
 	const handleLast = () => {
 		if (currentPage === totalPages) return;
-		safeOnPageChange(totalPages);
+		onPageChange(totalPages);
 	};
 
 	return (
 		<div className="flex items-center justify-between px-2 py-3">
 			<div className="text-muted-foreground flex-1 text-sm">
-				Showing {startItem}-{endItem} of {totalItems}
+				Showing {startItem}-{endItem} of {totalItems.toLocaleString()}
 			</div>
 			<div className="flex items-center gap-3">
 				<div className="flex items-center gap-2">
@@ -245,23 +238,19 @@ const DataTablePagination = ({ currentPage, pageSize, totalItems, onPageChange }
 interface DataTableProps<TableData extends RowData> {
 	columns: ColumnDef<DataTableFeatures, TableData, any>[];
 	data: TableData[];
-	onRowClick?: (row: Row<DataTableFeatures, TableData>, event: MouseEvent<HTMLTableRowElement>) => void;
-	/** Controlled sorting state (optional). Keeps component generic and UI-only. */
-	sorting?: SortingState;
-	onSortingChange?: (sorting: SortingState) => void;
-	pagination?: DataTablePaginationProps;
+	// Sorting and pagination are done by the server, so both are controlled by the parent
+	sorting: SortingState;
+	onSortingChange: (sorting: SortingState) => void;
+	pagination: DataTablePaginationProps;
 }
 
 const DataTable = <TableData extends RowData>({
 	data,
 	columns,
-	onRowClick,
-	sorting: controlledSorting,
+	sorting,
 	onSortingChange,
 	pagination,
 }: DataTableProps<TableData>) => {
-	const [uncontrolledSorting, setUncontrolledSorting] = useState<SortingState>([]);
-	const sorting = controlledSorting ?? uncontrolledSorting;
 	const table = useTable({
 		features: dataTableFeatures,
 		data,
@@ -270,19 +259,11 @@ const DataTable = <TableData extends RowData>({
 		enableMultiSort: true,
 		state: { sorting },
 		onSortingChange: (updater) => {
-			const next =
-				typeof updater === "function" ? (updater as (old: SortingState) => SortingState)(sorting) : updater;
-			if (onSortingChange) {
-				onSortingChange(next);
-			} else {
-				setUncontrolledSorting(next);
-			}
+			onSortingChange(
+				typeof updater === "function" ? (updater as (old: SortingState) => SortingState)(sorting) : updater
+			);
 		},
 	});
-
-	const currentPage = pagination?.currentPage ?? 1;
-	const pageSize = pagination?.pageSize ?? data?.length ?? 1;
-	const totalItems = pagination?.totalItems ?? data?.length ?? 0;
 
 	return (
 		<div className="rounded-md border">
@@ -317,15 +298,7 @@ const DataTable = <TableData extends RowData>({
 					{table.getRowModel().rows?.length ? (
 						table.getRowModel().rows.map((row) => {
 							return (
-								<TableRow
-									key={row.id}
-									className={cn(onRowClick && "cursor-pointer")}
-									onClick={(event) => {
-										if (onRowClick) {
-											onRowClick(row, event);
-										}
-									}}
-								>
+								<TableRow key={row.id}>
 									{row.getAllCells().map((cell) => (
 										<TableCell
 											key={cell.id}
@@ -346,12 +319,7 @@ const DataTable = <TableData extends RowData>({
 					)}
 				</TableBody>
 			</Table>
-			<DataTablePagination
-				currentPage={currentPage}
-				pageSize={pageSize}
-				totalItems={totalItems}
-				onPageChange={pagination?.onPageChange}
-			/>
+			<DataTablePagination {...pagination} />
 		</div>
 	);
 };

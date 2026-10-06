@@ -4,31 +4,27 @@
 </aria-announcer>
 
 <script>
-	import { CustomEl, customEl } from "@/utils/customEl/client";
+	class AriaAnnouncer extends HTMLElement {
+		politeRegion = this.querySelector("[data-polite]");
+		assertiveRegion = this.querySelector("[data-assertive]");
 
-	customEl(
-		"aria-announcer",
-		class extends CustomEl {
-			politeRegion = this.querySelector("[data-polite]");
-			assertiveRegion = this.querySelector("[data-assertive]");
+		connectedCallback() {
+			window.announce = this.announce.bind(this);
+		}
 
-			connectedCallback() {
-				window.announce = this.announce.bind(this);
-			}
+		private announce(message: string, priority: "polite" | "assertive" = "polite") {
+			const region = priority === "assertive" ? this.assertiveRegion : this.politeRegion;
 
-			private announce(message: string, priority: "polite" | "assertive" = "polite", dontClear = false) {
-				const region = priority === "assertive" ? this.assertiveRegion : this.politeRegion;
+			if (!region) return;
 
-				if (!region) return;
+			region.textContent = message;
 
-				region.textContent = message;
+			// Clear after announcement to keep DOM clean
+			setTimeout(() => {
+				region.textContent = "";
+			}, 1000);
+		}
+	}
 
-				if (dontClear) return;
-				// Clear after announcement to keep DOM clean
-				setTimeout(() => {
-					region.textContent = "";
-				}, 1000);
-			}
-		},
-	);
+	customElements.define("aria-announcer", AriaAnnouncer);
 </script>

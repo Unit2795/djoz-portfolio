@@ -118,13 +118,6 @@ export class SnowEffect {
 		}
 	}
 
-	stop() {
-		if (this.animationId) {
-			cancelAnimationFrame(this.animationId);
-			this.animationId = null;
-		}
-	}
-
 	animate(currentTime: number = 0) {
 		// Handle visibility - pause when hidden, resume when visible
 		if (document.hidden) {

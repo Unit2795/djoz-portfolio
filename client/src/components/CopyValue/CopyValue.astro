@@ -1,7 +1,6 @@
 ---
 import Tooltip from "@/components/Tooltip/Tooltip.astro";
 import { copyValue } from "@/content";
-import { props } from "@/utils/customEl/server";
 import { CircleCheckBig, Clipboard } from "@lucide/astro";
 import type { HTMLAttributes } from "astro/types";
 
@@ -13,15 +12,13 @@ const { value, ...rest } = Astro.props;
 const { getId } = Astro.locals;
 const tooltipId = getId();
 
-export type Expose = Pick<Props & { successMessage: string }, "value" | "successMessage">;
-
 /* 
 	Context: Why a role of dialog?
 	While a tooltip is often used to provide additional information about an element, a dialog is a more appropriate role for this component because it contains interactive content (the input field) that users can interact with. This is especially important for accessibility. A role of tooltip will also prevent tab focus from entering the tooltip content. This prevents keyboard and screen reader users from being able to copy the value, particularly for no JS users as they are required to copy the value manually by focusing the input field and using keyboard copy commands.
 */
 ---
 
-<copy-value {...props<Expose>({ value, successMessage: copyValue.successMessage })}>
+<copy-value>
 	<Tooltip
 		role="dialog"
 		data-copy-tooltip
@@ -75,7 +72,7 @@ export type Expose = Pick<Props & { successMessage: string }, "value" | "success
 						role="tooltip"
 						class="copy-success-message absolute bottom-full z-10 inline-block rounded-lg border border-green-500 bg-gray-600 px-3 py-2 text-sm font-medium text-white duration-300"
 					>
-						<span>{copyValue.successMessage}</span>
+						<span data-copy-message>{copyValue.successMessage}</span>
 						<!-- Arrow pointer connecting the popover to the message -->
 						<div
 							class="absolute -bottom-2.5 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-r border-b border-green-500 bg-gray-600"
@@ -88,77 +85,80 @@ export type Expose = Pick<Props & { successMessage: string }, "value" | "success
 </copy-value>
 
 <script>
-	import type { Expose } from "@/components/CopyValue/CopyValue.astro";
-	import { CustomEl, customEl } from "@/utils/customEl/client";
+	class CopyValue extends HTMLElement {
+		trigger = this.querySelector<HTMLButtonElement>("[data-copy-trigger]");
+		tooltip = this.querySelector<HTMLDivElement>("[data-copy-tooltip]");
+		input = this.querySelector<HTMLInputElement>("[data-copy-input]");
+		timeoutId: NodeJS.Timeout | null = null;
+		value = this.input?.value ?? "";
+		successMessage = this.querySelector("[data-copy-message]")?.textContent ?? "";
 
-	customEl(
-		"copy-value",
-		class extends CustomEl<Expose> {
-			trigger = this.querySelector<HTMLButtonElement>("[data-copy-trigger]");
-			tooltip = this.querySelector<HTMLDivElement>("[data-copy-tooltip]");
-			input = this.querySelector<HTMLInputElement>("[data-copy-input]");
-			timeoutId: NodeJS.Timeout | null = null;
-			value = this.props.value;
-			successMessage = this.props.successMessage;
-
-			connectedCallback() {
-				/* Attach the click event listener to the trigger button and tooltip body */
-				this.trigger?.addEventListener("click", this.handleCopy.bind(this));
-				this.tooltip?.addEventListener("click", this.handleCopy.bind(this));
-				// Ensure touch devices fire the copy event immediately instead of just activating the tooltip
-				// This is due to the way touch events work in combination with hover styles
-				this.trigger?.addEventListener("touchend", this.handleCopy.bind(this));
-				// When user focuses the input field and presses Enter, copy the value
-				this.input?.addEventListener("keydown", (event) => {
-					if (event.key === "Enter") {
-						event.preventDefault();
-						this.handleCopy();
-					}
-				});
-
-				// Remove the success message when the user interacts elsewhere
-				this.trigger?.addEventListener("blur", this.disconnectTimeout.bind(this));
-				this.trigger?.addEventListener("mouseleave", this.disconnectTimeout.bind(this));
-
-				// Escape dismisses the popover (WCAG 1.4.13). Listen on document so it also works while only hovered.
-				document.addEventListener("keydown", (event) => {
-					if (event.key === "Escape" && (this.matches(":hover") || this.contains(document.activeElement))) {
-						this.dismiss();
-					}
-				});
-				// A fresh hover or focus shows the popover again
-				this.addEventListener("mouseenter", () => this.tooltip?.removeAttribute("data-dismissed"));
-				this.addEventListener("focusin", () => this.tooltip?.removeAttribute("data-dismissed"));
-			}
-
-			private dismiss() {
-				// Keep focus off the hidden content by returning it to the trigger
-				if (this.tooltip?.contains(document.activeElement)) this.trigger?.focus();
-				this.tooltip?.setAttribute("data-dismissed", "");
-			}
-
-			// Remove the success message when the user interacts elewhere and clear the timeout
-			// Prevents multiple timeouts from stacking up and causing unexpected behavior
-			private disconnectTimeout() {
-				if (this.timeoutId) {
-					clearTimeout(this.timeoutId);
-					this.tooltip!.setAttribute("data-success", "false");
-					this.timeoutId = null;
+		connectedCallback() {
+			/* Attach the click event listener to the trigger button and tooltip body */
+			this.trigger?.addEventListener("click", this.handleCopy.bind(this));
+			this.tooltip?.addEventListener("click", this.handleCopy.bind(this));
+			// Ensure touch devices fire the copy event immediately instead of just activating the tooltip
+			// This is due to the way touch events work in combination with hover styles
+			this.trigger?.addEventListener("touchend", this.handleCopy.bind(this));
+			// When user focuses the input field and presses Enter, copy the value
+			this.input?.addEventListener("keydown", (event) => {
+				if (event.key === "Enter") {
+					event.preventDefault();
+					this.handleCopy();
 				}
+			});
+
+			// Remove the success message when the user interacts elsewhere
+			this.trigger?.addEventListener("blur", this.disconnectTimeout.bind(this));
+			this.trigger?.addEventListener("mouseleave", this.disconnectTimeout.bind(this));
+
+			// Escape dismisses the popover (WCAG 1.4.13). Listen on document so it also works while only hovered.
+			document.addEventListener("keydown", (event) => {
+				if (event.key === "Escape" && (this.matches(":hover") || this.contains(document.activeElement))) {
+					this.dismiss();
+				}
+			});
+			// A fresh hover or focus shows the popover again
+			this.addEventListener("mouseenter", () => this.tooltip?.removeAttribute("data-dismissed"));
+			this.addEventListener("focusin", () => this.tooltip?.removeAttribute("data-dismissed"));
+		}
+
+		private dismiss() {
+			// Keep focus off the hidden content by returning it to the trigger
+			if (this.tooltip?.contains(document.activeElement)) this.trigger?.focus();
+			this.tooltip?.setAttribute("data-dismissed", "");
+		}
+
+		// Remove the success message when the user interacts elewhere and clear the timeout
+		// Prevents multiple timeouts from stacking up and causing unexpected behavior
+		private disconnectTimeout() {
+			if (this.timeoutId) {
+				clearTimeout(this.timeoutId);
+				this.tooltip!.setAttribute("data-success", "false");
+				this.timeoutId = null;
+			}
+		}
+
+		private async handleCopy() {
+			try {
+				await navigator.clipboard.writeText(this.value);
+			} catch (error) {
+				console.error("Failed to copy value", error);
+				return;
 			}
 
-			private handleCopy() {
-				// Copying re-shows a dismissed popover so the success state is visible
-				this.tooltip!.removeAttribute("data-dismissed");
-				this.tooltip!.setAttribute("data-success", "true");
-				window.announce(this.successMessage);
-				// Hide the success message after a delay
-				this.timeoutId = setTimeout(() => {
-					this.tooltip!.setAttribute("data-success", "false");
-				}, 2500);
+			// Clear the previous hide timer so it can't hide this success message early
+			if (this.timeoutId) clearTimeout(this.timeoutId);
+			// Copying re-shows a dismissed popover so the success state is visible
+			this.tooltip!.removeAttribute("data-dismissed");
+			this.tooltip!.setAttribute("data-success", "true");
+			window.announce(this.successMessage);
+			// Hide the success message after a delay
+			this.timeoutId = setTimeout(() => {
+				this.tooltip!.setAttribute("data-success", "false");
+			}, 2500);
+		}
+	}
 
-				navigator.clipboard.writeText(this.value);
-			}
-		},
-	);
+	customElements.define("copy-value", CopyValue);
 </script>
